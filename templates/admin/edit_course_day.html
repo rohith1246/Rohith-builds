@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="admin-form-page">
+
+    <h1>Edit Lesson</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.day_number.label }}
+            {{ form.day_number(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.title.label }}
+            {{ form.title(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.slug.label }}
+            {{ form.slug(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.short_description.label }}
+            {{ form.short_description(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.content.label }}
+            {{ form.content(class="form-control", rows="12") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.image.label }}
+            {{ form.image(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.estimated_minutes.label }}
+            {{ form.estimated_minutes(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.xp_reward.label }}
+            {{ form.xp_reward(class="form-control") }}
+        </div>
+
+        <button type="submit" class="complete-btn">
+            Update Lesson
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

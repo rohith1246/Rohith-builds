@@ -1,0 +1,393 @@
+
+{% extends "base.html" %}
+{% block title %}Dashboard — PromptVault{% endblock %}
+
+{% block content %}
+<div class="container dashboard-page">
+
+  <!-- Email Verification Banner -->
+  {% if not current_user.is_verified %}
+  <div class="verification-banner">
+    <div class="verification-content">
+
+      <div class="verification-icon">
+        📧
+      </div>
+
+      <div class="verification-text">
+        <strong>
+          Verify your email to unlock all features
+        </strong>
+
+        <p>
+          Create prompts, save favorites, and more.
+          Check your inbox and spam/promotions folder.
+        </p>
+      </div>
+
+      <form
+        method="POST"
+        action="{{ url_for('auth.resend_verification') }}"
+        style="margin:0;"
+      >
+        <input
+          type="hidden"
+          name="csrf_token"
+          value="{{ csrf_token() }}"
+        >
+
+        <button type="submit" class="btn-verification">
+          Resend Email
+        </button>
+      </form>
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- Dashboard Header -->
+  <div class="dash-header">
+
+    <div class="dash-avatar">
+      {{ current_user.username[0].upper() }}
+    </div>
+
+    <div class="dash-info">
+
+      <h1>
+        {{ current_user.username }}
+      </h1>
+
+      <p class="dash-email">
+        {{ current_user.email }}
+      </p>
+
+      <p class="dash-joined">
+        Member since
+        {{ current_user.created_at.strftime('%B %Y') }}
+      </p>
+
+    </div>
+
+    <div class="dash-header-actions">
+
+      <a
+        href="{{ url_for('prompts.create_prompt') }}"
+        class="btn-primary"
+      >
+        + New Prompt
+      </a>
+
+      {% if current_user.email == config.ADMIN_EMAIL %}
+      <a
+        href="{{ url_for('admin.admin') }}"
+        class="btn-admin-panel"
+      >
+        Admin Panel
+      </a>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+
+  <!-- Stats -->
+  <div class="dash-stats">
+
+    <div class="stat-card">
+      <span class="stat-num">
+        {{ prompts|length }}
+      </span>
+
+      <span class="stat-label">
+        Prompts Created
+      </span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-num">
+        {{ total_likes }}
+      </span>
+
+      <span class="stat-label">
+        Total Likes
+      </span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-num">
+        {{ fav_count }}
+      </span>
+
+      <span class="stat-label">
+        Saved Favorites
+      </span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-num">
+        {{ enrolled_courses|length }}
+      </span>
+
+      <span class="stat-label">
+        Courses Joined
+      </span>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-num">
+        {{ completed_lessons }}
+      </span>
+
+      <span class="stat-label">
+        Lessons Completed
+      </span>
+    </div>
+
+  </div>
+
+
+  <!-- Joined Courses -->
+  <div class="dash-section">
+
+    <div class="dash-section-header">
+
+      <h2>
+        📚 Joined Courses
+      </h2>
+
+    </div>
+
+    {% if enrolled_courses %}
+
+    <div class="joined-course-grid">
+
+      {% for enrollment in enrolled_courses %}
+
+      <a
+        href="{{ url_for('learn.python_ai_course') }}"
+        class="joined-course-card"
+      >
+
+        <div class="joined-course-icon">
+          🐍
+        </div>
+
+        <div class="joined-course-content">
+
+          <h3>
+            {{ enrollment.course.title }}
+          </h3>
+
+          <p>
+            Continue learning and complete more lessons.
+          </p>
+
+        </div>
+
+      </a>
+
+      {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        📘
+      </div>
+
+      <h3>
+        No joined courses yet
+      </h3>
+
+      <p>
+        Start learning with the AI Builder track.
+      </p>
+
+      <a
+        href="{{ url_for('learn.python_ai_course') }}"
+        class="btn-primary"
+      >
+        Explore Courses
+      </a>
+
+    </div>
+
+    {% endif %}
+
+  </div>
+
+
+  <!-- Admin Quick Access -->
+  {% if current_user.email == config.ADMIN_EMAIL %}
+
+  <div class="dash-section">
+
+    <div class="dash-section-header">
+      <h2>⚡ Admin Quick Access</h2>
+    </div>
+
+    <div class="admin-quick-grid">
+
+      <a
+        href="{{ url_for('admin.add_course_day') }}"
+        class="admin-quick-card"
+      >
+        <div class="admin-quick-icon">
+          📚
+        </div>
+
+        <h3>Add Course Day</h3>
+
+        <p>
+          Create structured lessons with images and HTML content.
+        </p>
+      </a>
+
+      <a
+        href="{{ url_for('learn.python_ai_course') }}"
+        class="admin-quick-card"
+      >
+        <div class="admin-quick-icon">
+          🐍
+        </div>
+
+        <h3>View Python Course</h3>
+
+        <p>
+          Open live AI Builder course page.
+        </p>
+      </a>
+
+    </div>
+
+  </div>
+
+  {% endif %}
+
+
+  <!-- My Prompts -->
+  <div class="dash-section">
+
+    <div class="dash-section-header">
+
+      <h2>
+        My Prompts
+      </h2>
+
+      <a
+        href="{{ url_for('prompts.favorites') }}"
+        class="link-subtle"
+      >
+        View Favorites →
+      </a>
+
+    </div>
+
+
+    {% if prompts %}
+
+    <div class="dash-prompts-list">
+
+      {% for prompt in prompts %}
+
+      <div class="dash-prompt-row">
+
+        <div class="dash-prompt-info">
+
+          <span class="card-cat cat-{{ prompt.category|lower }}">
+            {{ prompt.category }}
+          </span>
+
+          <a
+            href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}"
+            class="dash-prompt-title"
+          >
+            {{ prompt.title }}
+          </a>
+
+          <span class="dash-prompt-meta">
+
+            {{ prompt.created_at.strftime('%b %d, %Y') }}
+
+            ·
+
+            {{ prompt.likes }} likes
+
+          </span>
+
+        </div>
+
+        <div class="dash-prompt-actions">
+
+          <a
+            href="{{ url_for('prompts.edit_prompt', prompt_id=prompt.id) }}"
+            class="btn-ghost btn-sm"
+          >
+            Edit
+          </a>
+
+          <form
+            method="POST"
+            action="{{ url_for('prompts.delete_prompt', prompt_id=prompt.id) }}"
+            style="display:inline"
+            onsubmit="return confirm('Delete this prompt?')"
+          >
+
+            <input
+              type="hidden"
+              name="csrf_token"
+              value="{{ csrf_token() }}"
+            >
+
+            <button type="submit" class="btn-danger btn-sm">
+              Delete
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        ✍️
+      </div>
+
+      <h3>
+        No prompts yet
+      </h3>
+
+      <p>
+        Share your first AI prompt with the community!
+      </p>
+
+      <a
+        href="{{ url_for('prompts.create_prompt') }}"
+        class="btn-primary"
+      >
+        Create Prompt
+      </a>
+
+    </div>
+
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}
+```

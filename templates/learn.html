@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}
+Learn AI & Build Skills — RohithBuilds
+{% endblock %}
+
+{% block content %}
+
+<section class="learn-hero">
+
+    <div class="container">
+
+        <span class="learn-label">
+            AI Learning Hub
+        </span>
+
+        <h1 class="learn-title">
+            Learn AI Through Building
+        </h1>
+
+        <p class="learn-subtitle">
+            Structured visual courses designed for
+            builders, developers, students, and creators.
+        </p>
+
+    </div>
+
+</section>
+
+<section class="courses-section">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <h2>
+                Courses
+            </h2>
+
+            <p>
+                Practical learning tracks built for modern AI builders.
+            </p>
+
+        </div>
+
+        <div class="courses-grid">
+
+            {% for course in courses %}
+
+            <a
+                href="/learn/{{ course.slug }}"
+                class="course-card"
+            >
+
+                <div class="course-card-top">
+
+                    <span class="course-badge">
+                        {{ course.total_days }} Days
+                    </span>
+
+                </div>
+
+                <h3>
+                    {{ course.title }}
+                </h3>
+
+                <p>
+                    {{ course.description }}
+                </p>
+
+                <div class="course-footer">
+
+                    <span>
+                        Start Learning →
+                    </span>
+
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+            <!-- FUTURE COURSES -->
+
+            <div class="course-card upcoming">
+
+                <div class="course-card-top">
+
+                    <span class="course-badge soon">
+                        Coming Soon
+                    </span>
+
+                </div>
+
+                <h3>
+                    AI Agents Bootcamp
+                </h3>
+
+                <p>
+                    Learn to build autonomous AI systems and workflows.
+                </p>
+
+            </div>
+
+            <div class="course-card upcoming">
+
+                <div class="course-card-top">
+
+                    <span class="course-badge soon">
+                        Coming Soon
+                    </span>
+
+                </div>
+
+                <h3>
+                    Prompt Engineering Mastery
+                </h3>
+
+                <p>
+                    Master prompting frameworks, systems, and productivity.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

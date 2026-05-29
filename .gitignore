@@ -1,0 +1,50 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.pytest_cache/
+.python-version
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+.env/
+
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Environment variables
+.env
+*.env
+
+# SQLite database
+*.db
+*.sqlite3
+
+# Flask instance folder
+instance/
+
+# Logs
+*.log
+
+# Render build/system files
+render.yaml
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Generated files
+*.egg-info/
+build/
+dist/

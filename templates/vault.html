@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Vault — AI Prompts Library{% endblock %}
+
+{% block content %}
+
+<section class="vault-header">
+  <div class="container">
+    <h1 class="page-title">The Vault</h1>
+    <p class="page-subtitle">
+      Battle-tested AI prompts used by thousands of builders
+    </p>
+  </div>
+</section>
+
+<!-- Search & Filters -->
+<section class="filter-bar">
+  <div class="container">
+
+    <!-- Search -->
+    <form
+      action="{{ url_for('prompts.vault') }}"
+      method="GET"
+      class="search-form"
+    >
+
+      {% if active_category %}
+      <input
+        type="hidden"
+        name="category"
+        value="{{ active_category }}"
+      >
+      {% endif %}
+
+      <input
+        type="text"
+        name="search"
+        value="{{ search }}"
+        placeholder="Search prompts..."
+        class="search-input"
+      />
+
+      <button type="submit" class="search-btn">
+        Search
+      </button>
+    </form>
+
+    <!-- Categories -->
+    <div class="category-filters">
+
+      <!-- All -->
+      <a
+        href="{{ url_for('prompts.vault', search=search) }}"
+        class="cat-pill {% if not active_category %}active{% endif %}"
+      >
+        All
+      </a>
+
+      <!-- Categories -->
+      {% for cat in categories %}
+      <a
+        href="{{ url_for(
+          'prompts.vault',
+          category=cat,
+          search=search
+        ) }}"
+        class="cat-pill {% if active_category == cat %}active{% endif %}"
+      >
+        {{ cat }}
+      </a>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+<!-- Prompt Grid -->
+<section class="prompt-grid-section container">
+
+  <div id="promptResults">
+    {% include "partials/prompt_results.html" %}
+  </div>
+
+  <!-- Pagination -->
+  {% if pagination.pages > 1 %}
+  <div class="vault-pagination">
+
+    <!-- Previous -->
+    {% if pagination.has_prev %}
+    <a
+      class="page-btn"
+      href="{{ url_for(
+        'prompts.vault',
+        page=pagination.prev_num,
+        category=active_category,
+        search=search
+      ) }}"
+    >
+      ← Previous
+    </a>
+    {% endif %}
+
+    <!-- Numbers -->
+    {% for page_num in pagination.iter_pages(
+      left_edge=1,
+      right_edge=1,
+      left_current=1,
+      right_current=2
+    ) %}
+
+      {% if page_num %}
+      <a
+        href="{{ url_for(
+          'prompts.vault',
+          page=page_num,
+          category=active_category,
+          search=search
+        ) }}"
+        class="page-number {% if page_num == pagination.page %}active{% endif %}"
+      >
+        {{ page_num }}
+      </a>
+      {% else %}
+      <span class="page-dots">…</span>
+      {% endif %}
+
+    {% endfor %}
+
+    <!-- Next -->
+    {% if pagination.has_next %}
+    <a
+      class="page-btn"
+      href="{{ url_for(
+        'prompts.vault',
+        page=pagination.next_num,
+        category=active_category,
+        search=search
+      ) }}"
+    >
+      Next →
+    </a>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+</section>
+
+{% endblock %}

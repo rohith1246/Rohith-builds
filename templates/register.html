@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Create Account — PromptVault{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">⚡</div>
+      <h1>Join PromptVault</h1>
+      <p>Create your free account and start sharing prompts</p>
+    </div>
+
+
+    <form method="POST" class="auth-form" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-input" + (" input-error" if form.username.errors else "")) }}
+        {% for error in form.username.errors %}
+          <span class="form-error">{{ error }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-input" + (" input-error" if form.email.errors else "")) }}
+        {% for error in form.email.errors %}
+          <span class="form-error">{{ error }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label(class="form-label") }}
+        <div class="input-password-wrap">
+          {{ form.password(class="form-input" + (" input-error" if form.password.errors else ""), id="passwordField") }}
+          <button type="button" class="pw-toggle" onclick="togglePassword('passwordField', this)">👁</button>
+        </div>
+        {% for error in form.password.errors %}
+          <span class="form-error">{{ error }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.confirm_password.label(class="form-label") }}
+        <div class="input-password-wrap">
+          {{ form.confirm_password(class="form-input" + (" input-error" if form.confirm_password.errors else ""), id="confirmField") }}
+          <button type="button" class="pw-toggle" onclick="togglePassword('confirmField', this)">👁</button>
+        </div>
+        {% for error in form.confirm_password.errors %}
+          <span class="form-error">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="verify-notice">
+  📧 A verification link will be sent to your email. Check your <strong>spam/promotions folder</strong> if you don't see it.
+</div>
+
+      {{ form.submit(class="btn-primary btn-full") }}
+    </form>
+
+    <p class="auth-switch">
+      Already have an account? <a href="{{ url_for('auth.login') }}">Sign in →</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

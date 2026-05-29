@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}RohithBuilds — AI Prompts{% endblock %}
+
+
+{% block content %}
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+
+  <div class="hero-inner">
+  
+    <!-- Badge -->
+    <div class="hero-badge" data-animate="fadeUp" data-delay="0">
+      <span class="badge-dot"></span>
+      <span>The Community AI Prompt Library</span>
+      <span class="badge-arrow">→</span>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="hero-title" data-animate="fadeUp" data-delay="100">
+      <span class="title-line">Prompts that</span>
+      <span class="title-line gradient-shift">
+        <span class="typewriter-wrap">
+          <span id="typewriterText"></span><span class="tw-cursor">|</span>
+        </span>
+      </span>
+    </h1>
+
+    <p class="hero-sub" data-animate="fadeUp" data-delay="200">
+      Discover, share, and collect battle-tested AI prompts. 
+      Built by creators, for creators — completely free.
+    </p>
+
+    <!-- CTAs -->
+    <div class="hero-ctas" data-animate="fadeUp" data-delay="300">
+      <a href="{{ url_for('prompts.create_prompt') if current_user.is_authenticated else url_for('auth.register') }}" class="cta-primary">
+        <span class="cta-glow"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Share a Prompt</span>
+      </a>
+      <a href="#explore" class="cta-secondary">
+        <span>Browse Library</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-stats" data-animate="fadeUp" data-delay="400">
+      <div class="hstat">
+        <span class="hstat-num" data-count="{{ total_prompts }}">0</span>
+        <span class="hstat-label">Prompts</span>
+      </div>
+      <div class="hstat-sep"></div>
+      <div class="hstat">
+        <span class="hstat-num" data-count="{{ categories|length }}">0</span>
+        <span class="hstat-label">Categories</span>
+      </div>
+      <div class="hstat-sep"></div>
+      <div class="hstat">
+        <span class="hstat-num">∞</span>
+        <span class="hstat-label">Possibilities</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating prompt cards -->
+  <div class="hero-floaters" aria-hidden="true">
+    <div class="floater f1">
+      <div class="floater-tag">Vibe Coding</div>
+      <div class="floater-text">You are an expert code reviewer. Analyze this code for bugs, security issues...</div>
+      <div class="floater-footer"><span>▲ 124</span><span>📋 Copy</span></div>
+    </div>
+    <div class="floater f2">
+      <div class="floater-tag">LinkedIn That Doesn't Suck</div>
+      <div class="floater-text">Create a viral post about [TOPIC] that hooks readers instantly...</div>
+      <div class="floater-footer"><span>▲ 89</span><span>📋 Copy</span></div>
+    </div>
+    <div class="floater f3">
+      <div class="floater-tag">Side Hustle Launchpad</div>
+      <div class="floater-text">You are a startup advisor. Evaluate my idea and give me an action plan...</div>
+      <div class="floater-footer"><span>▲ 201</span><span>📋 Copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ LIVE AI SHOWCASE ═══════════ -->
+<section class="showcase-section">
+  <div class="showcase-inner container">
+    <div class="showcase-label">
+      <span class="pulse-dot"></span> Live Prompt Preview
+    </div>
+    <div class="showcase-terminal">
+      <div class="terminal-bar">
+        <span class="tb-dot red"></span>
+        <span class="tb-dot yellow"></span>
+        <span class="tb-dot green"></span>
+        <span class="tb-title">rohithbuilds ~ ai preview</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-prompt-line">
+          <span class="term-symbol">$</span>
+          <span class="term-cmd" id="termCategory">Loading prompt…</span>
+        </div>
+        <div class="terminal-output">
+          <span class="term-output-text" id="termOutput"></span>
+          <span class="term-cursor">▌</span>
+        </div>
+      </div>
+    </div>
+    <div class="showcase-dots" id="showcaseDots"></div>
+  </div>
+</section>
+
+<!-- ═══════════ CATEGORY FILTER ═══════════ -->
+<!-- ═════════════ CATEGORY FILTER ═════════════ -->
+<section class="filter-section" id="explore">
+  <div class="container">
+    <div class="filter-header">
+      <h2 class="section-title">Explore the Vault</h2>
+      <p class="section-sub"><span id="promptTotalCount">{{ prompt_count }}</span> prompts across {{ categories|length }} categories</p>
+    </div>
+    <div class="cat-scroll">
+      <div class="cat-pills">
+        <a href="{{ url_for('home.home') }}" class="cpill {% if not active_category %}active{% endif %}">
+          <span class="cpill-icon">✦</span> All
+        </a>
+
+        {% set cat_icons = {
+          'Academic Cheat Codes': '🎓',
+          'Vibe Coding': '💻',
+          'Developer DX & Docs': '📖',
+          'Career Pivot Playbook': '🚀',
+          'Legal Plain English': '⚖️',
+          'Prompt Engineering': '🧠',
+          'Learning Any Skill Fast': '⚡',
+          'Productivity Systems & SOPs': '📋',
+          'Roast Me & Brutal Feedback': '🔥',
+          'Brain Rot & Chaos Content': '🌀',
+          'Rizz & Social Scripts': '💬',
+          "LinkedIn That Doesn't Suck": '💼',
+          'Negotiation & Power Dynamics': '🤝',
+          'Food & Recipe Remixer': '🍳',
+          'Side Hustle Launchpad': '💰',
+          'Startup Founder Toolkit': '🏗️',
+          'Creator Monetization Vault': '💎',
+          'Cold Outreach That Converts': '📧',
+          'Marketing That Hits Different': '📣',
+          'Business Model & Pricing Lab': '📊',
+          'Personal Brand OS': '🌟',
+          'Lore Drops & Fictional Worlds': '🌍',
+          'AI Agent & Automation Builder': '🤖',
+          'Fictional Character Depth Dives': '🎭',
+          'Dark Academia & Aesthetic Writing': '🖋️',
+          'Therapy Speak & Emotional Processing': '💙',
+          'Manifesting & Future Self': '✨',
+          'Gamemaster & Worldbuilding': '🎲',
+          'Gamer Psychology & Meta': '🎮',
+          'Soft Skills & People Fluency': '🤝'
+        } %}
+
+        {% for cat in categories %}
+          <a href="{{ url_for('prompts.vault', category=cat, search=search) }}" class="cpill {% if active_category == cat %}active{% endif %}">
+            <span class="cpill-icon">{{ cat_icons.get(cat, '✦') }}</span>
+            {{ cat }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="grid-section container">
+  <div id="promptResults" data-prompt-results>
+    {% include "partials/prompt_results.html" %}
+  </div>
+</section>
+
+{% endblock %}

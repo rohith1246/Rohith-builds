@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}My Favorites — RohithBuilds{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>♥ My Favorites</h1>
+    <p>Prompts you've saved for quick access.</p>
+  </div>
+
+  {% if prompts %}
+    <div class="prompts-grid">
+      {% for prompt in prompts %}
+        <div class="prompt-card" data-id="{{ prompt.id }}">
+          <div class="card-header">
+            <span class="card-cat cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
+            <button class="btn-fav active" onclick="toggleFavorite({{ prompt.id }}, this)">♥</button>
+          </div>
+
+          <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="card-title-link">
+            <h3 class="card-title">{{ prompt.title }}</h3>
+          </a>
+
+          <p class="card-preview">{{ prompt.content[:140] }}{% if prompt.content|length > 140 %}…{% endif %}</p>
+
+          <div class="card-footer">
+            <div class="card-meta">
+              <span class="card-author">by {{ prompt.author.username }}</span>
+              <span class="card-date">{{ prompt.created_at.strftime('%b %d') }}</span>
+            </div>
+            <div class="card-btns">
+              <span class="like-badge">▲ {{ prompt.likes }}</span>
+              <button class="btn-copy" onclick="copyPrompt({{ prompt.id }}, `{{ prompt.content | replace('`', '\\`') | replace('\n', '\\n') }}`, this)">
+                📋 Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💾</div>
+      <h3>No favorites yet</h3>
+      <p>Heart prompts you love and they'll appear here.</p>
+      <a href="{{ url_for('prompts.vault') }}" class="btn-primary">Explore Vault</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

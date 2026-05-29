@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - RohithBuilds</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0f1e;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 1px solid #ff4f6a;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(255, 79, 106, 0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .logo-accent {
+      color: #ff4f6a;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      margin: 20px 0 10px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #a0a0a0;
+    }
+    .content {
+      margin: 30px 0;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+    .content p {
+      margin: 15px 0;
+      color: #d0d0d0;
+    }
+    .username {
+      color: #ff4f6a;
+      font-weight: 600;
+    }
+    .cta-container {
+      text-align: center;
+      margin: 40px 0;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4f6a 0%, #ff6b7a 100%);
+      color: white;
+      padding: 14px 40px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 79, 106, 0.3);
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 79, 106, 0.5);
+    }
+    .link-text {
+      font-size: 12px;
+      color: #808080;
+      margin-top: 20px;
+      word-break: break-all;
+    }
+    .link-text a {
+      color: #ff4f6a;
+      text-decoration: none;
+    }
+    .footer {
+      border-top: 1px solid #333;
+      margin-top: 30px;
+      padding-top: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #808080;
+    }
+    .warning {
+      background: #2a2a3e;
+      border-left: 4px solid #ff4f6a;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .warning strong {
+      color: #ff4f6a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">⚡ Rohith<span class="logo-accent">Builds</span></div>
+      <div class="title">Verify Your Email</div>
+      <div class="subtitle">Complete your account setup</div>
+    </div>
+
+    <div class="content">
+      <p>Hey <span class="username">{{ username }}</span>! 👋</p>
+      
+      <p>Welcome to <strong>RohithBuilds</strong> — you’re officially one step closer to prompt greatness.</p>
+      
+      <p>To complete your account setup and unlock all the creative tools (create prompts, save favorites, and more), please verify your email address by clicking the button below:</p>
+    </div>
+
+    <div class="cta-container">
+      <a href="{{ verify_url }}" class="cta-button">✓ Verify Email Address</a>
+    </div>
+
+    <div class="link-text">
+      Or copy this link in your browser:<br>
+      <a href="{{ verify_url }}">{{ verify_url }}</a>
+    </div>
+
+    <div class="warning">
+      <strong>⏱️ Important:</strong> This verification link expires in <strong>1 hour</strong>. If it expires, you can request a new one from your dashboard.
+    </div>
+
+    <div class="content">
+      <p><strong>What happens after verification?</strong></p>
+      <ul>
+        <li>✅ Create and share your own prompts</li>
+        <li>❤️ Like and favorite prompts</li>
+        <li>📁 Build your personal prompt library</li>
+        <li>🔔 Get updates on trending prompts</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>Questions? <a href="mailto:support@rohithbuilds.com" style="color: #ff4f6a; text-decoration: none;">Contact us</a></p>
+      <p style="margin-top: 10px;">© 2026 RohithBuilds. Built for the AI generation.</p>
+    </div>
+  </div>
+</body>
+</html>

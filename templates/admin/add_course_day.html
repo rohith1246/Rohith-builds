@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Course Day — Admin
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-course-page">
+
+    <div class="container">
+
+        <div class="admin-header">
+
+            <span class="admin-badge">
+                RohithBuilds Admin
+            </span>
+
+            <h1>
+                Add New Course Day
+            </h1>
+
+            <p>
+                Publish new lessons for the
+                100 Days of Python for AI Builders track.
+            </p>
+
+        </div>
+
+        <div class="admin-form-card">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                {{ form.hidden_tag() }}
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        {{ form.day_number.label }}
+                        {{ form.day_number(class="form-input") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.slug.label }}
+                        {{ form.slug(class="form-input") }}
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    {{ form.title.label }}
+                    {{ form.title(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.short_description.label }}
+                    {{ form.short_description(class="form-textarea small-textarea") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.image.label }}
+                    {{ form.image(class="form-input") }}
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        {{ form.estimated_minutes.label }}
+                        {{ form.estimated_minutes(class="form-input") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.xp_reward.label }}
+                        {{ form.xp_reward(class="form-input") }}
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    {{ form.content.label }}
+                    {{ form.content(class="form-textarea lesson-editor") }}
+                </div>
+
+                <button
+                    type="submit"
+                    class="publish-btn"
+                >
+                    Publish Lesson
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

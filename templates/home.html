@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}RohithBuilds — AI Prompts & Lessons{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-badge">
+      🚀 Built for AI Creators, Developers & Builders
+    </div>
+
+    <h1 class="hero-title">
+      Learn AI Prompting.
+      <span class="gradient-text">
+        Build Better With AI.
+      </span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Discover powerful prompts, improve weak AI instructions,
+      and master practical AI skills through structured lessons,
+      creator tools, and real-world systems.
+    </p>
+
+    <div class="hero-ctas">
+
+      <a
+        href="{{ url_for('prompts.vault') }}"
+        class="btn-primary large"
+      >
+        Explore Prompt Vault →
+      </a>
+
+      <a
+        href="{{ url_for('improve.improve_page') }}"
+        class="btn-secondary large"
+      >
+        Improve My Prompt
+      </a>
+
+    </div>
+
+    <div class="hero-stats">
+
+      <div class="stat">
+        <span class="stat-number">500+</span>
+        <span class="stat-label">AI Prompts</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-number">100+</span>
+        <span class="stat-label">Learning Days Coming</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-number">10x</span>
+        <span class="stat-label">Better Prompting</span>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container">
+
+    <h2 class="section-title">
+      Everything You Need To Master AI
+    </h2>
+
+    <div class="features-grid">
+
+      <!-- Vault -->
+
+      <div class="feature-card">
+
+        <div class="feature-icon">
+          🔐
+        </div>
+
+        <h3>AI Prompt Vault</h3>
+
+        <p>
+          Access hundreds of curated prompts for coding,
+          productivity, content creation, learning, marketing,
+          automation, and more.
+        </p>
+
+        <a
+          href="{{ url_for('prompts.vault') }}"
+          class="feature-link"
+        >
+          Explore Vault →
+        </a>
+
+      </div>
+
+
+      <!-- Learn -->
+
+      <div class="feature-card">
+
+        <div class="feature-icon">
+          📚
+        </div>
+
+        <h3>Learn AI Skills</h3>
+
+        <p>
+          Structured visual lessons designed for creators,
+          developers, freelancers, and AI builders.
+        </p>
+
+        <a
+          href="{{ url_for('learn.learn') }}"
+          class="feature-link"
+        >
+          Start Learning →
+        </a>
+
+      </div>
+
+
+      <!-- Improve -->
+
+      <div class="feature-card improve-highlight">
+
+        <div class="feature-icon">
+          ✨
+        </div>
+
+        <h3>AI Prompt Improver</h3>
+
+        <p>
+          Paste any weak prompt and instantly transform it into
+          a professional high-performance AI instruction.
+        </p>
+
+        <a
+          href="{{ url_for('improve.improve_page') }}"
+          class="feature-link"
+        >
+          Improve Prompt →
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- PROMPT IMPROVER SHOWCASE -->
+<section class="improver-showcase">
+
+  <div class="container">
+
+    <div class="showcase-grid">
+
+      <div class="showcase-left">
+
+        <span class="mini-badge">
+          ⚡ AI Prompt Improver
+        </span>
+
+        <h2>
+          Turn weak prompts into powerful AI systems
+        </h2>
+
+        <p>
+          Most people write vague prompts and get mediocre AI results.
+          RohithBuilds helps you rewrite prompts with structure,
+          clarity, constraints, reasoning, and output optimization.
+        </p>
+
+        <ul class="showcase-list">
+          <li>✅ Better ChatGPT responses</li>
+          <li>✅ Smarter AI outputs</li>
+          <li>✅ Cleaner prompt engineering</li>
+          <li>✅ Faster workflow building</li>
+        </ul>
+
+        <a
+          href="{{ url_for('improve.improve_page') }}"
+          class="btn-primary"
+        >
+          Try The Improver
+        </a>
+
+      </div>
+
+
+      <div class="showcase-right">
+
+        <div class="prompt-demo-card">
+
+          <div class="prompt-demo-header">
+            Before
+          </div>
+
+          <div class="prompt-demo-content weak">
+            "write me instagram captions"
+          </div>
+
+        </div>
+
+
+        <div class="prompt-arrow">
+          ↓
+        </div>
+
+
+        <div class="prompt-demo-card improved">
+
+          <div class="prompt-demo-header">
+            After Improvement
+          </div>
+
+          <div class="prompt-demo-content strong">
+
+            Generate 10 high-engagement Instagram captions
+            for a tech creator audience.
+            Use curiosity hooks, short punchy language,
+            and include CTA variations.
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+
+  <div class="container">
+
+    <div class="final-cta-box">
+
+      <h2>
+        Become Dangerous With AI
+      </h2>
+
+      <p>
+        Learn prompting, build systems, and create faster
+        with battle-tested AI workflows.
+      </p>
+
+      <div class="hero-ctas">
+
+        <a
+          href="{{ url_for('prompts.vault') }}"
+          class="btn-primary large"
+        >
+          Explore Vault
+        </a>
+
+        <a
+          href="{{ url_for('learn.learn') }}"
+          class="btn-secondary large"
+        >
+          Start Learning
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+{% endblock %}

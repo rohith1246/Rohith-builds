@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ prompt.title }} — RohithBuilds{% endblock %}
+
+{% block content %}
+<div class="container detail-page">
+  <div class="detail-main">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="{{ url_for('home.home') }}">Home</a>
+      <span>›</span>
+      <a href="{{ url_for('prompts.vault', category=prompt.category) }}">{{ prompt.category }}</a>
+      <span>›</span>
+      <span>{{ prompt.title[:40] }}{% if prompt.title|length > 40 %}…{% endif %}</span>
+    </div>
+
+    <!-- Prompt Header -->
+    <div class="detail-header">
+      <span class="card-cat cat-{{ prompt.category|lower }} card-cat-lg">{{ prompt.category }}</span>
+      <h1 class="detail-title">{{ prompt.title }}</h1>
+      <div class="detail-meta">
+        <span class="detail-author">
+          <span class="mini-avatar">{{ prompt.author.username[0].upper() }}</span>
+          {{ prompt.author.username }}
+        </span>
+        <span class="detail-date">{{ prompt.created_at.strftime('%B %d, %Y') }}</span>
+        <span class="detail-likes">▲ {{ prompt.likes }} likes</span>
+      </div>
+    </div>
+
+    <!-- Prompt Content Box -->
+    <div class="detail-content-box">
+      <div class="detail-content-header">
+        <span class="detail-content-label">📝 Prompt</span>
+        <button class="btn-copy-lg" id="copyBtn" onclick="copyDetailPrompt({{ prompt.id }}, this)">
+          📋 Copy Prompt
+        </button>
+      </div>
+      <pre class="detail-prompt-text" id="promptContent">{{ prompt.content }}</pre>
+    </div>
+
+    <!-- Action bar -->
+    <div class="detail-actions">
+      <button class="btn-like-lg" id="likeBtn" onclick="likePromptDetail({{ prompt.id }}, this)">
+        <span>▲</span> <span id="likeCount">{{ prompt.likes }}</span> Likes
+      </button>
+
+      {% if current_user.is_authenticated %}
+        <button class="btn-fav-lg {% if is_favorite %}active{% endif %}" id="favBtn" onclick="toggleFavDetail({{ prompt.id }}, this)">
+          {% if is_favorite %}♥ Saved{% else %}♡ Save{% endif %}
+        </button>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-fav-lg">♡ Save to Favorites</a>
+      {% endif %}
+
+      {% if current_user.is_authenticated and current_user.id == prompt.user_id %}
+        <a href="{{ url_for('prompts.edit_prompt', prompt_id=prompt.id) }}" class="btn-ghost">✏️ Edit</a>
+        <form method="POST" action="{{ url_for('prompts.delete_prompt', prompt_id=prompt.id) }}" style="display:inline" onsubmit="return confirm('Delete this prompt?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-danger">🗑 Delete</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="detail-sidebar">
+    <div class="sidebar-card">
+      <h3>About this prompt</h3>
+      <div class="sidebar-info-row">
+        <span>Category</span>
+        <a href="{{ url_for('prompts.vault', category=prompt.category) }}">{{ prompt.category }}</a>
+      </div>
+      <div class="sidebar-info-row">
+        <span>Author</span>
+        <strong>{{ prompt.author.username }}</strong>
+      </div>
+      <div class="sidebar-info-row">
+        <span>Published</span>
+        <strong>{{ prompt.created_at.strftime('%b %d, %Y') }}</strong>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

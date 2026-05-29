@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="improve-wrapper">
+
+    <div class="improve-card">
+
+        <h1 class="improve-title">
+            Improve Your Prompt
+        </h1>
+
+        <p class="improve-subtitle">
+            Turn weak prompts into powerful AI prompts instantly.
+        </p>
+
+        <textarea
+            id="promptInput"
+            class="improve-textarea"
+            placeholder="Enter your prompt here..."
+        ></textarea>
+
+        <button
+            type="button"
+            class="improve-btn"
+            onclick="improvePrompt(event)"
+        >
+            Improve Prompt
+        </button>
+
+        <div id="loading"></div>
+
+        <div id="resultBox" class="result-box">
+
+            <div class="result-header">
+<button
+    class="copy-btn"
+    onclick="copyImprovedPrompt()"
+>
+    Copy
+</button>
+                <h3 class="result-title">
+                    Improved Prompt
+                </h3>
+
+            </div>
+
+            <div id="output" class="result-text"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

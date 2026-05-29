@@ -1,0 +1,456 @@
+/* =========================================
+   DASHBOARD PAGE
+========================================= */
+
+.dashboard-page{
+    max-width:1200px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+}
+
+/* =========================================
+   DASH HEADER
+========================================= */
+
+.dash-header{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    padding:32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:28px;
+    margin-bottom:40px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.05);
+}
+
+.dash-avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#f59e0b);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:2.3rem;
+    font-weight:700;
+    flex-shrink:0;
+}
+
+.dash-info{
+    flex:1;
+}
+
+.dash-info h1{
+    font-size:2rem;
+    margin-bottom:8px;
+    color:#0f172a;
+}
+
+.dash-email{
+    color:#64748b;
+    margin-bottom:4px;
+}
+
+.dash-joined{
+    color:#94a3b8;
+    font-size:0.95rem;
+}
+
+.dash-header-actions{
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.btn-primary{
+    background:#3b82f6;
+    color:white;
+    padding:14px 22px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:600;
+    transition:0.2s ease;
+}
+
+.btn-primary:hover{
+    background:#2563eb;
+    transform:translateY(-2px);
+}
+
+.btn-admin-panel{
+    background:#0f172a;
+    color:white;
+    padding:14px 22px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.btn-admin-panel:hover{
+    background:#1e293b;
+}
+
+/* =========================================
+   STATS GRID
+========================================= */
+
+.dash-stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+    margin-bottom:50px;
+}
+
+.stat-card{
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:32px 20px;
+    text-align:center;
+    transition:0.25s ease;
+}
+
+.stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 12px 30px rgba(15,23,42,0.08);
+}
+
+.stat-num{
+    font-size:3rem;
+    font-weight:800;
+    color:#0f172a;
+    display:block;
+    margin-bottom:10px;
+}
+
+.stat-label{
+    color:#64748b;
+    font-size:1rem;
+}
+
+/* =========================================
+   DASH SECTIONS
+========================================= */
+
+.dash-section{
+    margin-bottom:60px;
+}
+
+.dash-section-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:24px;
+}
+
+.dash-section-header h2{
+    font-size:2rem;
+    color:#0f172a;
+}
+
+.link-subtle{
+    color:#7c3aed;
+    text-decoration:none;
+    font-weight:600;
+}
+
+/* =========================================
+   JOINED COURSES
+========================================= */
+
+.joined-course-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:24px;
+}
+
+.joined-course-card{
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    padding:24px;
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    text-decoration:none;
+    transition:0.25s ease;
+}
+
+.joined-course-card:hover{
+    transform:translateY(-4px);
+    border-color:#3b82f6;
+    box-shadow:0 10px 30px rgba(59,130,246,0.12);
+}
+
+.joined-course-icon{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    color:white;
+    flex-shrink:0;
+}
+
+.joined-course-content h3{
+    margin:0 0 10px;
+    font-size:1.3rem;
+    color:#0f172a;
+}
+
+.joined-course-content p{
+    margin:0;
+    color:#64748b;
+    line-height:1.6;
+}
+
+/* =========================================
+   PROMPTS LIST
+========================================= */
+
+.dash-prompts-list{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.dash-prompt-row{
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:22px;
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    align-items:center;
+    transition:0.2s ease;
+}
+
+.dash-prompt-row:hover{
+    border-color:#3b82f6;
+    box-shadow:0 8px 24px rgba(59,130,246,0.08);
+}
+
+.dash-prompt-info{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.dash-prompt-title{
+    font-size:1.2rem;
+    font-weight:700;
+    color:#0f172a;
+    text-decoration:none;
+}
+
+.dash-prompt-meta{
+    color:#64748b;
+    font-size:0.95rem;
+}
+
+.dash-prompt-actions{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+/* =========================================
+   SMALL BUTTONS
+========================================= */
+
+.btn-sm{
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:0.95rem;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.btn-ghost{
+    background:#f1f5f9;
+    color:#0f172a;
+}
+
+.btn-ghost:hover{
+    background:#e2e8f0;
+}
+
+.btn-danger{
+    background:#ef4444;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+.btn-danger:hover{
+    background:#dc2626;
+}
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.empty-state{
+    background:#f8fafc;
+    border:2px dashed #cbd5e1;
+    border-radius:24px;
+    padding:70px 30px;
+    text-align:center;
+}
+
+.empty-icon{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.empty-state h3{
+    font-size:1.7rem;
+    margin-bottom:10px;
+    color:#0f172a;
+}
+
+.empty-state p{
+    color:#64748b;
+    margin-bottom:28px;
+}
+
+/* =========================================
+   ADMIN QUICK GRID
+========================================= */
+
+.admin-quick-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;
+}
+
+.admin-quick-card{
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    padding:28px;
+    text-decoration:none;
+    transition:0.25s ease;
+}
+
+.admin-quick-card:hover{
+    transform:translateY(-4px);
+    border-color:#3b82f6;
+    box-shadow:0 10px 30px rgba(59,130,246,0.12);
+}
+
+.admin-quick-icon{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    color:white;
+    margin-bottom:18px;
+}
+
+.admin-quick-card h3{
+    font-size:1.3rem;
+    margin-bottom:10px;
+    color:#0f172a;
+}
+
+.admin-quick-card p{
+    color:#64748b;
+    line-height:1.6;
+}
+
+/* =========================================
+   VERIFICATION BANNER
+========================================= */
+
+.verification-banner{
+    margin-bottom:32px;
+}
+
+.verification-content{
+    background:#fff7ed;
+    border:1px solid #fdba74;
+    border-radius:20px;
+    padding:24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.verification-icon{
+    font-size:2rem;
+}
+
+.verification-text{
+    flex:1;
+}
+
+.btn-verification{
+    background:#ea580c;
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:768px){
+
+    .dash-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .dash-header-actions{
+        width:100%;
+        flex-direction:column;
+    }
+
+    .btn-primary,
+    .btn-admin-panel{
+        width:100%;
+        text-align:center;
+    }
+
+    .dash-prompt-row{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .dash-prompt-actions{
+        width:100%;
+    }
+
+    .dash-section-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+    }
+
+    .verification-content{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+}

@@ -1,0 +1,90 @@
+<div class="prompt-results" aria-live="polite">
+  <div class="search-label">
+    {% if search %}
+      {% if prompts %}
+        <span class="search-count">{{ prompts|length }}</span> result{{ 's' if prompts|length != 1 }} for "<strong>{{ search }}</strong>"
+        {% if active_category %}
+          <span class="search-filter-note">in <strong>{{ active_category }}</strong></span>
+        {% endif %}
+        {% if sort_label and sort != 'newest' %}
+          <span class="search-filter-note">· {{ sort_label }}</span>
+        {% endif %}
+      {% else %}
+        No results for "<strong>{{ search }}</strong>" — <a href="{{ clear_search_url }}">clear search</a>
+      {% endif %}
+    {% else %}
+      <span class="search-count">{{ prompts|length }}</span> prompt{{ 's' if prompts|length != 1 }}{% if active_category %} in <strong>{{ active_category }}</strong>{% endif %}
+      {% if sort_label and sort != 'newest' %}
+        <span class="search-filter-note">· {{ sort_label }}</span>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if prompts %}
+    <div class="prompts-grid">
+      {% for prompt in prompts %}
+        <article class="pcard" data-id="{{ prompt.id }}" style="--i:{{ loop.index0 }}">
+          <div class="pcard-glow"></div>
+          <div class="pcard-border"></div>
+
+          <div class="pcard-top">
+            <span class="pcat pcat-{{ prompt.category|lower|replace(' ', '-')|replace('&', '')|replace("'", '') }}">{{ prompt.category }}</span>
+            <button
+              class="pfav-btn {% if prompt.id in user_favorites %}active{% endif %}"
+              onclick="toggleFavorite({{ prompt.id }}, this)"
+              title="Save to favorites"
+            >
+              <svg viewBox="0 0 24 24" fill="{% if prompt.id in user_favorites %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+
+          <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="pcard-link">
+            <h3 class="pcard-title">{{ prompt.title }}</h3>
+          </a>
+
+          <p class="pcard-preview">{{ prompt.content[:130] }}{% if prompt.content|length > 130 %}…{% endif %}</p>
+
+          <div class="pcard-footer">
+            <div class="pcard-author">
+              <div class="author-dot">{{ prompt.author.username[0].upper() }}</div>
+              <div>
+                <div class="author-name">{{ prompt.author.username }}</div>
+                <div class="author-date">{{ prompt.created_at.strftime('%b %d') }}</div>
+              </div>
+            </div>
+            <div class="pcard-actions">
+              <button class="paction like-btn" onclick="likePrompt({{ prompt.id }}, this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <span class="like-num">{{ prompt.likes }}</span>
+              </button>
+              <button class="paction copy-btn" onclick="copyPrompt({{ prompt.id }}, `{{ prompt.content | replace('`', '\\`') | replace('\n', '\\n') }}`, this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-vault">
+      <div class="empty-orb"></div>
+      <h3>The vault is empty</h3>
+      <p>
+        {% if search %}
+          No prompts match your search.
+        {% elif active_category %}
+          No prompts found in {{ active_category }}.
+        {% else %}
+          Be the first to add a prompt!
+        {% endif %}
+      </p>
+      <a href="{{ url_for('prompts.create_prompt') if current_user.is_authenticated else url_for('auth.register') }}" class="cta-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Add First Prompt
+      </a>
+    </div>
+  {% endif %}
+</div>
