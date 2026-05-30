@@ -4,41 +4,18 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationE
 from models import User
 
 CATEGORIES = [
-    # Retention Engines
-    ("Academic Cheat Codes", "Academic Cheat Codes"),
-    ("Vibe Coding", "Vibe Coding"),
-    ("Developer DX & Docs", "Developer DX & Docs"),
-    ("Career Pivot Playbook", "Career Pivot Playbook"),
-    ("Legal Plain English", "Legal Plain English"),
+    ("AI Fundamentals", "AI Fundamentals"),
     ("Prompt Engineering", "Prompt Engineering"),
-    ("Learning Any Skill Fast", "Learning Any Skill Fast"),
-    ("Productivity Systems & SOPs", "Productivity Systems & SOPs"),
-    # Viral Engines
-    ("Roast Me & Brutal Feedback", "Roast Me & Brutal Feedback"),
-    ("Brain Rot & Chaos Content", "Brain Rot & Chaos Content"),
-    ("Rizz & Social Scripts", "Rizz & Social Scripts"),
-    ("LinkedIn That Doesn't Suck", "LinkedIn That Doesn't Suck"),
-    ("Negotiation & Power Dynamics", "Negotiation & Power Dynamics"),
-    ("Food & Recipe Remixer", "Food & Recipe Remixer"),
-    # Monetization Engines
-    ("Side Hustle Launchpad", "Side Hustle Launchpad"),
-    ("Startup Founder Toolkit", "Startup Founder Toolkit"),
-    ("Creator Monetization Vault", "Creator Monetization Vault"),
-    ("Cold Outreach That Converts", "Cold Outreach That Converts"),
-    ("Marketing That Hits Different", "Marketing That Hits Different"),
-    ("Business Model & Pricing Lab", "Business Model & Pricing Lab"),
-    # Creator Ecosystems
-    ("Personal Brand OS", "Personal Brand OS"),
-    ("Lore Drops & Fictional Worlds", "Lore Drops & Fictional Worlds"),
-    ("AI Agent & Automation Builder", "AI Agent & Automation Builder"),
-    ("Fictional Character Depth Dives", "Fictional Character Depth Dives"),
-    # Community Ecosystems
-    ("Dark Academia & Aesthetic Writing", "Dark Academia & Aesthetic Writing"),
-    ("Therapy Speak & Emotional Processing", "Therapy Speak & Emotional Processing"),
-    ("Manifesting & Future Self", "Manifesting & Future Self"),
-    ("Gamemaster & Worldbuilding", "Gamemaster & Worldbuilding"),
-    ("Gamer Psychology & Meta", "Gamer Psychology & Meta"),
-    ("Soft Skills & People Fluency", "Soft Skills & People Fluency"),
+    ("Coding & Development", "Coding & Development"),
+    ("Python", "Python"),
+    ("AI Automation", "AI Automation"),
+    ("Learning & Study", "Learning & Study"),
+    ("Productivity Systems", "Productivity Systems"),
+    ("Career & Resume", "Career & Resume"),
+    ("Communication Skills", "Communication Skills"),
+    ("Content Creation", "Content Creation"),
+    ("Business & Startups", "Business & Startups"),
+    ("Personal Development", "Personal Development"),
 ]
 
 
