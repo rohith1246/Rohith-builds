@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ collection.name }}
+{% endblock %}
+
+{% block content %}
+
+<section class="vault-header">
+  <div class="container">
+    <h1 class="page-title">
+      {{ collection.name }}
+    </h1>
+
+    <p class="page-subtitle">
+      {{ collection.description }}
+    </p>
+  </div>
+</section>
+
+<section class="prompt-grid-section container">
+
+  {% include "partials/prompt_results.html" %}
+
+</section>
+
+{% endblock %}

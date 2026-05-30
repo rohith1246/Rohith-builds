@@ -116,6 +116,56 @@ class PromptLike(db.Model):
             name="unique_user_like"
         ),
     )
+    
+    
+class PromptCollection(db.Model):
+    __tablename__ = "prompt_collections"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(100), unique=True)
+
+    slug = db.Column(db.String(100), unique=True)
+
+    description = db.Column(db.Text)
+
+    prompts = db.relationship(
+        "PromptCollectionItem",
+        backref="collection",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+    
+class PromptCollectionItem(db.Model):
+    __tablename__ = "prompt_collection_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    collection_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prompt_collections.id"),
+        nullable=False
+    )
+
+    prompt_id = db.Column(
+        db.Integer,
+        db.ForeignKey("prompts.id"),
+        nullable=False
+    )
+
+    prompt = db.relationship(
+        "Prompt",
+        backref="collection_items"
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "collection_id",
+            "prompt_id",
+            name="unique_collection_prompt"
+        ),
+    )    
+    
 
 class Favorite(db.Model):
     __tablename__ = "favorites"

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Prompt Collections{% endblock %}
+
+{% block content %}
+
+<section class="vault-header">
+    <div class="container">
+        <h1 class="page-title">
+            Prompt Collections
+        </h1>
+
+        <p class="page-subtitle">
+            Curated bundles of high-quality prompts for specific goals.
+        </p>
+    </div>
+</section>
+
+<section class="prompt-grid-section container">
+
+    {% if collections %}
+
+        <div class="prompt-grid">
+
+            {% for collection in collections %}
+
+            <a
+                href="{{ url_for('prompts.collection_detail', slug=collection.slug) }}"
+                class="prompt-card"
+            >
+
+                <div class="prompt-card-content">
+
+                    <h3>
+                        {{ collection.name }}
+                    </h3>
+
+                    <p>
+                        {{ collection.description }}
+                    </p>
+
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+            <h3>No collections yet</h3>
+            <p>Create your first prompt collection.</p>
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

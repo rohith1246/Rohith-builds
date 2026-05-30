@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import csrf
-from models import db, Prompt, Favorite, PromptLike
+from models import db, Prompt, Favorite, PromptLike,PromptCollection,PromptCollectionItem
 from forms import PromptForm
 
 from .helpers import build_prompt_feed_context
@@ -24,6 +24,37 @@ def vault():
 
     return render_template("vault.html", **feed)
 
+@prompts_bp.route("/collections")
+def collections():
+
+    collections = PromptCollection.query.all()
+
+    return render_template(
+        "collections.html",
+        collections=collections
+    )
+@prompts_bp.route("/collections/<slug>")
+def collection_detail(slug):
+
+    collection = PromptCollection.query.filter_by(
+        slug=slug
+    ).first_or_404()
+
+    prompt_ids = db.session.query(
+        PromptCollectionItem.prompt_id
+    ).filter(
+        PromptCollectionItem.collection_id == collection.id
+    )
+
+    prompts = Prompt.query.filter(
+        Prompt.id.in_(prompt_ids)
+    ).all()
+
+    return render_template(
+        "collection_detail.html",
+        collection=collection,
+        prompts=prompts
+    )
 
 @prompts_bp.route("/api/prompts")
 def api_prompts():

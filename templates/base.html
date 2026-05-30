@@ -40,6 +40,11 @@
         Vault
       </a>
 
+      <a href="{{ url_for('prompts.collections') }}"
+         class="nav-link {% if request.endpoint == 'prompts.collections' %}active{% endif %}">
+        Collections
+      </a>
+
       <a href="{{ url_for('learn.learn') }}"
          class="nav-link {% if request.endpoint == 'learn.learn' %}active{% endif %}">
         Learn
@@ -130,7 +135,9 @@
     <div class="footer-links">
       <a href="{{ url_for('home.home') }}">Home</a>
       <a href="{{ url_for('prompts.vault') }}">Vault</a>
+      <a href="{{ url_for('prompts.collections') }}">Collections</a>
       <a href="{{ url_for('learn.learn') }}">Learn</a>
+
     </div>
   </div>
 </footer>
