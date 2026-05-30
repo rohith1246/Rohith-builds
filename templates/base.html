@@ -21,39 +21,86 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
-
 <!-- NAVBAR -->
 <nav class="navbar">
   <div class="nav-container">
+
     <a href="{{ url_for('home.home') }}" class="nav-logo">
       Rohith<span class="logo-accent">Builds</span>
     </a>
 
     <div class="nav-links">
-      <a href="{{ url_for('home.home') }}" class="nav-link {% if request.endpoint == 'home.home' %}active{% endif %}">Home</a>
-      <a href="{{ url_for('prompts.vault') }}" class="nav-link {% if request.endpoint == 'prompts.vault' %}active{% endif %}">Vault</a>
-      <a href="{{ url_for('learn.learn') }}" class="nav-link {% if request.endpoint == 'learn.learn' %}active{% endif %}">Learn</a>
-      <a href="{{ url_for('improve.improve_page') }}" class="nav-link {% if request.endpoint == 'improve.improve_page' %}active{% endif %}">Improve Prompt</a>
+      <a href="{{ url_for('home.home') }}"
+         class="nav-link {% if request.endpoint == 'home.home' %}active{% endif %}">
+        Home
+      </a>
+
+      <a href="{{ url_for('prompts.vault') }}"
+         class="nav-link {% if request.endpoint == 'prompts.vault' %}active{% endif %}">
+        Vault
+      </a>
+
+      <a href="{{ url_for('learn.learn') }}"
+         class="nav-link {% if request.endpoint == 'learn.learn' %}active{% endif %}">
+        Learn
+      </a>
+
+      <a href="{{ url_for('improve.improve_page') }}"
+         class="nav-link {% if request.endpoint == 'improve.improve_page' %}active{% endif %}">
+        Improve Prompt
+      </a>
     </div>
 
     <div class="nav-right">
+
       {% if current_user.is_authenticated %}
-        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">+ New Prompt</a>
-        <a href="{{ url_for('auth.dashboard') }}" class="btn-primary">Dashboard
+
+        {% if request.blueprint != 'learn' %}
+        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">
+          + New Prompt
         </a>
-        
-         <a href="{{ url_for('auth.logout') }}" class="nav-link">
-      Logout
-    </a>
+        {% endif %}
+
+        <a href="{{ url_for('auth.dashboard') }}" class="btn-primary">
+          Dashboard
+        </a>
+
+        <a href="{{ url_for('auth.logout') }}" class="nav-link">
+          Logout
+        </a>
+
       {% else %}
-        <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
-        <a href="{{ url_for('auth.register') }}" class="btn-primary">Get Started</a>
+
+        {% if request.endpoint == 'auth.login' %}
+
+          <a href="{{ url_for('auth.register') }}" class="btn-primary">
+            Get Started
+          </a>
+
+        {% elif request.endpoint == 'auth.register' %}
+
+          <a href="{{ url_for('auth.login') }}" class="nav-link">
+            Login
+          </a>
+
+        {% else %}
+
+          <a href="{{ url_for('auth.login') }}" class="nav-link">
+            Login
+          </a>
+
+          <a href="{{ url_for('auth.register') }}" class="btn-primary">
+            Get Started
+          </a>
+
+        {% endif %}
+
       {% endif %}
+
     </div>
 
-    
+   
 
-    <button class="nav-hamburger" id="hamburger">☰</button>
   </div>
 </nav>
 

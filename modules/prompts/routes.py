@@ -2,11 +2,12 @@ from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import csrf
-from models import db, Prompt, Favorite
+from models import db, Prompt, Favorite, PromptLike
 from forms import PromptForm
 
 from .helpers import build_prompt_feed_context
 from . import prompts_bp
+
 
 
 @prompts_bp.route("/vault")
@@ -207,14 +208,40 @@ def like_prompt(prompt_id):
 
     prompt = Prompt.query.get_or_404(prompt_id)
 
-    prompt.likes = (prompt.likes or 0) + 1
+    existing = PromptLike.query.filter_by(
+        user_id=current_user.id,
+        prompt_id=prompt_id
+    ).first()
+
+    if existing:
+
+        db.session.delete(existing)
+
+        if prompt.likes > 0:
+            prompt.likes -= 1
+
+        liked = False
+
+    else:
+
+        db.session.add(
+            PromptLike(
+                user_id=current_user.id,
+                prompt_id=prompt_id
+            )
+        )
+
+        prompt.likes += 1
+
+        liked = True
 
     db.session.commit()
 
     return jsonify({
+        "success": True,
+        "liked": liked,
         "likes": prompt.likes
     })
-
 
 @prompts_bp.route("/api/copy/<int:prompt_id>", methods=["POST"])
 @csrf.exempt

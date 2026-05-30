@@ -1,4 +1,6 @@
-/* static/css/improve.css */
+/* ==================================================
+   IMPROVE PAGE
+================================================== */
 
 .improve-wrapper {
   padding: 80px 20px 100px;
@@ -8,10 +10,10 @@
 
 .improve-card {
   background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 48px 40px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 .improve-title {
@@ -19,11 +21,12 @@
   font-weight: 700;
   margin-bottom: 12px;
   text-align: center;
+  color: var(--text);
 }
 
 .improve-subtitle {
   text-align: center;
-  color: #64748b;
+  color: var(--text-light);
   font-size: 1.1rem;
   margin-bottom: 40px;
   max-width: 500px;
@@ -31,50 +34,93 @@
   margin-right: auto;
 }
 
+/* ==================================================
+   TEXTAREA INPUT
+================================================== */
+
 .improve-textarea {
   width: 100%;
   min-height: 220px;
   padding: 20px;
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
   font-size: 1.05rem;
   resize: vertical;
   margin-bottom: 20px;
-  transition: all 0.2s;
+  transition: var(--transition);
+  font-family: inherit;
+  color: var(--text);
+}
+
+.improve-textarea::placeholder {
+  color: var(--text-light);
 }
 
 .improve-textarea:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
   outline: none;
 }
+
+/* ==================================================
+   IMPROVE BUTTON
+================================================== */
 
 .improve-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--primary), #1d4ed8);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 20px;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .improve-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
 }
+
+.improve-btn:active {
+  transform: translateY(0);
+}
+
+.improve-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==================================================
+   RESULT BOX
+================================================== */
 
 .result-box {
   margin-top: 30px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 28px;
   display: none;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-box.show {
+  display: block;
 }
 
 .result-header {
@@ -82,22 +128,39 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 16px;
 }
 
 .result-title {
   font-size: 1.3rem;
   font-weight: 600;
+  color: var(--text);
 }
 
 .copy-btn {
   padding: 8px 18px;
-  background: #3b82f6;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.95rem;
+  font-weight: 600;
+  transition: var(--transition);
 }
+
+.copy-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.copy-btn.copied {
+  background: var(--success);
+}
+
+/* ==================================================
+   RESULT TEXT
+================================================== */
 
 .result-text {
   white-space: pre-wrap;
@@ -106,6 +169,156 @@
   color: #334155;
   background: white;
   padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ==================================================
+   LOADING STATE
+================================================== */
+
+.improve-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-light);
+}
+
+.improve-loading::after {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  border: 3px solid var(--primary);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================================================
+   TIPS SECTION
+================================================== */
+
+.improve-tips {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.improve-tips h3 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.improve-tips-list {
+  list-style: none;
+  padding: 0;
+}
+
+.improve-tips-list li {
+  padding: 12px 0;
+  color: var(--text-light);
+  line-height: 1.6;
+  display: flex;
+  gap: 12px;
+}
+
+.improve-tips-list li::before {
+  content: "→";
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ==================================================
+   RESPONSIVE DESIGN
+================================================== */
+
+@media (max-width: 768px) {
+  .improve-wrapper {
+    padding: 60px 20px 80px;
+  }
+
+  .improve-card {
+    padding: 32px 24px;
+    border-radius: var(--radius-md);
+  }
+
+  .improve-title {
+    font-size: 1.8rem;
+  }
+
+  .improve-subtitle {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
+
+  .improve-textarea {
+    min-height: 180px;
+    padding: 16px;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .improve-wrapper {
+    padding: 40px 16px 60px;
+  }
+
+  .improve-card {
+    padding: 24px 16px;
+  }
+
+  .improve-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .improve-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .improve-textarea {
+    min-height: 150px;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .improve-btn {
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+  .result-box {
+    padding: 20px;
+  }
+
+  .result-text {
+    padding: 16px;
+    font-size: 1rem;
+  }
+
+  .copy-btn {
+    padding: 6px 14px;
+    font-size: 0.9rem;
+  }
 }

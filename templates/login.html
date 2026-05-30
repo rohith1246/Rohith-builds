@@ -1,13 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Sign In — PromptVault{% endblock %}
+{% block title %}Login — RohithBuilds{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="auth-page">
   <div class="auth-card">
+
     <div class="auth-header">
-      <div class="auth-logo">⚡</div>
-      <h1>Welcome back</h1>
-      <p>Sign in to your PromptVault account</p>
+      <img
+    src="{{ url_for('static', filename='images/logo.png') }}"
+    alt="RohithBuilds"
+    class="auth-logo-img"
+>
+      <h1>Welcome Back</h1>
+      <p>Continue your AI learning and building journey.</p>
     </div>
 
     <form method="POST" class="auth-form" novalidate>
@@ -15,7 +24,11 @@
 
       <div class="form-group">
         {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-input" + (" input-error" if form.email.errors else "")) }}
+        {{ form.email(
+          class="form-input" + (" input-error" if form.email.errors else ""),
+          placeholder="you@example.com"
+        ) }}
+
         {% for error in form.email.errors %}
           <span class="form-error">{{ error }}</span>
         {% endfor %}
@@ -23,10 +36,22 @@
 
       <div class="form-group">
         {{ form.password.label(class="form-label") }}
+
         <div class="input-password-wrap">
-          {{ form.password(class="form-input" + (" input-error" if form.password.errors else ""), id="passwordField") }}
-          <button type="button" class="pw-toggle" onclick="togglePassword('passwordField', this)">👁</button>
+          {{ form.password(
+            class="form-input" + (" input-error" if form.password.errors else ""),
+            id="passwordField",
+            placeholder="Enter your password"
+          ) }}
+
+          <button
+            type="button"
+            class="pw-toggle"
+            onclick="togglePassword('passwordField', this)">
+            👁
+          </button>
         </div>
+
         {% for error in form.password.errors %}
           <span class="form-error">{{ error }}</span>
         {% endfor %}
@@ -36,8 +61,12 @@
     </form>
 
     <p class="auth-switch">
-      Don't have an account? <a href="{{ url_for('auth.register') }}">Sign up free →</a>
+      New to RohithBuilds?
+      <a href="{{ url_for('auth.register') }}">
+        Create Account →
+      </a>
     </p>
+
   </div>
 </div>
 {% endblock %}

@@ -19,22 +19,114 @@
             automation workflows, and practical tools.
         </p>
 
-        <a
+      {% if enrolled %}
+
+{% if next_day %}
+
+<a
+    href="{{ url_for('learn.python_course_day', slug=next_day.slug) }}"
+    class="btn-primary enroll-btn"
+>
+    Continue Day {{ next_day.day_number }} →
+</a>
+
+{% else %}
+
+<div class="course-complete-badge">
+    🏆 Course Completed
+</div>
+
+{% endif %}
+<div class="enrolled-badge">
+    ✅ You are enrolled in this course
+</div>
+
+{% else %}
+
+<a
     href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
     class="btn-primary enroll-btn"
 >
     Enroll Course
 </a>
 
+{% endif %}
+
     </section>
 
-    <section class="course-grid">
+    {% if is_enrolled %}
+
+<div class="course-progress-card">
+
+    <div class="progress-header">
+
+        <span>
+            Course Progress
+        </span>
+
+        <span>
+            {{ completed_count }}/{{ days|length }} Lessons
+        </span>
+
+    </div>
+
+    <div class="progress-bar">
+
+        <div
+            class="progress-fill"
+            style="width: {{ progress_percent }}%;"
+        ></div>
+
+    </div>
+
+    <div class="progress-percent">
+        {{ progress_percent }}% Complete
+    </div>
+
+</div>
+
+{% endif %}
+
+  <section class="course-grid" id="course-content">
+
 {% for day in days %}
 
+{% set completed = day.id in completed_day_ids %}
+
+{% if completed %}
+
 <a
-    href="/learn/python-ai-course/{{ day.slug }}"
-    class="course-card"
+    href="{{ url_for('learn.python_course_day', slug=day.slug) }}"
+    class="course-card completed-card"
 >
+
+    <div class="lesson-status completed-status">
+        ✅ Completed
+    </div>
+
+{% elif next_day and day.id == next_day.id %}
+
+<a
+    href="{{ url_for('learn.python_course_day', slug=day.slug) }}"
+    class="course-card current-card"
+>
+
+    <div class="lesson-status current-status">
+        ▶ Continue Learning
+    </div>
+
+{% else %}
+
+<a
+    href="{{ url_for('learn.python_course_day', slug=day.slug) }}"
+    class="course-card locked-card"
+>
+
+    <div class="lesson-status locked-status">
+        🔒 Upcoming
+    </div>
+
+{% endif %}
 
     <div class="course-day">
         Day {{ day.day_number }}
@@ -64,7 +156,7 @@
 
 {% endfor %}
 
-    </section>
+</section>
 
 </div>
 

@@ -85,12 +85,20 @@
 
         <div class="lesson-actions">
 
-    <a
-        href="{{ url_for('learn.complete_lesson', day_id=day.id) }}"
-        class="btn-primary"
-    >
-        ✅ Mark As Complete
-    </a>
+   {% if completed %}
+
+<div class="lesson-completed-badge">
+    ✅ Lesson Completed
+</div>
+
+{% else %}
+
+<a href="{{ url_for('learn.complete_lesson', day_id=day.id) }}"
+   class="btn-primary">
+    Mark as Complete
+</a>
+
+{% endif %}
 
 </div>
 

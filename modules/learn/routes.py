@@ -62,27 +62,56 @@ def python_ai_course():
         CourseDay.day_number.asc()
     ).all()
 
-    enrolled = False
+    is_enrolled = False
+    completed_ids = []
+    next_day = None
 
     if current_user.is_authenticated:
 
-        enrolled = CourseEnrollment.query.filter_by(
+        enrollment = CourseEnrollment.query.filter_by(
             user_id=current_user.id,
             course_id=course.id
-        ).first() is not None
+        ).first()
+
+        is_enrolled = enrollment is not None
+
+        completed_ids = [
+            p.course_day_id
+            for p in LessonProgress.query.filter_by(
+                user_id=current_user.id,
+                completed=True
+            ).all()
+        ]
+
+        for day in days:
+            if day.id not in completed_ids:
+                next_day = day
+                break
+
+    completed_count = len(completed_ids)
+
+    progress_percent = 0
+
+    if len(days) > 0:
+        progress_percent = int(
+            (completed_count / len(days)) * 100
+        )
 
     return render_template(
-        "learn/python_course.html",
-        course=course,
-        days=days,
-        enrolled=enrolled
-    )
+    "learn/python_course.html",
+    course=course,
+    days=days,
+    enrolled=is_enrolled,
+    completed_day_ids=completed_ids,
+    completed_count=completed_count,
+    progress_percent=progress_percent,
+    next_day=next_day
+)
 
 
 # ==========================================
 # SINGLE LESSON PAGE
 # ==========================================
-
 @learn_bp.route("/learn/python-ai-course/<slug>")
 def python_course_day(slug):
 
@@ -93,10 +122,10 @@ def python_course_day(slug):
     completed = False
 
     if current_user.is_authenticated:
-
         completed = LessonProgress.query.filter_by(
             user_id=current_user.id,
-            course_day_id=day.id
+            course_day_id=day.id,
+            completed=True
         ).first() is not None
 
     return render_template(
@@ -104,7 +133,6 @@ def python_course_day(slug):
         day=day,
         completed=completed
     )
-
 
 # ==========================================
 # ENROLL COURSE
@@ -139,10 +167,30 @@ def enroll_course(course_id):
 # ==========================================
 # COMPLETE LESSON
 # ==========================================
-
 @learn_bp.route("/lesson/<int:day_id>/complete")
 @login_required
 def complete_lesson(day_id):
+
+    day = CourseDay.query.get_or_404(day_id)
+
+    enrollment = CourseEnrollment.query.filter_by(
+        user_id=current_user.id,
+        course_id=day.course_id
+    ).first()
+
+    if not enrollment:
+
+        flash(
+            "Please enroll in the course before completing lessons.",
+            "warning"
+        )
+
+        return redirect(
+            url_for(
+                "learn.enroll_course",
+                course_id=day.course_id
+            )
+        )
 
     existing = LessonProgress.query.filter_by(
         user_id=current_user.id,

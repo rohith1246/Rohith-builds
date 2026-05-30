@@ -1,87 +1,6 @@
-/* =========================
-   ADMIN QUICK ACTIONS
-========================= */
-
-.admin-quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  margin: 40px 0;
-}
-
-.admin-action-card {
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.9),
-    rgba(248,250,252,0.95)
-  );
-  border: 1px solid rgba(226,232,240,0.8);
-  border-radius: 24px;
-  padding: 28px;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 10px 25px rgba(15,23,42,0.04);
-}
-
-.admin-action-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(59,130,246,0.3);
-  box-shadow:
-    0 20px 40px rgba(59,130,246,0.12);
-}
-
-.admin-action-card::before {
-  content: "";
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 140px;
-  height: 140px;
-  background: rgba(59,130,246,0.05);
-  border-radius: 50%;
-}
-
-.admin-action-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-
-  background: linear-gradient(
-    135deg,
-    #3b82f6,
-    #2563eb
-  );
-
-  color: white;
-
-  box-shadow:
-    0 10px 20px rgba(59,130,246,0.25);
-}
-
-.admin-action-card h3 {
-  font-size: 1.1rem;
-  color: #0f172a;
-  margin-bottom: 10px;
-  font-weight: 700;
-}
-
-.admin-action-card p {
-  color: #64748b;
-  line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-/* =========================
-   ADMIN PAGE IMPROVEMENTS
-========================= */
+/* ==================================================
+   ADMIN PAGE
+================================================== */
 
 .admin-page {
   padding-top: 40px;
@@ -100,39 +19,94 @@
   font-size: 2.5rem;
   margin-top: 12px;
   margin-bottom: 12px;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .admin-header p {
-  color: #64748b;
+  color: var(--text-light);
   max-width: 600px;
 }
 
 .admin-badge {
-  background: rgba(59,130,246,0.12);
-  color: #2563eb;
+  background: var(--primary-light);
+  color: var(--primary);
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
-.btn-ghost {
-  border: 1px solid #e2e8f0;
-  padding: 12px 18px;
-  border-radius: 14px;
+/* ==================================================
+   ADMIN QUICK ACTIONS
+================================================== */
+
+.admin-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin: 40px 0;
+}
+
+.admin-action-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
   text-decoration: none;
-  color: #0f172a;
-  transition: 0.2s ease;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  color: inherit;
 }
 
-.btn-ghost:hover {
-  background: #f8fafc;
+.admin-action-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
 }
 
-/* =========================
+.admin-action-card::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 140px;
+  height: 140px;
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 50%;
+}
+
+.admin-action-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--primary), #1d4ed8);
+  color: white;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+}
+
+.admin-action-card h3 {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.admin-action-card p {
+  color: var(--text-light);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* ==================================================
    ADMIN STATS
-========================= */
+================================================== */
 
 .admin-stats {
   display: grid;
@@ -143,53 +117,56 @@
 
 .astat-card {
   background: white;
-  border-radius: 22px;
+  border-radius: var(--radius-md);
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 18px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
 
-  box-shadow:
-    0 10px 20px rgba(15,23,42,0.04);
+.astat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .astat-icon {
   width: 58px;
   height: 58px;
-  border-radius: 18px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: #eff6ff;
+  background: var(--primary-light);
   font-size: 1.4rem;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .astat-num {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .astat-label {
-  color: #64748b;
+  color: var(--text-light);
   margin-top: 4px;
 }
 
-/* =========================
+/* ==================================================
    ADMIN SECTIONS
-========================= */
+================================================== */
 
 .admin-section {
   background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 28px;
   margin-bottom: 40px;
-
-  box-shadow:
-    0 12px 30px rgba(15,23,42,0.04);
+  box-shadow: var(--shadow-md);
 }
 
 .admin-section-header {
@@ -197,21 +174,24 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 16px;
 }
 
 .admin-section-header h2 {
   font-size: 1.3rem;
-  color: #0f172a;
+  color: var(--text);
+  margin: 0;
 }
 
 .admin-count {
-  color: #64748b;
+  color: var(--text-light);
   font-size: 0.95rem;
+  font-weight: 600;
 }
 
-/* =========================
-   TABLE
-========================= */
+/* ==================================================
+   TABLE STYLES
+================================================== */
 
 .admin-table-wrap {
   overflow-x: auto;
@@ -225,22 +205,24 @@
 .admin-table thead th {
   text-align: left;
   padding: 16px;
-  color: #64748b;
+  color: var(--text-light);
   font-size: 0.9rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
 }
 
 .admin-table tbody td {
   padding: 18px 16px;
   border-bottom: 1px solid #f1f5f9;
+  color: var(--text);
 }
 
 .admin-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--surface-alt);
 }
 
 .td-muted {
-  color: #64748b;
+  color: var(--text-light);
 }
 
 .td-user {
@@ -253,19 +235,23 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #dbeafe;
-  color: #2563eb;
-
+  background: var(--primary-light);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-weight: 700;
+  flex-shrink: 0;
 }
+
+/* ==================================================
+   BADGES
+================================================== */
 
 .badge-admin,
 .badge-verified,
 .badge-unverified {
+  display: inline-block;
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -287,6 +273,10 @@
   color: #dc2626;
 }
 
+/* ==================================================
+   TABLE ACTIONS
+================================================== */
+
 .td-actions {
   display: flex;
   gap: 10px;
@@ -296,43 +286,68 @@
 .btn-admin-delete {
   border: none;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
+  transition: var(--transition);
+  font-size: 0.9rem;
 }
 
 .btn-admin-verify {
-  background: #2563eb;
+  background: var(--primary);
   color: white;
+}
+
+.btn-admin-verify:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
 }
 
 .btn-admin-delete {
-  background: #ef4444;
+  background: var(--danger);
   color: white;
 }
 
+.btn-admin-delete:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
 .td-link {
-  color: #2563eb;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 600;
+  transition: var(--transition);
 }
 
 .td-link:hover {
   text-decoration: underline;
+  color: var(--primary-hover);
 }
 
 .td-empty {
   text-align: center;
   padding: 30px;
-  color: #94a3b8;
+  color: var(--text-lighter);
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* ==================================================
+   RESPONSIVE DESIGN
+================================================== */
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 992px) {
+  .admin-header {
+    flex-direction: column;
+  }
+}
 
 @media (max-width: 768px) {
-
   .admin-header {
     flex-direction: column;
   }
@@ -345,4 +360,129 @@
     padding: 20px;
   }
 
+  .admin-quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-table-wrap {
+    border-radius: var(--radius-md);
+  }
+
+  .admin-table thead th {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .admin-table tbody td {
+    padding: 14px 12px;
+    font-size: 0.95rem;
+  }
+
+  .td-user {
+    gap: 8px;
+  }
+
+  .td-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .td-actions {
+    gap: 6px;
+  }
+
+  .btn-admin-verify,
+  .btn-admin-delete {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .admin-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .admin-page {
+    padding-top: 30px;
+    padding-bottom: 60px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .admin-quick-actions {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .astat-card {
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .astat-num {
+    font-size: 1.5rem;
+  }
+
+  .admin-action-card {
+    padding: 20px;
+  }
+
+  .admin-action-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+
+  .admin-action-card h3 {
+    font-size: 1rem;
+  }
+
+  .admin-section {
+    padding: 16px;
+  }
+
+  .admin-section-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .admin-table {
+    font-size: 0.9rem;
+  }
+
+  .admin-table thead th {
+    padding: 10px 8px;
+  }
+
+  .admin-table tbody td {
+    padding: 10px 8px;
+  }
+
+  .td-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btn-admin-verify,
+  .btn-admin-delete {
+    width: 100%;
+    padding: 6px 10px;
+  }
 }

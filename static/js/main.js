@@ -253,46 +253,76 @@ document.querySelectorAll(".flash").forEach(el => {
 
 /* ── Like prompt (grid) ─────────────────────────── */
 function likePrompt(id, btn) {
-  if (btn.classList.contains("liked")) return;
-  fetch(`/api/like/${id}`, { method: "POST" })
+
+    fetch(`/api/like/${id}`, {
+        method: "POST"
+    })
     .then(r => {
-      if (r.status === 401) { location.href="/login"; return null; }
-      if (r.status === 403) {
-        const errorMsg = "Please verify your email to like prompts.";
-        alert(errorMsg);
-        return null;
-      }
-      return r.json();
+
+        if (r.status === 401) {
+            location.href = "/login";
+            return null;
+        }
+
+        if (r.status === 403) {
+            alert("Please verify your email to like prompts.");
+            return null;
+        }
+
+        return r.json();
+
     })
     .then(d => {
-      if (!d) return;
-      btn.querySelector(".like-num").textContent = d.likes;
-      btn.classList.add("liked");
-      btn.style.transform = "scale(1.2)";
-      setTimeout(() => btn.style.transform = "", 200);
-    }).catch(console.error);
+
+        if (!d) return;
+
+        btn.querySelector(".like-num").textContent = d.likes;
+
+        if (d.liked) {
+            btn.classList.add("liked");
+        } else {
+            btn.classList.remove("liked");
+        }
+
+    })
+    .catch(console.error);
 }
 
 /* ── Like prompt (detail) ───────────────────────── */
 function likePromptDetail(id, btn) {
-  if (btn.classList.contains("liked")) return;
-  fetch(`/api/like/${id}`, { method: "POST" })
+
+    fetch(`/api/like/${id}`, {
+        method: "POST"
+    })
     .then(r => {
-      if (r.status === 401) { location.href="/login"; return null; }
-      if (r.status === 403) {
-        const errorMsg = "Please verify your email to like prompts.";
-        alert(errorMsg);
-        return null;
-      }
-      return r.json();
+
+        if (r.status === 401) {
+            location.href = "/login";
+            return null;
+        }
+
+        if (r.status === 403) {
+            alert("Please verify your email to like prompts.");
+            return null;
+        }
+
+        return r.json();
+
     })
     .then(d => {
-      if (!d) return;
-      document.getElementById("likeCount").textContent = d.likes;
-      btn.classList.add("liked");
-      btn.style.color = "var(--gold)";
-      btn.style.borderColor = "rgba(245,158,11,.4)";
-    }).catch(console.error);
+
+        if (!d) return;
+
+        document.getElementById("likeCount").textContent = d.likes;
+
+        if (d.liked) {
+            btn.classList.add("liked");
+        } else {
+            btn.classList.remove("liked");
+        }
+
+    })
+    .catch(console.error);
 }
 
 /* ── Toggle favorite (grid) ─────────────────────── */
@@ -350,14 +380,41 @@ function toggleFavDetail(id, btn) {
 
 /* ── Copy prompt (grid) ─────────────────────────── */
 function copyPrompt(id, content, btn) {
-  const text = content.replace(/\\n/g, "\n");
-  navigator.clipboard.writeText(text).then(() => {
-    const orig = btn.innerHTML;
-    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Copied!</span>`;
-    btn.classList.add("copied");
-    fetch(`/api/copy/${id}`, { method: "POST" }).catch(console.error);
-    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove("copied"); }, 2200);
-  }).catch(() => fallbackCopy(text, btn));
+    const text = content.replace(/\\n/g, "\n");
+
+    if (navigator.clipboard && window.isSecureContext) {
+
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                const orig = btn.innerHTML;
+
+                btn.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Copied!</span>`;
+
+                btn.classList.add("copied");
+
+                fetch(`/api/copy/${id}`, {
+                    method: "POST"
+                }).catch(console.error);
+
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.classList.remove("copied");
+                }, 2200);
+            });
+
+    } else {
+
+        fallbackCopy(text, btn);
+
+        fetch(`/api/copy/${id}`, {
+            method: "POST"
+        }).catch(console.error);
+    }
 }
 
 /* ── Copy prompt (detail) ───────────────────────── */
