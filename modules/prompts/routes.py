@@ -12,7 +12,6 @@ from . import prompts_bp
 
 @prompts_bp.route("/vault")
 def vault():
-    """Prompt Vault / Library"""
 
     page = request.args.get("page", 1, type=int)
 
@@ -22,7 +21,22 @@ def vault():
         page=page,
     )
 
-    return render_template("vault.html", **feed)
+    feed["featured_collections"] = (
+        PromptCollection.query
+        .filter(
+            PromptCollection.slug.in_([
+                "ai-beginner-pack",
+                "coding-mastery-pack",
+                "student-productivity-pack",
+            ])
+        )
+        .all()
+    )
+
+    return render_template(
+        "vault.html",
+        **feed
+    )
 
 @prompts_bp.route("/collections")
 def collections():
