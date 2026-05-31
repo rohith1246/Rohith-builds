@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
@@ -240,6 +241,11 @@ class CourseDay(db.Model):
     is_published = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    lesson_data = db.Column(
+    db.JSON,
+    nullable=True
+)
 
 
 class UserCourseProgress(db.Model):

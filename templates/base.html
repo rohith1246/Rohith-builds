@@ -9,7 +9,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
-  
+ <script>
+window.COURSE_SLUG = null;
+window.LESSON_SLUG = null;
+</script>
+  <script src="{{ url_for('static', filename='js/rohi.js') }}"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}"/>
@@ -37,7 +41,7 @@
 
       <a href="{{ url_for('prompts.vault') }}"
          class="nav-link {% if request.endpoint == 'prompts.vault' %}active{% endif %}">
-        Vault
+        Prompts
       </a>
 
       <a href="{{ url_for('prompts.collections') }}"
@@ -141,7 +145,77 @@
     </div>
   </div>
 </footer>
+<div id="rohi-widget">
 
+    <button id="rohi-toggle">
+    🤖
+</button>
+
+    <div id="rohi-chat">
+
+        <div class="rohi-header">
+             Rohi AI Tutor
+        </div>
+
+        <div id="rohi-messages">
+
+            <div class="rohi-ai">
+                Hi 👋 I'm Rohi.
+                Ask me anything about this lesson.
+            </div>
+
+        </div>
+
+        <div class="rohi-input-row">
+
+            <input
+                id="rohi-input"
+                type="text"
+                placeholder="Ask about this lesson..."
+            >
+
+            <button id="rohi-send">
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="rohi-limit-modal" class="rohi-limit-modal">
+
+    <div class="rohi-limit-card">
+
+        <div class="rohi-limit-icon">
+            💜
+        </div>
+
+        <h2>
+            Continue Learning with Rohi
+        </h2>
+
+        <p>
+            You've used your 3 free Rohi questions.
+            Create a free account to continue learning.
+        </p>
+
+        <div class="rohi-limit-actions">
+
+            <a href="/register" class="rohi-signup-btn">
+                Create Free Account
+            </a>
+
+            <a href="/login" class="rohi-login-btn">
+                Login
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block extra_js %}{% endblock %}
 </body>

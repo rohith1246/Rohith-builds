@@ -3,14 +3,15 @@ from flask import (
     redirect,
     url_for,
     flash,
-    request
+    request,
+    session
 )
 
 from flask_login import (
     login_required,
     current_user
 )
-
+from extensions import csrf
 from datetime import datetime
 
 from . import learn_bp
@@ -23,6 +24,77 @@ from models import (
     LessonProgress
 )
 
+
+from gemini_helper import rohi_chat
+from flask import jsonify    
+
+
+
+@learn_bp.route("/api/rohi-chat", methods=["POST"])
+@csrf.exempt
+
+def rohi_chat_api():
+
+    data = request.get_json()
+    
+    
+
+    message = data.get("message")
+    course_slug = data.get("course_slug")
+    lesson_slug = data.get("lesson_slug")
+    
+    
+    # Guest limit
+    if not current_user.is_authenticated:
+
+        used = session.get("rohi_guest_count", 0)
+
+        if used >= 3:
+
+            return jsonify({
+            "limit_reached": True,
+            "message": "Please sign up to continue chatting with Rohi."
+        }), 403
+
+        session["rohi_guest_count"] = used + 1
+
+# Global Rohi mode
+    if not course_slug or not lesson_slug:
+
+        response = rohi_chat(
+            message=message,
+            course_name="RohithBuilds",
+            lesson_title="General Learning",
+            lesson_content=""
+        )
+
+        return jsonify({
+        "reply": response
+        })
+
+# Lesson mode
+    course = Course.query.filter_by(
+        slug=course_slug
+    ).first_or_404()
+
+    lesson = CourseDay.query.filter_by(
+        course_id=course.id,
+        slug=lesson_slug
+    ).first_or_404()
+    response = rohi_chat(
+
+        message=message,
+
+        course_name=course.title,
+
+        lesson_title=lesson.title,
+
+        lesson_content=lesson.content
+    )
+
+    return jsonify({
+        "reply": response
+    })
 
 # ==========================================
 # LEARN HOME
@@ -45,15 +117,11 @@ def learn():
     )
 
 
-# ==========================================
-# PYTHON COURSE PAGE
-# ==========================================
-
-@learn_bp.route("/learn/python-ai-course")
-def python_ai_course():
+@learn_bp.route("/learn/course/<course_slug>")
+def course_page(course_slug):
 
     course = Course.query.filter_by(
-        slug="python-ai-course"
+        slug=course_slug
     ).first_or_404()
 
     days = CourseDay.query.filter_by(
@@ -88,7 +156,9 @@ def python_ai_course():
                 next_day = day
                 break
 
-    completed_count = len(completed_ids)
+    completed_count = len(
+        [d for d in days if d.id in completed_ids]
+    )
 
     progress_percent = 0
 
@@ -98,30 +168,47 @@ def python_ai_course():
         )
 
     return render_template(
-    "learn/python_course.html",
-    course=course,
-    days=days,
-    enrolled=is_enrolled,
-    completed_day_ids=completed_ids,
-    completed_count=completed_count,
-    progress_percent=progress_percent,
-    next_day=next_day
-)
+        "learn/course.html",
+        course=course,
+        days=days,
+        enrolled=is_enrolled,
+        completed_day_ids=completed_ids,
+        completed_count=completed_count,
+        progress_percent=progress_percent,
+        next_day=next_day
+    )
 
+    
+@learn_bp.route("/learn/<course_slug>/<lesson_slug>")
+def lesson_page(course_slug, lesson_slug):
 
-# ==========================================
-# SINGLE LESSON PAGE
-# ==========================================
-@learn_bp.route("/learn/python-ai-course/<slug>")
-def python_course_day(slug):
+    course = Course.query.filter_by(
+        slug=course_slug
+    ).first_or_404()
 
     day = CourseDay.query.filter_by(
-        slug=slug
+        course_id=course.id,
+        slug=lesson_slug
     ).first_or_404()
+    
+    next_day = CourseDay.query.filter(
+        CourseDay.course_id == course.id,
+        CourseDay.day_number > day.day_number
+    ).order_by(
+        CourseDay.day_number.asc()
+    ).first()
+
+    previous_day = CourseDay.query.filter(
+        CourseDay.course_id == course.id,
+        CourseDay.day_number < day.day_number
+    ).order_by(
+        CourseDay.day_number.desc()
+    ).first()
 
     completed = False
 
     if current_user.is_authenticated:
+
         completed = LessonProgress.query.filter_by(
             user_id=current_user.id,
             course_day_id=day.id,
@@ -129,10 +216,34 @@ def python_course_day(slug):
         ).first() is not None
 
     return render_template(
-        "learn/python_day.html",
+        "learn/lesson.html",
+        course=course,
         day=day,
-        completed=completed
-    )
+        completed=completed,
+        next_day=next_day,
+        previous_day=previous_day
+    )      
+# ==========================================
+# PYTHON COURSE PAGE
+# ==========================================
+
+
+# ==========================================
+# AI AGENT COURSE PAGE
+# ==========================================
+
+
+# ==========================================
+# SINGLE LESSON PAGE
+# ==========================================
+
+import json
+
+
+# ==========================================
+# AI AGENT LESSON PAGE
+# ==========================================
+
 
 # ==========================================
 # ENROLL COURSE
@@ -141,7 +252,7 @@ def python_course_day(slug):
 @learn_bp.route("/course/<int:course_id>/enroll")
 @login_required
 def enroll_course(course_id):
-
+    course = Course.query.get(course_id)
     existing = CourseEnrollment.query.filter_by(
         user_id=current_user.id,
         course_id=course_id
@@ -160,8 +271,11 @@ def enroll_course(course_id):
     flash("Successfully enrolled!", "success")
 
     return redirect(
-        url_for("learn.python_ai_course")
+    url_for(
+        "learn.course_page",
+        course_slug=course.slug
     )
+)
 
 
 # ==========================================
@@ -172,6 +286,8 @@ def enroll_course(course_id):
 def complete_lesson(day_id):
 
     day = CourseDay.query.get_or_404(day_id)
+
+    course = Course.query.get_or_404(day.course_id)
 
     enrollment = CourseEnrollment.query.filter_by(
         user_id=current_user.id,
@@ -213,5 +329,9 @@ def complete_lesson(day_id):
 
     return redirect(
         request.referrer or
-        url_for("learn.python_ai_course")
+        url_for(
+            "learn.course_page",
+            course_slug=course.slug
+        )
     )
+    

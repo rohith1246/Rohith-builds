@@ -81,9 +81,12 @@ def add_course_day():
 
     form = CourseDayForm()
 
-    course = Course.query.filter_by(
-        slug="python-ai-course"
-    ).first()
+    courses = Course.query.all()
+
+    form.course_id.choices = [
+    (c.id, c.title)
+    for c in courses
+    ]
 
     if form.validate_on_submit():
 
@@ -119,7 +122,7 @@ def add_course_day():
             )
 
         day = CourseDay(
-            course_id=course.id,
+            course_id=form.course_id.data,
             day_number=form.day_number.data,
             title=form.title.data,
             slug=form.slug.data,

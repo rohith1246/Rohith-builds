@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script>
+window.COURSE_SLUG = "{{ course.slug }}";
+window.LESSON_SLUG = "{{ day.slug }}";
+</script>
+
+
+<div class="lesson-page">
+
+
+<section class="lesson-hero">
+
+    <div class="lesson-badge">
+        DAY {{ day.day_number }}
+    </div>
+
+    <h1>
+        {{ day.title }}
+    </h1>
+
+    <p>
+        {{ day.short_description }}
+    </p>
+
+    <div class="lesson-meta">
+
+        <div class="meta-card">
+            ⏱ {{ day.estimated_minutes }} mins
+        </div>
+
+        <div class="meta-card xp">
+            ⚡ +{{ day.xp_reward }} XP
+        </div>
+
+    </div>
+
+</section>
+
+{% if day.image %}
+
+<section class="lesson-image-section">
+
+    <img
+        src="{{ url_for('static', filename=day.image) }}"
+        alt="{{ day.title }}"
+        class="lesson-image"
+    >
+
+</section>
+
+{% endif %}
+
+<section class="lesson-content-wrapper">
+
+    <div class="lesson-content">
+
+        {{ day.content | safe }}
+
+    </div>
+
+</section>
+
+<section class="builder-challenge">
+
+    <div class="challenge-card">
+
+        <span class="challenge-label"></span>
+
+        <h3></h3>
+
+        <p></p>
+
+    </div>
+
+</section>
+
+<section class="lesson-navigation">
+
+    {% if previous_day %}
+
+    <a
+        href="{{ url_for(
+            'learn.lesson_page',
+            course_slug=course.slug,
+            lesson_slug=previous_day.slug
+        ) }}"
+        class="back-btn"
+    >
+        ← Previous Lesson
+    </a>
+
+    {% else %}
+
+    <a
+        href="{{ url_for(
+            'learn.course_page',
+            course_slug=course.slug
+        ) }}"
+        class="back-btn"
+    >
+        ← Back to Course
+    </a>
+
+    {% endif %}
+
+    <div class="lesson-actions">
+
+        {% if completed %}
+
+            {% if next_day %}
+
+            <a
+                href="{{ url_for(
+                    'learn.lesson_page',
+                    course_slug=course.slug,
+                    lesson_slug=next_day.slug
+                ) }}"
+                class="btn-primary"
+            >
+                Next Lesson →
+            </a>
+
+            {% else %}
+
+            <div class="lesson-completed-badge">
+                🏆 Course Completed
+            </div>
+
+            {% endif %}
+
+        {% else %}
+
+        <a
+            href="{{ url_for(
+                'learn.complete_lesson',
+                day_id=day.id
+            ) }}"
+            class="btn-primary"
+        >
+            Mark as Complete
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% if current_user.is_authenticated and current_user.email == config.ADMIN_EMAIL %}
+
+<div style="margin-bottom:20px;text-align:right;">
+
+    <a
+        href="{{ url_for('admin.edit_course_day', day_id=day.id) }}"
+        class="complete-btn"
+        style="text-decoration:none;"
+    >
+        Edit Lesson
+    </a>
+
+</div>
+
+
+
+
+{% endif %}
+
+
+{% endblock %}

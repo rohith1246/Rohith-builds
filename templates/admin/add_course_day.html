@@ -36,6 +36,11 @@ Add Course Day — Admin
                 <div class="form-grid">
 
                     <div class="form-group">
+    {{ form.course_id.label }}
+    {{ form.course_id(class="form-input") }}
+</div>
+
+                    <div class="form-group">
                         {{ form.day_number.label }}
                         {{ form.day_number(class="form-input") }}
                     </div>

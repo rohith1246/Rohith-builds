@@ -12,8 +12,8 @@ from models import (
     LessonProgress
 )
 
-from forms import RegisterForm, LoginForm
-from .helpers import send_verification_email, verify_token
+from forms import RegisterForm, LoginForm, ForgotPasswordForm, ResetPasswordForm
+from .helpers import send_verification_email, verify_token, send_password_reset_email, verify_reset_token
 from . import auth_bp
 
 
@@ -141,6 +141,60 @@ def login():
         flash("Invalid email or password.", "danger")
 
     return render_template("login.html", form=form)
+
+
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if current_user.is_authenticated:
+        return redirect(url_for("home.home"))
+
+    form = ForgotPasswordForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        # Always show success to prevent email enumeration
+        if user:
+            send_password_reset_email(user)
+
+        flash(
+            "If that email is registered, you'll receive a reset link shortly. Check your spam folder too!",
+            "info"
+        )
+        return redirect(url_for("auth.login"))
+
+    return render_template("forgot_password.html", form=form)
+
+
+@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+
+    if current_user.is_authenticated:
+        return redirect(url_for("home.home"))
+
+    email = verify_reset_token(token)
+
+    if not email:
+        flash("This password reset link is invalid or has expired.", "danger")
+        return redirect(url_for("auth.forgot_password"))
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for("auth.forgot_password"))
+
+    form = ResetPasswordForm()
+
+    if form.validate_on_submit():
+        from werkzeug.security import generate_password_hash
+        user.password_hash = generate_password_hash(form.password.data)
+        db.session.commit()
+        flash("✅ Password reset successfully! You can now log in with your new password.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("reset_password.html", form=form, token=token)
 
 
 @auth_bp.route("/logout")

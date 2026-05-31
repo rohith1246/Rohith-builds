@@ -111,3 +111,21 @@
     display: block;
     margin: 0 auto 20px;
 }
+
+.forgot-password-link {
+    text-align: right;
+    margin-top: 6px;
+}
+
+.forgot-password-link a {
+    font-size: 0.85rem;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgot-password-link a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}

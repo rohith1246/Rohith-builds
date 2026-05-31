@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="python-course-page">
+
+
+<section class="python-course-hero">
+
+    <span class="course-label">
+        AI Agent Builder Track
+    </span>
+
+    <h1>
+        Build Your First AI Agent in 7 Days
+    </h1>
+
+    <p>
+        Learn AI agents, Groq API, memory,
+        tools, deployment, and monetization
+        by building real projects.
+    </p>
+
+  {% if enrolled %}
+
+
+{% if next_day %}
+
+<a
+href="{{ url_for('learn.ai_agent_day', slug=next_day.slug) }}"
+class="btn-primary enroll-btn"
+
+>
+
+
+Continue Day {{ next_day.day_number }} →
+
+
+</a>
+
+{% else %}
+
+<div class="course-complete-badge">
+    🏆 Course Completed
+</div>
+
+{% endif %}
+
+<div class="enrolled-badge">
+    ✅ You are enrolled in this course
+</div>
+
+{% else %}
+
+<a
+href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
+class="btn-primary enroll-btn"
+
+>
+
+
+Enroll Course
+
+
+</a>
+
+{% endif %}
+
+
+</section>
+
+{% if enrolled %}
+
+
+<div class="course-progress-card">
+
+
+<div class="progress-header">
+
+    <span>
+        Course Progress
+    </span>
+
+    <span>
+        {{ completed_count }}/{{ days|length }} Lessons
+    </span>
+
+</div>
+
+<div class="progress-bar">
+
+    <div
+        class="progress-fill"
+        style="width: {{ progress_percent }}%;"
+    ></div>
+
+</div>
+
+<div class="progress-percent">
+    {{ progress_percent }}% Complete
+</div>
+
+
+</div>
+
+{% endif %}
+
+<section class="course-grid" id="course-content">
+
+{% for day in days %}
+
+{% set completed = day.id in completed_day_ids %}
+
+{% if completed %}
+
+<a
+href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+class="course-card completed-card"
+
+>
+
+
+<div class="lesson-status completed-status">
+    ✅ Completed
+</div>
+
+
+{% elif next_day and day.id == next_day.id %}
+
+<a
+href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+class="course-card current-card"
+
+>
+
+
+<div class="lesson-status current-status">
+    ▶ Continue Learning
+</div>
+
+
+{% else %}
+
+<a
+href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+class="course-card locked-card"
+
+>
+
+
+<div class="lesson-status locked-status">
+    🔒 Upcoming
+</div>
+
+{% endif %}
+
+
+<div class="course-day">
+    Day {{ day.day_number }}
+</div>
+
+<h3>
+    {{ day.title }}
+</h3>
+
+<p>
+    {{ day.short_description }}
+</p>
+
+<div class="course-meta">
+
+    <span>
+        {{ day.estimated_minutes }} mins
+    </span>
+
+    <span>
+        +{{ day.xp_reward }} XP
+    </span>
+
+</div>
+
+
+</a>
+
+{% endfor %}
+
+</section>
+
+</div>
+
+{% endblock %}

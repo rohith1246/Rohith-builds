@@ -45,12 +45,17 @@ Learn AI & Build Skills — RohithBuilds
 
         <div class="courses-grid">
 
+            <!-- Dynamic Courses -->
+
             {% for course in courses %}
 
-            <a
-                href="/learn/{{ course.slug }}"
-                class="course-card"
-            >
+          <a
+    href="{{ url_for(
+        'learn.course_page',
+        course_slug=course.slug
+    ) }}"
+    class="course-card"
+>
 
                 <div class="course-card-top">
 
@@ -80,27 +85,9 @@ Learn AI & Build Skills — RohithBuilds
 
             {% endfor %}
 
-            <!-- FUTURE COURSES -->
+      
 
-            <div class="course-card upcoming">
-
-                <div class="course-card-top">
-
-                    <span class="course-badge soon">
-                        Coming Soon
-                    </span>
-
-                </div>
-
-                <h3>
-                    AI Agents Bootcamp
-                </h3>
-
-                <p>
-                    Learn to build autonomous AI systems and workflows.
-                </p>
-
-            </div>
+            <!-- Coming Soon -->
 
             <div class="course-card upcoming">
 
@@ -117,7 +104,8 @@ Learn AI & Build Skills — RohithBuilds
                 </h3>
 
                 <p>
-                    Master prompting frameworks, systems, and productivity.
+                    Master prompting frameworks,
+                    systems, and productivity.
                 </p>
 
             </div>

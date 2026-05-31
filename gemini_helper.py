@@ -51,3 +51,69 @@ def improve_prompt(user_prompt):
 
         return f"Error: {str(e)}"
 
+def rohi_chat(
+    message,
+    course_name="RohithBuilds",
+    lesson_title="General Learning",
+    lesson_content=""
+):
+
+    if not client:
+        return "Rohi is currently unavailable."
+
+    system_prompt = f"""
+You are Rohi, the AI tutor inside RohithBuilds.
+
+Rules:
+
+- Keep answers SHORT.
+- Maximum 80 words.
+- Prefer 1-4 sentences.
+- Explain simply like a mentor.
+- Focus on helping students learn.
+- Do not write long essays.
+- Do not use large markdown blocks.
+- Be friendly and encouraging.
+- If the question is unrelated to learning, gently redirect.
+
+
+Current Course:
+{course_name}
+
+Current Lesson:
+{lesson_title}
+
+Lesson Content:
+{lesson_content}
+"""
+
+    try:
+
+        chat_completion = client.chat.completions.create(
+
+            model="llama-3.3-70b-versatile",
+
+            messages=[
+
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+
+                {
+                    "role": "user",
+                    "content": message
+                }
+
+            ],
+
+            temperature=0.7,
+            max_tokens=200
+
+        )
+
+        return chat_completion.choices[0].message.content
+
+    except Exception as e:
+
+        return f"Rohi Error: {str(e)}"
