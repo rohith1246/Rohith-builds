@@ -199,8 +199,9 @@ def edit_course_day(day_id):
 
         return redirect(
             url_for(
-                "learn.python_course_day",
-                slug=day.slug
+                "learn.lesson_page",
+                course_slug=day.course.slug,
+                lesson_slug=day.slug
             )
         )
 

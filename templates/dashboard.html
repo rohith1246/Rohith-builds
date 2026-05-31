@@ -167,7 +167,7 @@
       {% for enrollment in enrolled_courses %}
 
       <a
-        href="{{ url_for('learn.python_ai_course') }}"
+        href="{{ url_for('learn.course_page', course_slug=enrollment.course.slug) }}"
         class="joined-course-card"
       >
 
@@ -250,7 +250,7 @@
       </a>
 
       <a
-        href="{{ url_for('learn.python_ai_course') }}"
+        href="{{ url_for('learn.course_page', course_slug='python-ai-course') }}"
         class="admin-quick-card"
       >
         <div class="admin-quick-icon">

@@ -27,7 +27,7 @@
 {% if next_day %}
 
 <a
-href="{{ url_for('learn.ai_agent_day', slug=next_day.slug) }}"
+href="{{ url_for('learn.lesson_page', course_slug=course.slug, lesson_slug=next_day.slug) }}"
 class="btn-primary enroll-btn"
 
 >
@@ -114,7 +114,7 @@ Enroll Course
 {% if completed %}
 
 <a
-href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+href="{{ url_for('learn.lesson_page', course_slug=course.slug, lesson_slug=day.slug) }}"
 class="course-card completed-card"
 
 >
@@ -128,7 +128,7 @@ class="course-card completed-card"
 {% elif next_day and day.id == next_day.id %}
 
 <a
-href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+href="{{ url_for('learn.lesson_page', course_slug=course.slug, lesson_slug=day.slug) }}"
 class="course-card current-card"
 
 >
@@ -142,7 +142,7 @@ class="course-card current-card"
 {% else %}
 
 <a
-href="{{ url_for('learn.ai_agent_day', slug=day.slug) }}"
+href="{{ url_for('learn.lesson_page', course_slug=course.slug, lesson_slug=day.slug) }}"
 class="course-card locked-card"
 
 >
