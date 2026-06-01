@@ -167,6 +167,66 @@ window.LESSON_SLUG = "{{ day.slug }}";
 
 
 {% endif %}
+<style>
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    background-color: #f5c518;
+    color: #000000;
+    border: none;
+    font-weight: 600;
+  }
 
+  .copy-btn:hover {
+    background-color: #e6b800;
+  }
+
+  @media (max-width: 768px) {
+    .copy-btn {
+      padding: 2px 6px;
+      font-size: 10px;
+      top: 4px;
+      right: 4px;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.lesson-code pre').forEach(function(pre) {
+    var btn = document.createElement('button');
+    btn.innerText = 'Copy';
+    btn.className = 'copy-btn';
+    pre.parentElement.style.position = 'relative';
+    pre.parentElement.appendChild(btn);
+
+    btn.addEventListener('click', function() {
+      var text = pre.textContent.trim();
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+          btn.innerText = 'Copied!';
+          setTimeout(function() { btn.innerText = 'Copy'; }, 2000);
+        });
+      } else {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.innerText = 'Copied!';
+        setTimeout(function() { btn.innerText = 'Copy'; }, 2000);
+      }
+    });
+  });
+</script>
 
 {% endblock %}
