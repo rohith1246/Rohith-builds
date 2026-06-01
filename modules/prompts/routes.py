@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import csrf
+from datetime import datetime
 from models import db, Prompt, Favorite, PromptLike,PromptCollection,PromptCollectionItem
 from forms import PromptForm
 
@@ -331,7 +332,8 @@ def toggle_favorite(prompt_id):
     db.session.add(
         Favorite(
             user_id=current_user.id,
-            prompt_id=prompt_id
+            prompt_id=prompt_id,
+            created_at=datetime.utcnow()
         )
     )
 

@@ -187,7 +187,7 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -354,7 +354,7 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,6 +397,160 @@
   font-size: 2rem;
   flex-shrink: 0;
 }
+
+/* ==================================================
+   SUGGESTED COURSES
+================================================== */
+.suggested-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 760px) {
+  .suggested-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.suggested-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: white;
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: var(--radius-md);
+}
+
+.suggested-thumb {
+  width: 84px;
+  height: 64px;
+  border-radius: 10px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.suggested-body {
+  flex: 1;
+}
+
+.suggested-body h4 { margin:0; font-size:1.05rem; color:var(--text); }
+.suggested-body p { margin:6px 0 0; color:var(--text-light); font-size:0.95rem; }
+
+.suggested-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.suggested-actions a { flex: 1 1 auto; min-width: 0; }
+
+@media (max-width: 600px) {
+  .suggested-actions { flex-direction: column; }
+  .suggested-actions a { width: 100%; }
+}
+
+
+/* ==================================================
+   ADDITIONAL DASHBOARD ELEMENTS & BRAND OVERRIDES
+================================================== */
+
+.dashboard-page {
+  --primary: #000000;
+  --accent: #FFD54A;
+  --accent-hover: #ffbf24;
+  --text: #000000;
+}
+
+.course-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.course-thumb {
+  width: 140px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.progress-track {
+  background: var(--surface-alt);
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.progress-track.small { height:8px }
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ffc42d);
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.achievement-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.achievement-card.locked {
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.recent-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-row {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  background:white;
+  border:1px solid var(--border);
+  padding:12px;
+  border-radius:12px;
+}
+
+.activity-icon { font-size:20px }
+
+.activity-body .activity-label { font-weight:700 }
+
+.btn-ghost { background:transparent;border:1px solid var(--border);padding:10px 14px;border-radius:10px }
+
 
 .verification-text {
   flex: 1;

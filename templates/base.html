@@ -82,9 +82,11 @@ window.LESSON_SLUG = null;
         </a>
         {% endif %}
 
+        {% if request.endpoint != 'auth.dashboard' %}
         <a href="{{ url_for('auth.dashboard') }}" class="btn-primary">
           Dashboard
         </a>
+        {% endif %}
 
         <a href="{{ url_for('auth.logout') }}" class="nav-link">
           Logout

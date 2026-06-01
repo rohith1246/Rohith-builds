@@ -174,6 +174,7 @@ class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     prompt_id = db.Column(db.Integer, db.ForeignKey("prompts.id"), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (db.UniqueConstraint("user_id", "prompt_id", name="unique_favorite"),)
 

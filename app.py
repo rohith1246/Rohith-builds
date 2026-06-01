@@ -1,5 +1,6 @@
 import os
 import resend
+import threading
 from flask import Flask, render_template, request, jsonify
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
@@ -83,59 +84,91 @@ def seed_database():
     db.session.commit()
     print("[OK] Database seeded successfully.")
 
-# DB Setup & Seeding
-with app.app_context():
+# DB Setup & Seeding is now deferred to a safe startup hook so imports don't
+# attempt to connect to Neon/Postgres during module import (which can crash
+# the process if the database is unreachable). Initialization will run once
+# on the first incoming request; failures are handled gracefully and a
+# friendly error page is shown instead of letting the server crash.
 
-    db.create_all()
-
+def _initialize_database():
     from sqlalchemy import inspect, text
+    from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
-    inspector = inspect(db.engine)
-    table_names = inspector.get_table_names()
+    try:
+        # create tables and apply lightweight, idempotent migration SQL
+        with app.app_context():
+            db.create_all()
 
-    # PROMPTS TABLE
-    if "prompts" in table_names:
+            inspector = inspect(db.engine)
+            table_names = inspector.get_table_names()
 
-        if "copies" not in [
-            col["name"] for col in inspector.get_columns("prompts")
-        ]:
+            # PROMPTS TABLE
+            if "prompts" in table_names:
+                if "copies" not in [col["name"] for col in inspector.get_columns("prompts")]:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE prompts ADD COLUMN copies INTEGER DEFAULT 0"))
 
-            with db.engine.connect() as conn:
-                conn.execute(
-                    text(
-                        "ALTER TABLE prompts ADD COLUMN copies INTEGER DEFAULT 0"
-                    )
-                )
+            # USERS TABLE
+            if "users" in table_names:
+                if "is_verified" not in [col["name"] for col in inspector.get_columns("users")]:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0"))
 
-    # USERS TABLE
-    if "users" in table_names:
+            # COURSE DAYS TABLE
+            if "course_days" in table_names:
+                if "image" not in [col["name"] for col in inspector.get_columns("course_days")]:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE course_days ADD COLUMN image VARCHAR(300)"))
 
-        if "is_verified" not in [
-            col["name"] for col in inspector.get_columns("users")
-        ]:
+            # seed only when tables exist
+            seed_database()
 
-            with db.engine.connect() as conn:
-                conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0"
-                    )
-                )
+            app.config["DB_AVAILABLE"] = True
+            app.config.pop("DB_INIT_ERROR", None)
 
-    # COURSE DAYS TABLE
-    if "course_days" in table_names:
+    except OperationalError as e:
+        app.logger.error("Database initialization failed: %s", e)
+        app.config["DB_AVAILABLE"] = False
+        app.config["DB_INIT_ERROR"] = str(e)
 
-        if "image" not in [
-            col["name"] for col in inspector.get_columns("course_days")
-        ]:
+    except SQLAlchemyError as e:
+        app.logger.exception("Database error during initialization: %s", e)
+        app.config["DB_AVAILABLE"] = False
+        app.config["DB_INIT_ERROR"] = str(e)
 
-            with db.engine.connect() as conn:
-                conn.execute(
-                    text(
-                        "ALTER TABLE course_days ADD COLUMN image VARCHAR(300)"
-                    )
-                )
+    except Exception as e:
+        app.logger.exception("Unexpected error during DB initialization: %s", e)
+        app.config["DB_AVAILABLE"] = False
+        app.config["DB_INIT_ERROR"] = str(e)
 
-    seed_database()
+
+@app.before_request
+def _block_if_db_unavailable():
+    # Allow static assets and simple health paths to load even when DB is down
+    path = request.path or ""
+    if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico":
+        return None
+
+    # Initialize DB on first real request (some Flask installs don't expose
+    # `before_first_request` as an attribute). Use a lock to avoid races.
+    if app.config.get("DB_AVAILABLE") is None:
+        init_lock = app.config.setdefault("_db_init_lock", threading.Lock())
+        # Mark that init has started so concurrent requests don't all try.
+        if not app.config.get("DB_INIT_STARTED"):
+            app.config["DB_INIT_STARTED"] = True
+            with init_lock:
+                # Double-check after acquiring lock
+                if app.config.get("DB_AVAILABLE") is None:
+                    _initialize_database()
+
+    # If initialization previously failed, show a friendly error page
+    if app.config.get("DB_AVAILABLE") is False:
+        error_message = app.config.get("DB_INIT_ERROR", "Cannot connect to the database.")
+        try:
+            return render_template("db_unavailable.html", admin_email=app.config.get("ADMIN_EMAIL"), error_message=error_message), 503
+        except Exception:
+            # Fallback plain-text response if template rendering itself fails
+            return f"Database unavailable: {error_message}", 503
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")
