@@ -828,3 +828,34 @@
 
     font-weight: 700;
 }
+.lesson-content {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.lesson-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.lesson-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.lesson-content code {
+    word-break: break-word;
+}
+
+.lesson-content table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.lesson-page {
+    overflow-x: hidden;
+}
