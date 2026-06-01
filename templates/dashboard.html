@@ -73,7 +73,7 @@
       <div class="joined-course-grid">
         {% for info in courses_info %}
           <div class="joined-course-card course-summary">
-            <div class="joined-course-icon" style="background-image: url('{{ info.course.thumbnail or url_for('static', filename='images/lessons/default.png') }}'); background-size: cover; background-position: center;"></div>
+            <div class="joined-course-icon" style="background-image: url('{{ url_for('static', filename=info.course.thumbnail) if info.course.thumbnail else url_for('static', filename='images/lessons/default.png') }}'); background-size: cover; background-position: center;"></div>
             <div class="joined-course-content">
               <h3>{{ info.course.title }}</h3>
               <p class="muted">{{ (info.course.short_description or info.course.description or '')[:140] }}{% if info.course.description and info.course.description|length > 140 %}...{% endif %}</p>
@@ -97,7 +97,7 @@
           <div class="suggested-grid">
             {% for course in suggested_courses %}
               <div class="suggested-card">
-                <div class="suggested-thumb" style="background-image:url('{{ course.thumbnail or url_for('static', filename='images/lessons/default.png') }}'); background-size:cover; background-position:center;"></div>
+                <div class="suggested-thumb" style="background-image:url('{{ url_for('static', filename=course.thumbnail) if course.thumbnail else url_for('static', filename='images/lessons/default.png') }}'); background-size:cover; background-position:center;"></div>
                 <div class="suggested-body">
                   <h4>{{ course.title }}</h4>
                   <p class="muted">{{ (course.short_description or course.description or '')[:120] }}{% if course.description and course.description|length > 120 %}...{% endif %}</p>

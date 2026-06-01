@@ -149,24 +149,7 @@ window.LESSON_SLUG = "{{ day.slug }}";
 
 </section>
 
-{% if current_user.is_authenticated and current_user.email == config.ADMIN_EMAIL %}
 
-<div style="margin-bottom:20px;text-align:right;">
-
-    <a
-        href="{{ url_for('admin.edit_course_day', day_id=day.id) }}"
-        class="complete-btn"
-        style="text-decoration:none;"
-    >
-        Edit Lesson
-    </a>
-
-</div>
-
-
-
-
-{% endif %}
 <style>
   .copy-btn {
     position: absolute;

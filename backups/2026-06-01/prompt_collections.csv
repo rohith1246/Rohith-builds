@@ -1,0 +1,13 @@
+id,name,slug,description
+1,AI Beginner Pack,ai-beginner-pack,Essential prompts for learning AI from scratch
+2,Python Starter Pack,python-starter-pack,Core Python learning and development prompts
+3,Prompt Engineering Pack,prompt-engineering-pack,Master prompting frameworks and AI workflows
+4,Student Productivity Pack,student-productivity-pack,"Study systems, learning methods, and productivity prompts"
+5,Resume & Career Pack,resume-career-pack,"Career growth, resumes, interviews, and job search prompts"
+6,AI Automation Pack,ai-automation-pack,"AI agents, automations, and workflow systems"
+7,Coding Mastery Pack,coding-mastery-pack,"Software engineering, architecture and coding prompts"
+8,Business & Startup Pack,business-startup-pack,"Business strategy, startups and growth prompts"
+9,Content Creation Pack,content-creation-pack,"Writing, content and publishing prompts"
+10,Communication & Influence Pack,communication-influence-pack,"Communication, persuasion and negotiation prompts"
+11,Personal Growth Pack,personal-growth-pack,"Mindset, habits and self-development prompts"
+12,Research & Analysis Pack,research-analysis-pack,"Research, analysis and synthesis prompts"

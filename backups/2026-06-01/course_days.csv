@@ -1,0 +1,22 @@
+id,course_id,day_number,title,slug,short_description,xp_reward,estimated_minutes,is_published,created_at
+4,1,4,User Input 🎤⌨️💬,day4,Programs become interactive when they listen to users. Learn input() to make your code talk to humans and respond.,30,29,False,2026-05-30T10:01:03.962115
+7,1,7,Mini Project 🎯💻🧩,Mini Project ,Combine everything from Week 1 into one real program. Variables + Input + Conditions + Loops working together.,30,30,False,2026-05-30T17:22:15.376809
+1,1,1,How Computers Think,day-1,Understand how computers follow instructions and why this matters for AI builders.,100,15,False,2026-05-29T10:03:18.662348
+2,1,2,DAY 2 — VARIABLES 📦🐍,day-2-variables,Variables store information for your program.,27,30,False,2026-05-29T11:02:12.876719
+3,1,3,Data Types 🏺💰🌡️💡,Day3,"Different data needs different containers. String (text), Integer (whole numbers), Float (decimals), Boolean (True/False). Choose the right type or code breaks.",34,33,False,2026-05-30T09:52:02.360671
+5,1,5,Conditions ⚡🤔🚦,Day5,Code can make decisions using if statements. Programs evaluate TRUE/FALSE conditions and choose what to do. This is how apps respond differently to different situations.,30,30,False,2026-05-30T10:26:35.424270
+6,1,6, Loops 🔁⚡♾️, Loops,"Loops let computers repeat tasks automatically. No more copy-pasting code. Write it once, run it 1000 times.",30,30,False,2026-05-30T17:20:36.267212
+19,1,8,Functions 🏭⚡🔧,functions,"Write code once, use it forever. Functions are reusable machines that do your work on command!",100,15,True,2026-05-31T12:14:57.919176
+20,1,9,Function Inputs & Outputs 📥📤⚙️,function-inputs-and-outputs,Make functions smarter by sending data in and getting results back. This is how functions become truly powerful!,100,15,True,2026-05-31T12:16:27.008231
+21,1,10,Lists 📋📦🚂,day-10-lists,One variable that stores many values. Like a train with many compartments!,50,15,True,2026-05-31T16:25:02.923413
+22,1,11,List Operations ✏️➕➖🛒,day-11-list-operations,"Lists can grow, shrink and change. Add, remove and update items just like a shopping cart!",50,15,True,2026-05-31T16:27:16.723347
+23,1,12,List Loops 🔁📋🤖,day-12-list-loops,Loop through every item in a list automatically. No item gets skipped!,50,15,True,2026-05-31T16:27:59.258623
+24,1,13,Dictionaries 📖🔑🗂️,day-13-dictionaries,"Store data as key-value pairs. Like a contact book — search by name, get their number instantly!",50,15,True,
+25,1,14,Strings 💬🔤✏️,day-14-strings,"Strings are how programs handle text. Every chat, search and message in every app is a string!",50,15,True,
+26,1,15,String Operations ✂️🔗🧱,day-15-string-operations,Transform and combine text like LEGO blocks. Build bigger messages from smaller pieces!,50,15,True,
+27,1,16,Tuples 🔒📦🛡️,tuples,Tuples store data that should never change. Like a sealed locker — you can read it but never edit it!,100,15,True,
+28,1,17,Sets 🎯🔄⭐,sets,Sets automatically remove duplicates. Only unique values survive — like a VIP guest list with no repeats!,100,15,True,
+29,1,18,Nested Data Structures 🏠📦🔗,nested-data-structures,Data inside data! Like a house with rooms with cupboards — access anything layer by layer!,100,15,True,
+30,1,19,File Handling 📁💾📝,file-handling,Save data permanently so it survives after your program closes. Like writing in a notebook you can read anytime!,100,15,True,
+31,1,20,Error Handling 🛡️⚠️🔧,error-handling,Stop your program from crashing! Handle problems gracefully so the app keeps running no matter what.,100,15,True,
+36,4,1,Day 1 — Setup Your Environment,day-1-setup-your-environment,"Set up Python, VS Code, virtual environments, and required libraries to prepare your AI Agent development environment.",100,30,True,2026-06-01T08:01:24.469325

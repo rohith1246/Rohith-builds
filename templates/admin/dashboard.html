@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — RohithBuilds{% endblock %}
+
+{% block content %}
+<div class="container admin-dashboard" style="padding:28px 0;">
+  <div class="dash-section-header">
+    <h1>Admin Dashboard</h1>
+    <div>
+      <a href="{{ url_for('admin.backups') }}" class="btn-ghost">Backups</a>
+      <a href="{{ url_for('admin.courses') }}" class="btn-ghost">Courses</a>
+      <a href="{{ url_for('admin.users') }}" class="btn-ghost">Users</a>
+    </div>
+  </div>
+
+  <div class="dash-stats" style="margin-bottom:18px;">
+    <div class="stat-card">
+      <span class="stat-num">{{ user_count }}</span>
+      <span class="stat-label">Users</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ verified_count }}</span>
+      <span class="stat-label">Verified</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ course_count }}</span>
+      <span class="stat-label">Courses</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ published_courses }}</span>
+      <span class="stat-label">Published</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ total_lessons }}</span>
+      <span class="stat-label">Lessons</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ total_enrollments }}</span>
+      <span class="stat-label">Enrollments</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;">
+    <div>
+      <div class="dash-section-header"><h2>Recent Users</h2></div>
+      <div class="dash-prompts-list">
+        {% for u in recent_users %}
+          <div class="dash-prompt-row">
+            <div>
+              <strong>{{ u.username }}</strong>
+              <div class="muted">{{ u.email }} • {{ u.created_at.strftime('%b %d, %Y') }}</div>
+            </div>
+            <div>
+              <form method="POST" action="{{ url_for('admin.verify_user', user_id=u.id) }}" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-sm btn-ghost" type="submit">Verify</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Delete user?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-sm btn-danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside>
+      <div class="dash-section-header"><h2>Recent Enrollments</h2></div>
+      <div class="admin-card">
+        {% for e in recent_enrollments %}
+          <div style="margin-bottom:12px">
+            <div><strong>{{ e.course.title }}</strong></div>
+            <div class="muted">User ID: {{ e.user_id }} • {{ e.enrolled_at.strftime('%b %d, %Y') }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+
+</div>
+{% endblock %}

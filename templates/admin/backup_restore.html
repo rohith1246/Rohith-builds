@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Backup Restore Instructions — Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="dash-section-header">
+    <h1>Restore Instructions</h1>
+    <a href="{{ url_for('admin.backups') }}" class="link-subtle">← Backups</a>
+  </div>
+
+  <div class="admin-card">
+    <h2>Warning</h2>
+    <p>Restoring data will modify or overwrite your production database. Always test restores on a staging copy first and keep an extra backup.</p>
+
+    <h3>Restore using psql (Postgres)</h3>
+    <pre style="background:#f6f7f8;padding:12px;border-radius:8px;">-- Example: restore users.csv into `users` table
+psql "$DATABASE_URL" -c "\copy users(id,username,email,is_verified,created_at) FROM 'backups/2026-06-01/users.csv' CSV HEADER;"
+
+-- For other tables, adapt columns accordingly.
+</pre>
+
+    <h3>Restore using Python (recommended for complex imports)</h3>
+    <p>Example outline:</p>
+    <pre style="background:#f6f7f8;padding:12px;border-radius:8px;">from models import db, User
+import csv
+
+with open('backups/2026-06-01/users.csv', newline='', encoding='utf-8') as fh:
+    reader = csv.DictReader(fh)
+    for row in reader:
+        user = User(id=row['id'], username=row['username'], email=row['email'], is_verified=row['is_verified'])
+        db.session.merge(user)  # merge will insert or update based on PK
+    db.session.commit()
+</pre>
+
+    <p>If you'd like, I can add a small restore helper script to this repo that safely imports CSVs using the ORM. Want me to create it?</p>
+  </div>
+</div>
+{% endblock %}

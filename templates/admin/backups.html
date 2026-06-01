@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Backups — Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="dash-section-header">
+    <h1>Backups</h1>
+    <a href="{{ url_for('admin.admin') }}" class="link-subtle">← Admin</a>
+  </div>
+
+  <div class="admin-card">
+    <form method="POST" action="{{ url_for('admin.export_backup') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-primary">Export Database Backup</button>
+    </form>
+    <p class="muted" style="margin-top:10px">Exports CSVs for users, courses, course_days, course_enrollments, lesson_progress, prompts, prompt_collections, prompt_collection_items and packages them into a ZIP stored under <strong>backups/YYYY-MM-DD/</strong>.</p>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h3>Existing Backups</h3>
+    {% if backups %}
+       {% for b in backups %}
+         <div class="backup-day" style="margin-bottom:14px;">
+            <h4>{{ b.date }}</h4>
+            <ul style="list-style:none;padding-left:0;margin-top:8px;">
+              {% for f in b.files %}
+                <li style="margin-bottom:8px;">
+                  <strong>{{ f.name }}</strong> — {{ (f.size / 1024)|round(2) }} KB
+                  <a href="{{ url_for('admin.download_backup', relpath=f.relpath) }}" class="btn-ghost btn-sm" style="margin-left:8px;">Download</a>
+                </li>
+              {% endfor %}
+            </ul>
+         </div>
+       {% endfor %}
+    {% else %}
+       <p>No backups yet.</p>
+    {% endif %}
+  </div>
+
+  <div style="margin-top:24px;">
+    <a href="{{ url_for('admin.backup_restore') }}" class="link-subtle">Restore Instructions →</a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,3 @@
+id,title,slug,description,difficulty,is_published,created_at
+1,100 Days of Mastering AI,python-ai-course,"Learn Python by building AI systems, automations, and practical projects.",Beginner,False,2026-05-29T10:03:07.269652
+4,Build Your First AI Agent in 7 Days,ai-agent-course,Learn how to build your first AI agent step by step in 7 days. Perfect for beginners who want hands-on experience with modern AI workflows and automation.,Beginner,True,2026-06-01T06:28:47.947024
