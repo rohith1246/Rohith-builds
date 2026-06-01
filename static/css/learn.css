@@ -859,3 +859,12 @@
 .lesson-page {
     overflow-x: hidden;
 }
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}

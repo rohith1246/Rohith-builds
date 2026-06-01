@@ -215,6 +215,38 @@ window.LESSON_SLUG = null;
     </div>
 
 </div>
+<script>
+  document.querySelectorAll('.lesson-code pre').forEach(function(pre) {
+    var btn = document.createElement('button');
+    btn.innerText = 'Copy';
+    btn.className = 'copy-btn';
+    pre.parentElement.style.position = 'relative';
+    pre.parentElement.appendChild(btn);
+
+    btn.addEventListener('click', function() {
+      var text = pre.textContent.trim();
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+          btn.innerText = 'Copied!';
+          setTimeout(function() { btn.innerText = 'Copy'; }, 2000);
+        });
+      } else {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.innerText = 'Copied!';
+        setTimeout(function() { btn.innerText = 'Copy'; }, 2000);
+      }
+    });
+  });
+</script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block extra_js %}{% endblock %}
 </body>
