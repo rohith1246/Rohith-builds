@@ -299,15 +299,16 @@ class CourseEnrollment(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
-    course = db.relationship(
-    "Course",
-    backref="enrollments"
-)
 
-user = db.relationship(
-    "User",
-    backref="enrollments"
-)
+    course = db.relationship(
+        "Course",
+        backref="enrollments"
+    )
+
+    user = db.relationship(
+        "User",
+        backref="enrollments"
+    )
     
     
 class LessonProgress(db.Model):
@@ -334,14 +335,14 @@ class LessonProgress(db.Model):
 
     completed_at = db.Column(
         db.DateTime
-    )   
-    
-    course_day = db.relationship(
-    "CourseDay",
-    backref="lesson_progress"
-)
+    )
 
-user = db.relationship(
-    "User",
-    backref="lesson_progress"
-)
+    course_day = db.relationship(
+        "CourseDay",
+        backref="lesson_progress"
+    )
+
+    user = db.relationship(
+        "User",
+        backref="lesson_progress"
+    )

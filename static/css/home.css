@@ -386,3 +386,135 @@
     gap: 8px;
   }
 }
+
+/* FEATURED COURSE */
+.featured-course {
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+  padding: 60px 0;
+  margin: 40px 0;
+}
+.featured-course-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.featured-badge {
+  background: #ff6b35;
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.featured-course h2 {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+.featured-course p {
+  color: #aaa;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.course-highlights {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.course-highlights li {
+  color: #ccc;
+  font-size: 0.95rem;
+}
+.course-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.day-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.day-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #ccc;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.day-item.highlight {
+  background: rgba(255, 107, 53, 0.15);
+  border-color: #ff6b35;
+  color: #ff6b35;
+  font-weight: 600;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .featured-course-inner {
+    grid-template-columns: 1fr;
+  }
+  .featured-course h2 {
+    font-size: 1.5rem;
+  }
+  .course-highlights {
+    grid-template-columns: 1fr;
+  }
+  .course-ctas {
+    flex-direction: column;
+  }
+  .course-ctas a {
+    width: 100%;
+    text-align: center;
+  }
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+.featured-course .btn-secondary {
+  border: 2px solid white;
+  color: white;
+  background: transparent;
+}
+.featured-course .btn-secondary {
+  border: 2px solid white;
+  color: white;
+  background: transparent !important;
+}
+.featured-course a.btn-secondary {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: white !important;
+  border: 2px solid white !important;
+  box-shadow: none !important;
+}
+section.featured-course div.course-ctas a.btn-secondary {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: none !important;
+}
+.btn-outline-white {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  border-radius: 16px;
+  padding: 12px 22px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.btn-outline-white:hover {
+  background: white;
+  color: #0f0f1a;
+}

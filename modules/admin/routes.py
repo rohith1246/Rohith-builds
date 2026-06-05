@@ -35,35 +35,107 @@ def admin_required(f):
 @login_required
 @admin_required
 def admin_dashboard():
-    """Main admin dashboard with all stats."""
-    
-    # User stats
+    """Main admin dashboard with all stats including enrollment analytics."""
+
+    # ── User stats ──────────────────────────────────────────────────────────
     user_count = User.query.count()
     verified_count = User.query.filter_by(is_verified=True).count()
-    
-    # Course stats
+
+    # ── Course stats ─────────────────────────────────────────────────────────
     course_count = Course.query.count()
     published_courses = Course.query.filter_by(is_published=True).count()
     total_lessons = CourseDay.query.count()
-    
-    # Enrollment stats
+
+    # ── Enrollment stats ─────────────────────────────────────────────────────
     total_enrollments = CourseEnrollment.query.count()
-    unique_enrolled_users = db.session.query(func.count(func.distinct(CourseEnrollment.user_id))).scalar() or 0
-    
-    # Prompt stats
+    unique_enrolled_users = (
+        db.session.query(func.count(func.distinct(CourseEnrollment.user_id))).scalar() or 0
+    )
+
+    # ── Prompt stats ─────────────────────────────────────────────────────────
     prompt_count = Prompt.query.count()
     total_likes = db.session.query(func.coalesce(func.sum(Prompt.likes), 0)).scalar() or 0
     total_copies = db.session.query(func.coalesce(func.sum(Prompt.copies), 0)).scalar() or 0
-    
-    # Completion stats
+
+    # ── Lesson completion stats ───────────────────────────────────────────────
     total_completed_lessons = LessonProgress.query.filter_by(completed=True).count()
-    
-    # Recent activity
+
+    # ── Active learners: users with at least 1 completed lesson ───────────────
+    try:
+        active_learners = (
+            db.session.query(func.count(func.distinct(LessonProgress.user_id)))
+            .filter(LessonProgress.completed == True)
+            .scalar() or 0
+        )
+    except Exception:
+        active_learners = 0
+
+    # ── Recent activity ───────────────────────────────────────────────────────
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
-    recent_enrollments = CourseEnrollment.query.order_by(CourseEnrollment.enrolled_at.desc()).limit(5).all()
-    
+    recent_enrollments = (
+        CourseEnrollment.query.order_by(CourseEnrollment.enrolled_at.desc()).limit(5).all()
+    )
+
+    # ── Full enrollment analytics table ──────────────────────────────────────
+    # Fetch every enrollment with its user + course in a single query pass
+    enrollment_analytics = []
+    try:
+        all_enrollments = (
+            CourseEnrollment.query
+            .order_by(CourseEnrollment.enrolled_at.desc())
+            .all()
+        )
+
+        # Pre-fetch total lessons per course to avoid N+1 queries
+        course_lesson_counts = dict(
+            db.session.query(CourseDay.course_id, func.count(CourseDay.id))
+            .group_by(CourseDay.course_id)
+            .all()
+        )
+
+        # Pre-fetch completed lesson counts per (user_id, course_id)
+        completed_rows = (
+            db.session.query(
+                CourseDay.course_id,
+                LessonProgress.user_id,
+                func.count(LessonProgress.id).label("done")
+            )
+            .join(CourseDay, LessonProgress.course_day_id == CourseDay.id)
+            .filter(LessonProgress.completed == True)
+            .group_by(CourseDay.course_id, LessonProgress.user_id)
+            .all()
+        )
+        completed_map = {(r.course_id, r.user_id): r.done for r in completed_rows}
+
+        for enr in all_enrollments:
+            user = enr.user        # uses relationship
+            course = enr.course    # uses relationship
+            if not user or not course:
+                continue
+
+            total_course_lessons = course_lesson_counts.get(course.id, 0)
+            lessons_done = completed_map.get((course.id, user.id), 0)
+            progress_pct = (
+                int((lessons_done / total_course_lessons) * 100)
+                if total_course_lessons > 0 else 0
+            )
+
+            enrollment_analytics.append({
+                "username": user.username,
+                "email": user.email,
+                "course": course.title,
+                "enrolled_at": enr.enrolled_at,
+                "lessons_completed": lessons_done,
+                "total_lessons": total_course_lessons,
+                "progress_pct": progress_pct,
+            })
+    except Exception as e:
+        current_app.logger.error("Enrollment analytics error: %s", e)
+        enrollment_analytics = []
+
     return render_template(
         "admin/dashboard.html",
+        # existing stats
         user_count=user_count,
         verified_count=verified_count,
         course_count=course_count,
@@ -76,7 +148,10 @@ def admin_dashboard():
         total_copies=total_copies,
         total_completed_lessons=total_completed_lessons,
         recent_users=recent_users,
-        recent_enrollments=recent_enrollments
+        recent_enrollments=recent_enrollments,
+        # new enrollment analytics
+        active_learners=active_learners,
+        enrollment_analytics=enrollment_analytics,
     )
 
 # ==========================================
