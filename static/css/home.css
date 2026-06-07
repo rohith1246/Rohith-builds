@@ -518,3 +518,109 @@ section.featured-course div.course-ctas a.btn-secondary {
   background: white;
   color: #0f0f1a;
 }
+
+/* ROADMAP SECTION */
+.roadmap-section {
+    padding: 80px 20px;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.roadmap-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.roadmap-subtitle {
+    color: #6B7280;
+    font-size: 1rem;
+    margin-bottom: 40px;
+}
+
+.roadmap-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.roadmap-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 16px 24px;
+    text-align: left;
+    transition: box-shadow 0.2s;
+}
+
+.roadmap-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.roadmap-item.highlight {
+    border-color: #FACC15;
+    background: #FEFCE8;
+}
+
+.roadmap-week {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6B7280;
+    min-width: 90px;
+}
+
+.roadmap-arrow {
+    color: #FACC15;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.roadmap-topic {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.roadmap-cta {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 14px 32px;
+    background: #111827;
+    color: #ffffff;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.roadmap-cta:hover {
+    background: #1F2937;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .roadmap-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .roadmap-item {
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .roadmap-week {
+        min-width: 70px;
+        font-size: 0.78rem;
+    }
+
+    .roadmap-topic {
+        font-size: 0.9rem;
+    }
+}

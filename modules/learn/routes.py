@@ -324,14 +324,28 @@ def complete_lesson(day_id):
 
         db.session.add(progress)
         db.session.commit()
-
     flash("Lesson completed!", "success")
 
-    return redirect(
-        request.referrer or
-        url_for(
-            "learn.course_page",
-            course_slug=course.slug
+    next_day = CourseDay.query.filter(
+        CourseDay.course_id == day.course_id,
+        CourseDay.day_number > day.day_number
+    ).order_by(
+        CourseDay.day_number.asc()
+    ).first()
+
+    if next_day:
+        return redirect(
+            url_for(
+                "learn.lesson_page",
+                course_slug=course.slug,
+                lesson_slug=next_day.slug
+            )
         )
-    )
+    else:
+        return redirect(
+            url_for(
+                "learn.course_page",
+                course_slug=course.slug
+            )
+        )
     
