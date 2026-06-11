@@ -4,57 +4,66 @@
 
 <div class="python-course-page">
 
-```
 <section class="python-course-hero">
+    <div class="course-hero-inner">
+        <div class="course-hero-text">
+            <span class="course-label">
+                Learning Track
+            </span>
 
-    <span class="course-label">
-        Learning Track
-    </span>
+            <h1>
+                {{ course.title }}
+            </h1>
 
-    <h1>
-        {{ course.title }}
-    </h1>
+            <p>
+                {{ course.description }}
+            </p>
 
-    <p>
-        {{ course.description }}
-    </p>
+            <div class="course-hero-actions">
+                {% if enrolled %}
 
-    {% if enrolled %}
+                    {% if next_day %}
 
-        {% if next_day %}
+                    <a
+                        href="{{ url_for('learn.lesson_page',
+                            course_slug=course.slug,
+                            lesson_slug=next_day.slug) }}"
+                        class="btn-primary enroll-btn"
+                    >
+                        Continue Day {{ next_day.day_number }} →
+                    </a>
 
-        <a
-            href="{{ url_for('learn.lesson_page',
-                course_slug=course.slug,
-                lesson_slug=next_day.slug) }}"
-            class="btn-primary enroll-btn"
-        >
-            Continue Day {{ next_day.day_number }} →
-        </a>
+                    {% else %}
 
-        {% else %}
+                    <div class="course-complete-badge">
+                        🏆 Course Completed
+                    </div>
 
-        <div class="course-complete-badge">
-            🏆 Course Completed
+                    {% endif %}
+
+                    <div class="enrolled-badge">
+                        ✅ You are enrolled in this course
+                    </div>
+
+                {% else %}
+
+                <a
+                    href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
+                    class="btn-primary enroll-btn"
+                >
+                    Enroll Course
+                </a>
+
+                {% endif %}
+            </div>
         </div>
-
+        
+        {% if course.thumbnail %}
+        <div class="course-hero-thumbnail">
+            <img src="{{ url_for('static', filename=course.thumbnail) }}" alt="{{ course.title }} Thumbnail">
+        </div>
         {% endif %}
-
-        <div class="enrolled-badge">
-            ✅ You are enrolled in this course
-        </div>
-
-    {% else %}
-
-    <a
-        href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
-        class="btn-primary enroll-btn"
-    >
-        Enroll Course
-    </a>
-
-    {% endif %}
-
+    </div>
 </section>
 
 {% if enrolled %}
@@ -166,7 +175,6 @@
     {% endfor %}
 
 </section>
-```
 
 </div>
 

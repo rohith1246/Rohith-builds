@@ -48,3 +48,7 @@ Thumbs.db
 *.egg-info/
 build/
 dist/
+
+# Local Admin Dashboard (Ignored from GitHub / Local Only)
+admin_dashboard/
+local_admin/

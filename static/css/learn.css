@@ -174,9 +174,21 @@
 }
 
 .python-course-hero {
-  max-width: 850px;
   margin: 0 auto 70px;
-  text-align: center;
+}
+
+.course-hero-inner {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: var(--spacing-2xl);
+  align-items: center;
+}
+
+.course-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .course-label {
@@ -191,20 +203,87 @@
 }
 
 .python-course-hero h1 {
-  font-size: 4rem;
-  line-height: 1.05;
+  font-size: 3.5rem;
+  line-height: 1.1;
   margin-bottom: 24px;
   font-weight: 800;
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
   color: var(--text);
+  text-align: left;
 }
 
 .python-course-hero p {
   font-size: 1.15rem;
   line-height: 1.8;
   color: var(--text-light);
-  max-width: 720px;
-  margin: auto;
+  margin-bottom: 30px;
+  text-align: left;
+  max-width: 100%;
+  margin: 0;
+}
+
+.course-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.course-hero-thumbnail {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.course-hero-thumbnail img {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.3s ease;
+}
+
+.course-hero-thumbnail img:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive Course Hero Stack for Tablet & Mobile */
+@media (max-width: 992px) {
+  .course-hero-inner {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    text-align: center;
+  }
+  
+  .course-hero-text {
+    align-items: center;
+    text-align: center;
+    order: 2;
+  }
+  
+  .course-hero-thumbnail {
+    order: 1;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .python-course-hero h1 {
+    font-size: 2.8rem;
+    letter-spacing: -1px;
+    text-align: center;
+  }
+  
+  .python-course-hero p {
+    text-align: center;
+  }
+  
+  .course-hero-actions {
+    align-items: center;
+  }
 }
 
 .course-grid {
@@ -860,3 +939,70 @@
 .lesson-page {
     overflow-x: hidden;
 }
+
+/* ==================================================
+   CATALOG COURSE CARDS (WITH BANNERS)
+================================================== */
+
+.course-card.catalog-card {
+  padding: 0 !important;
+  min-height: 440px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.course-card-banner {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid var(--border-light);
+  border-top-left-radius: calc(var(--radius-lg) - 1px);
+  border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
+
+.course-card-banner img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 0.4s ease;
+}
+
+.course-card.catalog-card:hover .course-card-banner img {
+  transform: scale(1.04);
+}
+
+.course-card-body {
+  padding: 26px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.course-card-body h3 {
+  margin-top: 12px;
+  font-size: 1.6rem;
+}
+
+/* Default / Fallback gradient banners */
+.course-card-banner.default-banner {
+  background: linear-gradient(135deg, #fbbf24 0%, #78350f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.course-card-banner.default-banner::after {
+  content: "🚀";
+  font-size: 2.8rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.course-card-banner.default-banner.soon-banner {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+.course-card-banner.default-banner.soon-banner::after {
+  content: "✨";
+}
+

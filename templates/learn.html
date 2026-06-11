@@ -54,61 +54,42 @@ Learn AI & Build Skills — RohithBuilds
         'learn.course_page',
         course_slug=course.slug
     ) }}"
-    class="course-card"
+    class="course-card catalog-card"
 >
-
-                <div class="course-card-top">
-
-                    <span class="course-badge">
-                        {{ course.total_days }} Days
-                    </span>
-
+                {% if course.thumbnail %}
+                <div class="course-card-banner">
+                    <img src="{{ url_for('static', filename=course.thumbnail) }}" alt="{{ course.title }} Banner">
                 </div>
+                {% else %}
+                <div class="course-card-banner default-banner"></div>
+                {% endif %}
 
-                <h3>
-                    {{ course.title }}
-                </h3>
+                <div class="course-card-body">
+                    <div class="course-card-top">
+                        <span class="course-badge">
+                            {{ course.total_days }} Days
+                        </span>
+                    </div>
 
-                <p>
-                    {{ course.description }}
-                </p>
+                    <h3>
+                        {{ course.title }}
+                    </h3>
 
-                <div class="course-footer">
+                    <p>
+                        {{ course.description }}
+                    </p>
 
-                    <span>
-                        Start Learning →
-                    </span>
-
+                    <div class="course-footer">
+                        <span>
+                            Start Learning →
+                        </span>
+                    </div>
                 </div>
-
             </a>
 
             {% endfor %}
 
       
-
-            <!-- Coming Soon -->
-
-            <div class="course-card upcoming">
-
-                <div class="course-card-top">
-
-                    <span class="course-badge soon">
-                        Coming Soon
-                    </span>
-
-                </div>
-
-                <h3>
-                    Prompt Engineering Mastery
-                </h3>
-
-                <p>
-                    Master prompting frameworks,
-                    systems, and productivity.
-                </p>
-
-            </div>
 
         </div>
 
