@@ -1249,171 +1249,184 @@
 
 /* Floating Button */
 
-#rohi-toggle{
+#rohi-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: #fbbf24; /* Brand Yellow */
+    color: #111827; /* Brand Black */
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1010;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: rohi-pulse 2s infinite;
+}
 
-    position:fixed;
-    bottom:20px;
-    right:20px;
+#rohi-toggle:hover {
+    transform: scale(1.08) rotate(5deg);
+}
 
-    width:64px;
-    height:64px;
-
-    border:none;
-    border-radius:50%;
-
-    background:#f4b400;
-    color:#111;
-
-    font-weight:700;
-    font-size:16px;
-
-    cursor:pointer;
-
-    box-shadow:
-    0 8px 20px rgba(0,0,0,.15);
-
-    z-index:9999;
+#rohi-toggle.active {
+    background: #111827;
+    color: #fbbf24;
+    border: 2px solid #fbbf24;
 }
 
 /* Chat Window */
 
-#rohi-chat{
+#rohi-chat {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 360px;
+    height: 520px;
+    background: rgba(17, 24, 39, 0.95); /* Charcoal Glass */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1010;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
 
-    position:fixed;
-
-    bottom:95px;
-    right:20px;
-
-    width:360px;
-    height:500px;
-
-    background:#fff;
-
-    border-radius:20px;
-
-    border:2px solid #f4b400;
-
-    box-shadow:
-    0 15px 40px rgba(0,0,0,.15);
-
-    overflow:hidden;
-
-    display:none;
-    flex-direction:column;
-
-    z-index:9999;
+#rohi-chat.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Header */
 
-.rohi-header{
-
-    background:#111;
-    color:#f4b400;
-
-    padding:16px;
-
-    font-weight:700;
+.rohi-header {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+    color: #fbbf24; /* Brand Yellow */
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.3px;
 }
 
 /* Messages */
 
-#rohi-messages{
-
-    flex:1;
-
-    padding:16px;
-
-    overflow-y:auto;
+#rohi-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.rohi-user{
-
-    background:#f4b400;
-
-    color:#111;
-
-    padding:10px 14px;
-
-    border-radius:12px;
-
-    margin-bottom:10px;
-
-    width:fit-content;
-
-    margin-left:auto;
+.rohi-user {
+    background: #fbbf24; /* Brand Yellow */
+    color: #111827; /* Brand Black */
+    padding: 10px 16px;
+    border-radius: 14px 14px 2px 14px;
+    align-self: flex-end;
+    max-width: 80%;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-word;
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15);
 }
 
-.rohi-ai{
-
-    background:#f5f5f5;
-
-    color:#111;
-
-    padding:10px 14px;
-
-    border-radius:12px;
-
-    margin-bottom:10px;
-
-    width:fit-content;
-
-    max-width:85%;
+.rohi-ai {
+    background: rgba(255, 255, 255, 0.06);
+    color: #e5e7eb;
+    padding: 10px 16px;
+    border-radius: 14px 14px 14px 2px;
+    align-self: flex-start;
+    max-width: 80%;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    word-break: break-word;
 }
 
 /* Input */
 
-.rohi-input-row{
-
-    display:flex;
-
-    border-top:1px solid #eee;
+.rohi-input-row {
+    display: flex;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(17, 24, 39, 0.98);
 }
 
-#rohi-input{
-
-    flex:1;
-
-    border:none;
-
-    padding:14px;
-
-    outline:none;
+#rohi-input {
+    flex: 1;
+    border: none;
+    padding: 16px 20px;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-size: 0.95rem;
 }
 
-#rohi-send{
-
-    background:#f4b400;
-    color:#111;
-
-    border:none;
-
-    padding:0 20px;
-
-    font-weight:700;
-
-    cursor:pointer;
+#rohi-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
 }
+
+#rohi-send {
+    background: #fbbf24; /* Brand Yellow */
+    color: #111827; /* Brand Black */
+    border: none;
+    padding: 0 24px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#rohi-send:hover {
+    background: #f59e0b; /* Amber */
+}
+
+@keyframes rohi-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+}
+
 @media(max-width:768px){
 
     #rohi-toggle{
-
-        width:52px;
-        height:52px;
-
-        font-size:14px;
-
-        right:12px;
-        bottom:12px;
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+        right: 16px;
+        bottom: 16px;
     }
 
     #rohi-chat{
-
-        width:90vw;
-        height:70vh;
-
-        right:5vw;
-        bottom:75px;
+        width: calc(100% - 32px);
+        height: 60vh;
+        right: 16px;
+        left: 16px;
+        bottom: 84px;
     }
 
 }

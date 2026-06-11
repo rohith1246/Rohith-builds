@@ -22,22 +22,17 @@ console.log(lessonSlug);
 
     // Toggle Chat
     if (toggle && chat) {
-
         toggle.addEventListener("click", () => {
-
             console.log("Rohi Toggle Clicked");
-
-            if (
-                chat.style.display === "flex" ||
-                chat.style.display === "block"
-            ) {
-                chat.style.display = "none";
+            chat.classList.toggle("show");
+            if (chat.classList.contains("show")) {
+                toggle.innerHTML = "✕";
+                toggle.classList.add("active");
             } else {
-                chat.style.display = "flex";
+                toggle.innerHTML = "🤖";
+                toggle.classList.remove("active");
             }
-
         });
-
     }
 
     // Send Message
