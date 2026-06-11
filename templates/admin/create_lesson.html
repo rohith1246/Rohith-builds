@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Create Lesson — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page" style="max-width:850px;">
+  <div class="dash-section-header">
+    <h1>Create New Lesson</h1>
+    <a href="{{ url_for('admin.lessons') }}" class="link-subtle">← Cancel</a>
+  </div>
+
+  <div class="admin-section">
+    <form method="POST" action="{{ url_for('admin.create_lesson') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+        <div class="form-group">
+          <label for="course_id" class="form-label">Course *</label>
+          <select id="course_id" name="course_id" required class="form-select">
+            <option value="">-- Select Course --</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if default_course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="day_number" class="form-label">Day Number *</label>
+          <input type="number" id="day_number" name="day_number" value="{{ next_day_number or '' }}" required min="1" placeholder="e.g. 1" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="title" class="form-label">Lesson Title *</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Variables and Data Types" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="slug" class="form-label">Slug *</label>
+        <input type="text" id="slug" name="slug" required placeholder="e.g. variables-and-data-types" class="form-input">
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div class="form-group">
+          <label for="xp_reward" class="form-label">XP Reward</label>
+          <input type="number" id="xp_reward" name="xp_reward" value="50" min="0" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="estimated_minutes" class="form-label">Estimated Minutes</label>
+          <input type="number" id="estimated_minutes" name="estimated_minutes" value="10" min="1" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="image" class="form-label">Lesson Image Banner (Optional)</label>
+        <input type="file" id="image" name="image" accept="image/*" class="form-input" style="padding:10px;">
+      </div>
+
+      <div class="form-group">
+        <label for="short_description" class="form-label">Short Description (Syllabus summary)</label>
+        <textarea id="short_description" name="short_description" placeholder="A single sentence summary of the lesson." class="form-textarea" style="min-height:70px;"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="content_type" class="form-label">Lesson Content Type *</label>
+        <select id="content_type" name="content_type" required class="form-select">
+          <option value="text" selected>Text (Raw / HTML in text area)</option>
+          <option value="html">HTML File (.html)</option>
+          <option value="markdown">Markdown File (.md)</option>
+          <option value="jupyter">Jupyter Notebook File (.ipynb)</option>
+        </select>
+      </div>
+
+      <!-- Text Content Area (Default) -->
+      <div class="form-group" id="content-text-group">
+        <label for="content" class="form-label">Lesson Body Content</label>
+        <textarea id="content" name="content" placeholder="Write lesson contents here..." class="form-textarea" style="min-height:300px; font-family:monospace; font-size:0.9rem;"></textarea>
+      </div>
+
+      <!-- File Upload Content Area (Hidden by default) -->
+      <div class="form-group" id="content-file-group" style="display:none;">
+        <label for="content_file" class="form-label">Upload Lesson File *</label>
+        <input type="file" id="content_file" name="content_file" class="form-input" style="padding:10px;">
+        <span class="td-muted" style="font-size:0.8rem; margin-top:4px;" id="file-helper-text">Select file type matching content type.</span>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:32px;">
+        <button type="submit" class="btn-primary" style="flex:1;">Create Lesson</button>
+        <a href="{{ url_for('admin.lessons') }}" class="btn-ghost" style="flex:1;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Auto-generate slug from title
+const titleInput = document.getElementById('title');
+const slugInput = document.getElementById('slug');
+
+titleInput.addEventListener('input', function() {
+  const slugVal = titleInput.value
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // remove special chars
+    .replace(/[\s_]+/g, '-')  // replace spaces/underscores with hyphens
+    .replace(/-+/g, '-');     // remove duplicate hyphens
+  slugInput.value = slugVal;
+});
+
+// Switch content input based on content type select
+const contentTypeSelect = document.getElementById('content_type');
+const textGroup = document.getElementById('content-text-group');
+const fileGroup = document.getElementById('content-file-group');
+const fileInput = document.getElementById('content_file');
+const helperText = document.getElementById('file-helper-text');
+
+contentTypeSelect.addEventListener('change', function() {
+  const val = contentTypeSelect.value;
+  if (val === 'text') {
+    textGroup.style.display = 'flex';
+    fileGroup.style.display = 'none';
+    fileInput.removeAttribute('required');
+  } else {
+    textGroup.style.display = 'none';
+    fileGroup.style.display = 'flex';
+    fileInput.setAttribute('required', 'true');
+    
+    // Set file extension helpers
+    if (val === 'html') {
+      fileInput.setAttribute('accept', '.html');
+      helperText.textContent = "Please upload an HTML document (.html).";
+    } else if (val === 'markdown') {
+      fileInput.setAttribute('accept', '.md');
+      helperText.textContent = "Please upload a Markdown file (.md).";
+    } else if (val === 'jupyter') {
+      fileInput.setAttribute('accept', '.ipynb');
+      helperText.textContent = "Please upload a Jupyter notebook (.ipynb).";
+    }
+  }
+});
+</script>
+{% endblock %}

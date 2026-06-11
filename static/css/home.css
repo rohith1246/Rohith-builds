@@ -7,7 +7,7 @@
   text-align: center;
   background: linear-gradient(
     180deg,
-    rgba(59, 130, 246, 0.06) 0%,
+    rgba(251, 191, 36, 0.06) 0%,
     rgba(248, 250, 252, 0.5) 50%,
     #ffffff 100%
   );
@@ -272,8 +272,8 @@
 }
 
 .improve-highlight {
-  border: 2px solid rgba(37, 99, 235, 0.2);
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.03), white);
+  border: 2px solid rgba(251, 191, 36, 0.2);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.04), white);
   padding: 20px;
   border-radius: var(--radius-md);
 }

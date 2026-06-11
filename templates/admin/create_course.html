@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page" style="max-width:800px;">
+  <div class="dash-section-header">
+    <h1>Create New Course</h1>
+    <a href="{{ url_for('admin.courses') }}" class="link-subtle">← Cancel</a>
+  </div>
+
+  <div class="admin-section">
+    <form method="POST" action="{{ url_for('admin.create_course') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="title" class="form-label">Course Title *</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Prompt Engineering Basics" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="slug" class="form-label">Slug *</label>
+        <input type="text" id="slug" name="slug" required placeholder="e.g. prompt-engineering-basics" class="form-input">
+        <span class="td-muted" style="font-size:0.8rem; margin-top:4px;">Unique URL identifier (lowercase, hyphens, alphanumeric only).</span>
+      </div>
+
+      <div class="form-group">
+        <label for="difficulty" class="form-label">Difficulty Level</label>
+        <select id="difficulty" name="difficulty" class="form-select">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="thumbnail" class="form-label">Thumbnail Image</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="form-input" style="padding:10px;">
+        <span class="td-muted" style="font-size:0.8rem; margin-top:4px;">Upload a cover photo for this course.</span>
+      </div>
+
+      <div class="form-group" style="margin-bottom:28px;">
+        <label for="description" class="form-label">Course Description</label>
+        <textarea id="description" name="description" placeholder="Describe the course goals, topics covered, and who it is for..." class="form-textarea"></textarea>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary" style="flex:1;">Create Course</button>
+        <a href="{{ url_for('admin.courses') }}" class="btn-ghost" style="flex:1;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Auto-generate slug from title
+const titleInput = document.getElementById('title');
+const slugInput = document.getElementById('slug');
+
+titleInput.addEventListener('input', function() {
+  const slugVal = titleInput.value
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // remove special chars
+    .replace(/[\s_]+/g, '-')  // replace spaces/underscores with hyphens
+    .replace(/-+/g, '-');     // remove duplicate hyphens
+  slugInput.value = slugVal;
+});
+</script>
+{% endblock %}

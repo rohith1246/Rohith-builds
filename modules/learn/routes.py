@@ -21,7 +21,8 @@ from models import (
     Course,
     CourseDay,
     CourseEnrollment,
-    LessonProgress
+    LessonProgress,
+    LessonReview
 )
 
 
@@ -348,4 +349,36 @@ def complete_lesson(day_id):
                 course_slug=course.slug
             )
         )
+
+
+@learn_bp.route("/learn/lesson/<int:day_id>/review", methods=["POST"])
+@login_required
+def submit_review(day_id):
+    """Asynchronously submit a star rating review for a lesson."""
+    day = CourseDay.query.get_or_404(day_id)
+    
+    data = request.get_json() or {}
+    rating = data.get("rating")
+    
+    if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+        return jsonify({"success": False, "message": "Invalid rating value. Must be 1 to 5."}), 400
+        
+    existing = LessonReview.query.filter_by(user_id=current_user.id, course_day_id=day.id).first()
+    if existing:
+        existing.rating = rating
+        existing.created_at = datetime.utcnow()
+    else:
+        review = LessonReview(
+            user_id=current_user.id,
+            course_day_id=day.id,
+            rating=rating
+        )
+        db.session.add(review)
+        
+    db.session.commit()
+    
+    from modules.auth.helpers import send_lesson_review_email
+    send_lesson_review_email(current_user, day, rating)
+    
+    return jsonify({"success": True, "message": "Rating saved successfully!"})
     

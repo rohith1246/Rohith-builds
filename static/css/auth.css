@@ -85,9 +85,14 @@
 }
 
 .auth-switch a {
-    color: #2563eb;
+    color: var(--primary-dark);
     text-decoration: none;
     font-weight: 600;
+}
+
+.auth-switch a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
 }
 
 .btn-full {
@@ -119,13 +124,13 @@
 
 .forgot-password-link a {
     font-size: 0.85rem;
-    color: #2563eb;
+    color: var(--primary-dark);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
 }
 
 .forgot-password-link a:hover {
-    color: #1d4ed8;
+    color: var(--primary-hover);
     text-decoration: underline;
 }

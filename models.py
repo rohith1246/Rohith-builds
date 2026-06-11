@@ -276,8 +276,16 @@ class UserCourseProgress(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    
-    
+    user = db.relationship(
+        "User",
+        backref=db.backref("course_progresses", cascade="all, delete-orphan")
+    )
+    course = db.relationship(
+        "Course",
+        backref=db.backref("user_progresses", cascade="all, delete-orphan")
+    )
+
+
 class CourseEnrollment(db.Model):
     __tablename__ = "course_enrollments"
 
@@ -302,12 +310,12 @@ class CourseEnrollment(db.Model):
 
     course = db.relationship(
         "Course",
-        backref="enrollments"
+        backref=db.backref("enrollments", cascade="all, delete-orphan")
     )
 
     user = db.relationship(
         "User",
-        backref="enrollments"
+        backref=db.backref("enrollments", cascade="all, delete-orphan")
     )
     
     
@@ -339,10 +347,41 @@ class LessonProgress(db.Model):
 
     course_day = db.relationship(
         "CourseDay",
-        backref="lesson_progress"
+        backref=db.backref("lesson_progress", cascade="all, delete-orphan")
     )
 
     user = db.relationship(
         "User",
-        backref="lesson_progress"
+        backref=db.backref("lesson_progress", cascade="all, delete-orphan")
+    )
+
+
+class LessonReview(db.Model):
+    __tablename__ = "lesson_reviews"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    course_day_id = db.Column(
+        db.Integer,
+        db.ForeignKey("course_days.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    rating = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    course_day = db.relationship(
+        "CourseDay",
+        backref=db.backref("reviews", cascade="all, delete-orphan", lazy=True)
+    )
+    user = db.relationship(
+        "User",
+        backref=db.backref("reviews", cascade="all, delete-orphan", lazy=True)
     )

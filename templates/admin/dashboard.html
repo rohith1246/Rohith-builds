@@ -3,185 +3,475 @@
 {% block title %}Admin Dashboard — RohithBuilds{% endblock %}
 
 {% block content %}
-<div class="container admin-dashboard" style="padding:28px 0;">
-  <div class="dash-section-header">
-    <h1>Admin Dashboard</h1>
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Monitor platform health, track user metrics, and manage syllabus courses.</p>
+    </div>
     <div>
       <a href="{{ url_for('admin.backups') }}" class="btn-ghost">Backups</a>
       <a href="{{ url_for('admin.courses') }}" class="btn-ghost">Courses</a>
+      <a href="{{ url_for('admin.lessons') }}" class="btn-ghost">Lessons</a>
       <a href="{{ url_for('admin.users') }}" class="btn-ghost">Users</a>
       <a href="{{ url_for('admin.enrollments') }}" class="btn-ghost">Enrollments</a>
+      <a href="{{ url_for('admin.learning_history') }}" class="btn-ghost">Learning History</a>
+      <a href="{{ url_for('admin.admin_prompts') }}" class="btn-ghost">Prompts</a>
     </div>
   </div>
 
-  <!-- ── Platform Stats ─────────────────────────────────────────────── -->
-  <div class="dash-stats" style="margin-bottom:18px;">
-    <div class="stat-card">
-      <span class="stat-num">{{ user_count }}</span>
-      <span class="stat-label">Users</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num">{{ verified_count }}</span>
-      <span class="stat-label">Verified</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num">{{ course_count }}</span>
-      <span class="stat-label">Courses</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num">{{ published_courses }}</span>
-      <span class="stat-label">Published</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num">{{ total_lessons }}</span>
-      <span class="stat-label">Lessons</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-num">{{ total_enrollments }}</span>
-      <span class="stat-label">Enrollments</span>
-    </div>
+  <!-- Admin Tabs Navigation -->
+  <div class="admin-tabs-nav">
+    <button class="admin-tab-btn active" data-tab="tab-overview">💻 Overview</button>
+    <button class="admin-tab-btn" data-tab="tab-analytics">📊 Visual Analytics</button>
+    <button class="admin-tab-btn" data-tab="tab-tracking">📈 Progress Tracking</button>
+    <button class="admin-tab-btn" data-tab="tab-reviews">⭐ Lesson Reviews</button>
   </div>
 
-  <!-- ── Recent Users + Recent Enrollments ─────────────────────────── -->
-  <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;margin-bottom:32px;">
-    <div>
-      <div class="dash-section-header"><h2>Recent Users</h2></div>
-      <div class="dash-prompts-list">
-        {% for u in recent_users %}
-          <div class="dash-prompt-row">
-            <div>
-              <strong>{{ u.username }}</strong>
-              <div class="muted">{{ u.email }} • {{ u.created_at.strftime('%b %d, %Y') }}</div>
-            </div>
-            <div>
-              <form method="POST" action="{{ url_for('admin.verify_user', user_id=u.id) }}" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-sm btn-ghost" type="submit">Verify</button>
-              </form>
-              <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Delete user?')">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-sm btn-danger" type="submit">Delete</button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
+  <!-- ==================== TAB 1: OVERVIEW ==================== -->
+  <div id="tab-overview" class="admin-tab-content active">
+    <!-- Platform Stats Cards -->
+    <div class="admin-stats" style="margin-bottom: 28px;">
+      <div class="astat-card" style="border-top: 4px solid var(--primary);">
+        <div class="astat-icon">👥</div>
+        <div>
+          <div class="astat-num">{{ user_count }}</div>
+          <div class="astat-label">Total Users</div>
+        </div>
+      </div>
+      <div class="astat-card" style="border-top: 4px solid var(--success);">
+        <div class="astat-icon">🎓</div>
+        <div>
+          <div class="astat-num">{{ total_enrollments }}</div>
+          <div class="astat-label">Enrollments</div>
+        </div>
+      </div>
+      <div class="astat-card" style="border-top: 4px solid var(--warning);">
+        <div class="astat-icon">📚</div>
+        <div>
+          <div class="astat-num">{{ course_count }}</div>
+          <div class="astat-label">Courses</div>
+        </div>
+      </div>
+      <div class="astat-card" style="border-top: 4px solid #8b5cf6;">
+        <div class="astat-icon">📝</div>
+        <div>
+          <div class="astat-num">{{ prompt_count }}</div>
+          <div class="astat-label">Total Prompts</div>
+        </div>
       </div>
     </div>
 
-    <aside>
-      <div class="dash-section-header"><h2>Recent Enrollments</h2></div>
-      <div class="admin-card">
-        {% for e in recent_enrollments %}
-          <div style="margin-bottom:12px">
-            <div><strong>{{ e.course.title }}</strong></div>
-            <div class="muted">{{ e.user.username if e.user else 'User #' ~ e.user_id }} • {{ e.enrolled_at.strftime('%b %d, %Y') }}</div>
-          </div>
-        {% else %}
-          <div class="muted">No enrollments yet.</div>
-        {% endfor %}
+    <!-- Main Dashboard Two-Column Layout -->
+    <div class="admin-dashboard-layout">
+      <!-- Left Column: Recent Registrations -->
+      <div class="admin-section" style="margin-bottom:0;">
+        <div class="admin-section-header">
+          <h2>Recent Registrations</h2>
+          <span class="admin-count">Latest 5</span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in recent_users %}
+                <tr>
+                  <td>
+                    <div class="td-user">
+                      <div class="td-avatar">{{ u.username[0].upper() }}</div>
+                      <strong>{{ u.username }}</strong>
+                    </div>
+                  </td>
+                  <td class="td-muted">{{ u.email }}</td>
+                  <td>
+                    {% if u.is_verified %}
+                      <span class="badge-verified">Verified</span>
+                    {% else %}
+                      <span class="badge-unverified">Unverified</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="td-actions">
+                      {% if not u.is_verified %}
+                        <form method="POST" action="{{ url_for('admin.verify_user', user_id=u.id) }}" style="display:inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <button class="btn-admin-verify" style="padding: 6px 10px; font-size: 0.8rem;" type="submit">Verify</button>
+                        </form>
+                      {% endif %}
+                      <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Delete user and clear their progress?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn-admin-delete" style="padding: 6px 10px; font-size: 0.8rem;" type="submit">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </aside>
-  </div>
 
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!--  ENROLLMENT ANALYTICS                                           -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- Right Column: System health & Recent enrollments -->
+      <div>
+        <!-- System Health cards -->
+        <div class="admin-section-header" style="margin-bottom:14px;">
+          <h2>🖥️ System Monitor</h2>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px;">
+          <div class="monitor-card db-status">
+            <span class="monitor-title">Database Status</span>
+            <span class="monitor-value" style="color:var(--success);">ONLINE</span>
+            <span class="monitor-desc">Engine Type: <strong>{{ db_type }}</strong></span>
+          </div>
+          <a href="{{ url_for('admin.learning_history') }}" class="monitor-card server-status" style="text-decoration:none; color:inherit;">
+            <span class="monitor-title">Active Learners</span>
+            <span class="monitor-value" style="color:#8b5cf6;">{{ active_learners }}</span>
+            <span class="monitor-desc">User completions: <strong>{{ total_completed_lessons }}</strong></span>
+          </a>
+          <div class="monitor-card backup-status">
+            <span class="monitor-title">Backups Status</span>
+            <span class="monitor-value" style="color:var(--warning);">{{ backup_count }} Files</span>
+            <span class="monitor-desc">Last: <strong>{{ last_backup_time }}</strong></span>
+          </div>
+        </div>
 
-  <!-- Enrollment KPI Cards -->
-  <div class="dash-section-header" style="margin-bottom:12px;">
-    <h2>📊 Enrollment Analytics</h2>
-    <a href="{{ url_for('admin.enrollments') }}" class="btn-ghost btn-sm">Manage Enrollments →</a>
-  </div>
-
-  <div class="dash-stats" style="margin-bottom:24px;">
-    <div class="stat-card" style="border-top:3px solid #6c63ff;">
-      <span class="stat-num">{{ total_enrollments }}</span>
-      <span class="stat-label">Total Enrollments</span>
-    </div>
-    <div class="stat-card" style="border-top:3px solid #22c55e;">
-      <span class="stat-num">{{ total_completed_lessons }}</span>
-      <span class="stat-label">Total Lesson Completions</span>
-    </div>
-    <div class="stat-card" style="border-top:3px solid #f59e0b;">
-      <span class="stat-num">{{ active_learners }}</span>
-      <span class="stat-label">Active Learners</span>
-    </div>
-    <div class="stat-card" style="border-top:3px solid #06b6d4;">
-      <span class="stat-num">{{ unique_enrolled_users }}</span>
-      <span class="stat-label">Enrolled Users</span>
-    </div>
-  </div>
-
-  <!-- Full Enrollment Table -->
-  {% if enrollment_analytics %}
-  <div style="overflow-x:auto; border-radius:10px; border:1px solid rgba(255,255,255,0.08); margin-bottom:32px;">
-    <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
-      <thead>
-        <tr style="background:rgba(255,255,255,0.05); text-align:left;">
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">#</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Username</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Email</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Course</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Enrolled On</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Lessons Done</th>
-          <th style="padding:12px 16px; color:var(--muted,#a1a1aa); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08);">Progress</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in enrollment_analytics %}
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition:background 0.15s;"
-            onmouseover="this.style.background='rgba(255,255,255,0.04)'"
-            onmouseout="this.style.background='transparent'">
-          <td style="padding:12px 16px; color:var(--muted,#a1a1aa);">{{ loop.index }}</td>
-          <td style="padding:12px 16px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;">
-                {{ row.username[0].upper() }}
+        <!-- Recent enrollments list -->
+        <div class="admin-section-header" style="margin-bottom:14px;">
+          <h2>🎓 Recent Enrollments</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          {% for e in recent_enrollments %}
+            <div class="timeline-card">
+              <div style="font-weight:700; color:var(--text); font-size:0.95rem;">{{ e.course.title }}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.85rem; color:var(--text-light);">
+                <span>{{ e.user.username if e.user else 'User #' ~ e.user_id }}</span>
+                <span>{{ e.enrolled_at.strftime('%b %d') }}</span>
               </div>
-              <strong>{{ row.username }}</strong>
             </div>
-          </td>
-          <td style="padding:12px 16px; color:var(--muted,#a1a1aa);">{{ row.email }}</td>
-          <td style="padding:12px 16px;">
-            <span style="background:rgba(108,99,255,0.15);color:#a78bfa;padding:3px 8px;border-radius:4px;font-size:0.82rem;">
-              {{ row.course }}
-            </span>
-          </td>
-          <td style="padding:12px 16px; color:var(--muted,#a1a1aa);">
-            {{ row.enrolled_at.strftime('%b %d, %Y') if row.enrolled_at else '—' }}
-          </td>
-          <td style="padding:12px 16px; text-align:center;">
-            <span style="font-weight:600;">{{ row.lessons_completed }}</span>
-            <span style="color:var(--muted,#a1a1aa);font-size:0.8rem;">/ {{ row.total_lessons }}</span>
-          </td>
-          <td style="padding:12px 16px; min-width:130px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:999px;height:6px;overflow:hidden;">
-                <div style="
-                  height:100%;
-                  width:{{ row.progress_pct }}%;
-                  border-radius:999px;
-                  background:{% if row.progress_pct == 100 %}#22c55e{% elif row.progress_pct >= 50 %}#6c63ff{% else %}#f59e0b{% endif %};
-                  transition:width 0.4s ease;
-                "></div>
-              </div>
-              <span style="font-size:0.8rem;font-weight:600;min-width:32px;text-align:right;
-                color:{% if row.progress_pct == 100 %}#22c55e{% elif row.progress_pct >= 50 %}#a78bfa{% else %}#f59e0b{% endif %};">
-                {{ row.progress_pct }}%
-              </span>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% else %}
+            <div class="td-empty">No enrollments yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
-  {% else %}
-  <div style="text-align:center;padding:40px 0;color:var(--muted,#a1a1aa);border:1px dashed rgba(255,255,255,0.1);border-radius:10px;margin-bottom:32px;">
-    <div style="font-size:2rem;margin-bottom:8px;">📭</div>
-    <p style="margin:0;">No enrollments yet. <a href="{{ url_for('admin.create_enrollment') }}" style="color:#6c63ff;">Enroll a user →</a></p>
-  </div>
-  {% endif %}
 
+  <!-- ==================== TAB 2: ANALYTICS ==================== -->
+  <div id="tab-analytics" class="admin-tab-content">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">User Registration Growth (Last 30 Days)</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="userGrowthChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Students Per Course</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="courseEnrollmentChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Prompt Categories Distribution</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="promptCategoryChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Lesson Completions Trend (Last 15 Days)</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="lessonCompletionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: TRACKING ==================== -->
+  <div id="tab-tracking" class="admin-tab-content">
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h2>📊 Student Progress Tracking</h2>
+        <a href="{{ url_for('admin.enrollments') }}" class="td-link">Manage Enrollments →</a>
+      </div>
+
+      {% if enrollment_analytics %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Course</th>
+              <th>Enrolled On</th>
+              <th>Lessons Completed</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in enrollment_analytics %}
+            <tr>
+              <td class="td-muted">{{ loop.index }}</td>
+              <td>
+                <div class="td-user">
+                  <div class="td-avatar" style="width:28px; height:28px; font-size:0.75rem; background:linear-gradient(135deg, var(--primary), var(--info)); color:white;">
+                    {{ row.username[0].upper() }}
+                  </div>
+                  <strong>{{ row.username }}</strong>
+                </div>
+              </td>
+              <td class="td-muted">{{ row.email }}</td>
+              <td>
+                <span class="badge-pill badge-primary">
+                  {{ row.course }}
+                </span>
+              </td>
+              <td class="td-muted">
+                {{ row.enrolled_at.strftime('%b %d, %Y') if row.enrolled_at else '—' }}
+              </td>
+              <td style="text-align:center;">
+                <strong>{{ row.lessons_completed }}</strong>
+                <span class="td-muted" style="font-size:0.8rem;">/ {{ row.total_lessons }}</span>
+              </td>
+              <td style="min-width:130px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="flex:1; background:var(--border); border-radius:999px; height:6px; overflow:hidden;">
+                    <div style="
+                      height:100%;
+                      width:{{ row.progress_pct }}%;
+                      border-radius:999px;
+                      background:{% if row.progress_pct == 100 %}var(--success){% elif row.progress_pct >= 50 %}var(--primary){% else %}var(--warning){% endif %};
+                      transition:width 0.4s ease;
+                    "></div>
+                  </div>
+                  <span style="font-size:0.8rem; font-weight:600; min-width:32px; text-align:right;
+                    color:{% if row.progress_pct == 100 %}var(--success){% elif row.progress_pct >= 50 %}var(--primary-dark){% else %}var(--warning){% endif %};">
+                    {{ row.progress_pct }}%
+                  </span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="td-empty">
+        No enrollments yet. <a href="{{ url_for('admin.create_enrollment') }}" style="color:var(--primary);">Enroll a user →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ==================== TAB 4: REVIEWS ==================== -->
+  <div id="tab-reviews" class="admin-tab-content">
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h2>⭐ Lesson Reviews & Star Ratings</h2>
+        <span class="admin-badge">{{ lesson_reviews|length }} Reviews</span>
+      </div>
+
+      {% if lesson_reviews %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Learner</th>
+              <th>Course / Day</th>
+              <th>Rating</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in lesson_reviews %}
+              <tr>
+                <td class="td-muted">{{ r.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                <td>
+                  <strong>{{ r.user.username }}</strong>
+                  <div class="td-muted" style="font-size:0.8rem;">{{ r.user.email }}</div>
+                </td>
+                <td>
+                  <strong>{{ r.course_day.course.title }}</strong>
+                  <div class="td-muted" style="font-size:0.8rem;">Day {{ r.course_day.day_number }} — {{ r.course_day.title }}</div>
+                </td>
+                <td>
+                  <span style="color: var(--primary); font-size: 1.15rem; letter-spacing: 2px;">
+                    {{ "★" * r.rating }}{{ "☆" * (5 - r.rating) }}
+                  </span>
+                  <span class="td-muted" style="font-size: 0.85rem; margin-left: 6px;">({{ r.rating }}/5)</span>
+                </td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this rating?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="td-empty">
+        No lesson reviews submitted yet.
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
+<!-- Load Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // ── Tab Toggling Logic ───────────────────────────────────────────────
+  const tabBtns = document.querySelectorAll(".admin-tab-btn");
+  const tabContents = document.querySelectorAll(".admin-tab-content");
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // Remove active from all buttons and contents
+      tabBtns.forEach(b => b.classList.remove("active"));
+      tabContents.forEach(c => c.classList.remove("active"));
+      
+      // Add active to selected
+      btn.classList.add("active");
+      const tabId = btn.getAttribute("data-tab");
+      document.getElementById(tabId).classList.add("active");
+      
+      // Resize charts on switch so they scale correctly in hidden containers
+      if (tabId === "tab-analytics") {
+        window.dispatchEvent(new Event('resize'));
+      }
+    });
+  });
+
+  // ── Load Chart Data ──────────────────────────────────────────────────
+  fetch("{{ url_for('admin.api_stats') }}")
+    .then(response => response.json())
+    .then(data => {
+      // 1. User Growth Chart
+      const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+      new Chart(userGrowthCtx, {
+        type: 'line',
+        data: {
+          labels: data.user_growth.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }),
+          datasets: [{
+            label: 'New Registrations',
+            data: data.user_growth.map(d => d.count),
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+
+      // 2. Course Enrollments Chart
+      const courseCtx = document.getElementById('courseEnrollmentChart').getContext('2d');
+      new Chart(courseCtx, {
+        type: 'bar',
+        data: {
+          labels: data.course_enrollments.map(c => c.course),
+          datasets: [{
+            label: 'Students',
+            data: data.course_enrollments.map(c => c.count),
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+
+      // 3. Prompt Categories Chart
+      const promptCtx = document.getElementById('promptCategoryChart').getContext('2d');
+      new Chart(promptCtx, {
+        type: 'doughnut',
+        data: {
+          labels: data.prompt_categories.map(p => p.category),
+          datasets: [{
+            data: data.prompt_categories.map(p => p.count),
+            backgroundColor: [
+              '#3b82f6', '#10b981', '#f59e0b', '#dc2626', 
+              '#8b5cf6', '#06b6d4', '#ec4899', '#6b7280'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } }
+          }
+        }
+      });
+
+      // 4. Lesson Completion Chart
+      const lessonCtx = document.getElementById('lessonCompletionChart').getContext('2d');
+      new Chart(lessonCtx, {
+        type: 'line',
+        data: {
+          labels: data.lesson_completions.map(d => {
+            const date = new Date(d.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }),
+          datasets: [{
+            label: 'Completions',
+            data: data.lesson_completions.map(d => d.count),
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    })
+    .catch(err => console.error("Error loading dashboard metrics: ", err));
+});
+</script>
 {% endblock %}

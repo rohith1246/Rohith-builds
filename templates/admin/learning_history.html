@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Learning History — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Learning History</h1>
+      <p>Monitor in real-time who has completed which lesson and the exact time of learning.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.admin') }}" class="btn-ghost">← Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="admin-section" style="padding: 20px; margin-bottom: 24px;">
+    <form method="GET" action="{{ url_for('admin.learning_history') }}" style="display:grid; grid-template-columns: 2fr 1fr auto auto; gap:12px; align-items:center;">
+      
+      <!-- Search Input -->
+      <div>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by student or lesson title..." class="form-input" style="margin-bottom:0;">
+      </div>
+
+      <!-- Course Filter -->
+      <div>
+        <select name="course_id" class="form-select" onchange="this.form.submit()" style="margin-bottom:0;">
+          <option value="">-- All Courses --</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}" {% if course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="btn-primary" style="padding:12px 20px;">Search</button>
+      </div>
+      
+      {% if search or course_id %}
+        <div>
+          <a href="{{ url_for('admin.learning_history') }}" class="btn-ghost">Clear</a>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Learning History Table -->
+  <div class="admin-section">
+    {% if history.items %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Course Name</th>
+              <th>Lesson Title</th>
+              <th>XP Earned</th>
+              <th>Completed At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for progress in history.items %}
+              <tr>
+                <td class="td-muted">{{ progress.id }}</td>
+                <td>
+                  {% if progress.user %}
+                    <div class="td-user">
+                      <div class="td-avatar" style="background:var(--primary-light); color:var(--primary-dark);">
+                        {{ progress.user.username[0].upper() }}
+                      </div>
+                      <div>
+                        <strong>{{ progress.user.username }}</strong>
+                        <div class="td-muted" style="font-size:0.8rem;">{{ progress.user.email }}</div>
+                      </div>
+                    </div>
+                  {% else %}
+                    <span class="td-muted">User #{{ progress.user_id }} (Account Deleted)</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if progress.course_day and progress.course_day.course %}
+                    <span class="badge-pill badge-primary">
+                      {{ progress.course_day.course.title }}
+                    </span>
+                  {% else %}
+                    <span class="td-muted">Unknown Course</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if progress.course_day %}
+                    <strong>Day {{ progress.course_day.day_number }}: {{ progress.course_day.title }}</strong>
+                  {% else %}
+                    <span class="td-muted">Day #{{ progress.course_day_id }} (Lesson Deleted)</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span style="color:var(--success); font-weight:600;">
+                    +{{ progress.course_day.xp_reward if progress.course_day else 50 }} XP
+                  </span>
+                </td>
+                <td class="td-muted">
+                  ⏱️ {{ progress.completed_at.strftime('%b %d, %Y %I:%M %p') if progress.completed_at else '—' }}
+                </td>
+                <td>
+                  <form method="POST" action="{{ url_for('admin.delete_progress_record', progress_id=progress.id) }}" style="display:inline" onsubmit="return confirm('Mark this lesson as incomplete? This will remove the student\'s progress and reward XP for this specific lesson.')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Mark Incomplete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if history.pages > 1 %}
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; align-items:center;">
+          {% if history.has_prev %}
+            <a href="{{ url_for('admin.learning_history', page=history.prev_num, search=search, course_id=course_id) }}" class="btn-ghost btn-sm">&larr; Prev</a>
+          {% endif %}
+          
+          <span style="font-size:0.9rem; color:var(--text-light);">Page <strong>{{ history.page }}</strong> of {{ history.pages }}</span>
+          
+          {% if history.has_next %}
+            <a href="{{ url_for('admin.learning_history', page=history.next_num, search=search, course_id=course_id) }}" class="btn-ghost btn-sm">Next &rarr;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="td-empty">
+        <p>No learning history logs found.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

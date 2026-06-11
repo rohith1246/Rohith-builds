@@ -51,15 +51,28 @@ window.LESSON_SLUG = null;
         Home
       </a>
 
-      <a href="{{ url_for('prompts.vault') }}"
-         class="nav-link {% if request.endpoint == 'prompts.vault' %}active{% endif %}">
-        Prompts
-      </a>
-
-      <a href="{{ url_for('prompts.collections') }}"
-         class="nav-link {% if request.endpoint == 'prompts.collections' %}active{% endif %}">
-        Collections
-      </a>
+      <div class="nav-item-dropdown">
+        <a href="{{ url_for('prompts.vault') }}"
+           class="nav-link {% if request.blueprint == 'prompts' %}active{% endif %}">
+          Prompts <span class="nav-caret">▼</span>
+        </a>
+        <div class="nav-dropdown-menu">
+          <a href="{{ url_for('prompts.vault') }}" class="nav-dropdown-item">
+            <span class="nav-dropdown-icon">⚡</span>
+            <div class="nav-dropdown-text">
+              <strong>Prompt Vault</strong>
+              <span>Explore all curated AI prompts</span>
+            </div>
+          </a>
+          <a href="{{ url_for('prompts.collections') }}" class="nav-dropdown-item">
+            <span class="nav-dropdown-icon">📁</span>
+            <div class="nav-dropdown-text">
+              <strong>Collections</strong>
+              <span>Prompts organized by category</span>
+            </div>
+          </a>
+        </div>
+      </div>
 
       <a href="{{ url_for('learn.learn') }}"
          class="nav-link {% if request.endpoint == 'learn.learn' %}active{% endif %}">
@@ -75,6 +88,12 @@ window.LESSON_SLUG = null;
     <div class="nav-right">
 
       {% if current_user.is_authenticated %}
+
+        {% if is_admin %}
+        <a href="{{ url_for('admin.admin') }}" class="nav-link {% if request.blueprint == 'admin' %}active{% endif %}" style="margin-right: 8px;">
+          Admin
+        </a>
+        {% endif %}
 
         {% if request.blueprint != 'learn' %}
         <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">

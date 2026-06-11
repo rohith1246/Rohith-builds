@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Lessons — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Lessons</h1>
+      <p>Organize syllabus days, reward XP, and set lesson content.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.admin') }}" class="btn-ghost">← Dashboard</a>
+      {% if course_id %}
+        <a href="{{ url_for('admin.create_lesson', course_id=course_id) }}" class="btn-primary">+ Create Lesson</a>
+      {% else %}
+        <a href="{{ url_for('admin.create_lesson') }}" class="btn-primary">+ Create Lesson</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="admin-section" style="padding: 20px; margin-bottom: 24px;">
+    <form method="GET" action="{{ url_for('admin.lessons') }}" style="display:grid; grid-template-columns: 1fr 1fr auto auto; gap:12px; align-items:center;">
+      
+      <!-- Course Filter -->
+      <div>
+        <select name="course_id" class="form-select" onchange="this.form.submit()" style="margin-bottom:0;">
+          <option value="">-- All Courses --</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}" {% if course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Search Input -->
+      <div>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search lessons..." class="form-input" style="margin-bottom:0;">
+      </div>
+
+      <div>
+        <button type="submit" class="btn-primary" style="padding:12px 20px;">Filter</button>
+      </div>
+      
+      {% if search or course_id %}
+        <div>
+          <a href="{{ url_for('admin.lessons') }}" class="btn-ghost">Clear Filters</a>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Drag-and-Drop Reorder Info Alert -->
+  {% if course_id and not search and lessons.items %}
+    <div style="background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.2); border-radius:10px; padding:12px 16px; margin-bottom:20px; font-size:0.9rem; color:var(--primary-dark); display:flex; align-items:center; gap:8px;">
+      <span>💡</span>
+      <span>Drag and drop table rows to reorder days in this course. Day numbers will update automatically!</span>
+    </div>
+  {% endif %}
+
+  <!-- Lessons Table -->
+  <div class="admin-section">
+    {% if lessons.items %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              {% if course_id and not search %}
+                <th style="width: 40px;"></th>
+              {% endif %}
+              <th>Day</th>
+              <th>Course</th>
+              <th>Lesson Title</th>
+              <th>XP Reward</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="lessons-tbody">
+            {% for l in lessons.items %}
+              <tr {% if course_id and not search %}draggable="true" class="draggable-row" data-id="{{ l.id }}"{% endif %}>
+                {% if course_id and not search %}
+                  <td class="td-muted" style="cursor: grab; text-align: center; font-size: 1.2rem;">☰</td>
+                {% endif %}
+                <td>
+                  <strong>Day {{ l.day_number }}</strong>
+                </td>
+                <td class="td-muted">
+                  {{ l.course.title }}
+                </td>
+                <td>
+                  <strong>{{ l.title }}</strong>
+                  <div class="td-muted" style="font-size:0.8rem; margin-top:2px;">/{{ l.slug }}</div>
+                </td>
+                <td>
+                  <span style="font-weight:600; color:var(--success);">+{{ l.xp_reward }} XP</span>
+                </td>
+                <td class="td-muted">
+                  ⏱️ {{ l.estimated_minutes }} mins
+                </td>
+                <td>
+                  {% if l.is_published %}
+                    <span class="badge-verified">Published</span>
+                  {% else %}
+                    <span class="badge-unverified">Draft</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <a href="{{ url_for('admin.edit_lesson', lesson_id=l.id) }}" class="btn-ghost btn-sm" style="padding: 6px 12px; font-size:0.85rem;">Edit</a>
+                    <form method="POST" action="{{ url_for('admin.delete_lesson', lesson_id=l.id) }}" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this lesson and all completion logs associated with it?')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if lessons.pages > 1 %}
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; align-items:center;">
+          {% if lessons.has_prev %}
+            <a href="{{ url_for('admin.lessons', page=lessons.prev_num, course_id=course_id, search=search) }}" class="btn-ghost btn-sm">&larr; Prev</a>
+          {% endif %}
+          
+          <span style="font-size:0.9rem; color:var(--text-light);">Page <strong>{{ lessons.page }}</strong> of {{ lessons.pages }}</span>
+          
+          {% if lessons.has_next %}
+            <a href="{{ url_for('admin.lessons', page=lessons.next_num, course_id=course_id, search=search) }}" class="btn-ghost btn-sm">Next &rarr;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="td-empty">
+        <p>No lessons found.</p>
+        <a href="{{ url_for('admin.create_lesson') }}" style="color:var(--primary);">Add a lesson to this syllabus &rarr;</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if course_id and not search and lessons.items %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const tbody = document.getElementById("lessons-tbody");
+  let dragEl = null;
+
+  tbody.addEventListener("dragstart", function(e) {
+    if (e.target.tagName === "TR") {
+      dragEl = e.target;
+      e.target.style.opacity = "0.5";
+      e.dataTransfer.effectAllowed = "move";
+    }
+  });
+
+  tbody.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const target = e.target.closest("tr");
+    if (target && target !== dragEl && target.parentNode === tbody) {
+      const rect = target.getBoundingClientRect();
+      const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+      tbody.insertBefore(dragEl, next ? target.nextSibling : target);
+    }
+  });
+
+  tbody.addEventListener("dragend", function(e) {
+    if (dragEl) {
+      dragEl.style.opacity = "1";
+      
+      // Collect row IDs in new order
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const lessonIds = rows.map(r => parseInt(r.getAttribute("data-id")));
+      const courseId = parseInt("{{ course_id }}");
+
+      // Save order to server
+      fetch("{{ url_for('admin.reorder_lessons') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+          course_id: courseId,
+          lesson_ids: lessonIds
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Re-label day numbers sequentially in UI
+          rows.forEach((row, index) => {
+            const dayCell = row.querySelector("td strong");
+            if (dayCell) {
+              dayCell.textContent = "Day " + (index + 1);
+            }
+          });
+        } else {
+          alert("Failed to save reordered lessons: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error("Reorder failed: ", err);
+        alert("Server error occurred while reordering.");
+      });
+    }
+  });
+});
+</script>
+{% endif %}
+{% endblock %}

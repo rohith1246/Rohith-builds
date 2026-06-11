@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Lesson — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page" style="max-width:850px;">
+  <div class="dash-section-header">
+    <h1>Edit Lesson: {{ lesson.title }}</h1>
+    <a href="{{ url_for('admin.lessons', course_id=lesson.course_id) }}" class="link-subtle">← Back</a>
+  </div>
+
+  <div class="admin-section">
+    <form method="POST" action="{{ url_for('admin.edit_lesson', lesson_id=lesson.id) }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+        <div class="form-group">
+          <label for="course_id" class="form-label">Course</label>
+          <select id="course_id" disabled class="form-select" style="background:var(--surface-alt); cursor:not-allowed;">
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if lesson.course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+          <span class="td-muted" style="font-size:0.8rem; margin-top:2px;">Course cannot be reassigned after creation.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="day_number" class="form-label">Day Number *</label>
+          <input type="number" id="day_number" name="day_number" value="{{ lesson.day_number }}" required min="1" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="title" class="form-label">Lesson Title *</label>
+        <input type="text" id="title" name="title" value="{{ lesson.title }}" required class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="slug" class="form-label">Slug *</label>
+        <input type="text" id="slug" name="slug" value="{{ lesson.slug }}" required class="form-input">
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div class="form-group">
+          <label for="xp_reward" class="form-label">XP Reward</label>
+          <input type="number" id="xp_reward" name="xp_reward" value="{{ lesson.xp_reward }}" min="0" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="estimated_minutes" class="form-label">Estimated Minutes</label>
+          <input type="number" id="estimated_minutes" name="estimated_minutes" value="{{ lesson.estimated_minutes }}" min="1" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Image Banner</label>
+        {% if lesson.image %}
+          <div style="margin-bottom:10px;">
+            <img src="{{ url_for('static', filename=lesson.image) }}" alt="Banner" style="max-width:260px; border-radius:8px; border:1px solid var(--border);">
+          </div>
+        {% else %}
+          <div class="td-muted" style="font-size:0.9rem; margin-bottom:10px;">No image banner uploaded.</div>
+        {% endif %}
+        <label for="image" class="form-label">Upload New Image Banner</label>
+        <input type="file" id="image" name="image" accept="image/*" class="form-input" style="padding:10px;">
+      </div>
+
+      <div class="form-group">
+        <label for="short_description" class="form-label">Short Description (Syllabus summary)</label>
+        <textarea id="short_description" name="short_description" class="form-textarea" style="min-height:70px;">{{ lesson.short_description or '' }}</textarea>
+      </div>
+
+      <!-- Content Area -->
+      <div class="form-group">
+        <label for="content" class="form-label">Lesson Body Content</label>
+        {% if lesson.content and lesson.content.startswith('uploads/') %}
+          <div style="background:var(--surface-alt); border:1px solid var(--border); padding:10px 14px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; color:var(--text-light);">
+            📂 This lesson is linked to file: <strong>static/{{ lesson.content }}</strong>.
+          </div>
+        {% endif %}
+        <textarea id="content" name="content" class="form-textarea" style="min-height:300px; font-family:monospace; font-size:0.9rem;">{{ lesson.content or '' }}</textarea>
+      </div>
+
+      <div class="form-group" style="flex-direction:row; gap:10px; align-items:center; margin-bottom:28px;">
+        <input type="checkbox" id="is_published" name="is_published" {% if lesson.is_published %}checked{% endif %} style="width:20px; height:20px; cursor:pointer;">
+        <label for="is_published" class="form-label" style="margin-bottom:0; cursor:pointer;">Publish Lesson (Visible to students)</label>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary" style="flex:1;">Save Changes</button>
+        <a href="{{ url_for('admin.lessons', course_id=lesson.course_id) }}" class="btn-ghost" style="flex:1;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

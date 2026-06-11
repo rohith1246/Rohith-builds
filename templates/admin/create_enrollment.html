@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Enroll User — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page" style="max-width:700px;">
+  <div class="dash-section-header">
+    <h1>Enroll Student in Course</h1>
+    <a href="{{ url_for('admin.enrollments') }}" class="link-subtle">← Cancel</a>
+  </div>
+
+  <div class="admin-section">
+    <form method="POST" action="{{ url_for('admin.create_enrollment') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="user_id" class="form-label">Select Student *</label>
+        <select id="user_id" name="user_id" required class="form-select">
+          <option value="">-- Select Student --</option>
+          {% for u in users %}
+            <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:28px;">
+        <label for="course_id" class="form-label">Select Course *</label>
+        <select id="course_id" name="course_id" required class="form-select">
+          <option value="">-- Select Course --</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary" style="flex:1;">Create Enrollment</button>
+        <a href="{{ url_for('admin.enrollments') }}" class="btn-ghost" style="flex:1;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

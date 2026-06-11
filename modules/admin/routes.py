@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import func, or_
 from models import (
     db, User, Prompt, Course, CourseDay, CourseEnrollment, 
-    LessonProgress, UserCourseProgress, PromptLike, PromptCollection, PromptCollectionItem
+    LessonProgress, UserCourseProgress, PromptLike, PromptCollection, PromptCollectionItem, LessonReview
 )
 from . import admin_bp
 import os
@@ -35,7 +35,7 @@ def admin_required(f):
 @login_required
 @admin_required
 def admin_dashboard():
-    """Main admin dashboard with all stats including enrollment analytics."""
+    """Main admin dashboard with all stats including enrollment analytics and system health."""
 
     # ── User stats ──────────────────────────────────────────────────────────
     user_count = User.query.count()
@@ -76,13 +76,46 @@ def admin_dashboard():
         CourseEnrollment.query.order_by(CourseEnrollment.enrolled_at.desc()).limit(5).all()
     )
 
-    # ── Full enrollment analytics table ──────────────────────────────────────
-    # Fetch every enrollment with its user + course in a single query pass
+    # ── Backup Stats ──────────────────────────────────────────────────────────
+    backup_count = 0
+    last_backup_time = "Never"
+    try:
+        backup_root = os.path.join(current_app.root_path, "backups")
+        if os.path.exists(backup_root):
+            zip_files = []
+            for root, dirs, files in os.walk(backup_root):
+                for f in files:
+                    if f.endswith('.zip'):
+                        zip_files.append(os.path.join(root, f))
+            backup_count = len(zip_files)
+            if zip_files:
+                latest_file = max(zip_files, key=os.path.getmtime)
+                mtime = os.path.getmtime(latest_file)
+                last_backup_time = datetime.fromtimestamp(mtime).strftime('%b %d, %Y %I:%M %p')
+    except Exception:
+        pass
+
+    # ── Database row counts ───────────────────────────────────────────────────
+    try:
+        favorites_count = Favorite.query.count()
+    except Exception:
+        favorites_count = 0
+    try:
+        likes_count = PromptLike.query.count()
+    except Exception:
+        likes_count = 0
+    try:
+        collections_count = PromptCollection.query.count()
+    except Exception:
+        collections_count = 0
+
+    # ── Full enrollment analytics table (limited to 10 for performance) ───────
     enrollment_analytics = []
     try:
         all_enrollments = (
             CourseEnrollment.query
             .order_by(CourseEnrollment.enrolled_at.desc())
+            .limit(10)
             .all()
         )
 
@@ -133,6 +166,9 @@ def admin_dashboard():
         current_app.logger.error("Enrollment analytics error: %s", e)
         enrollment_analytics = []
 
+    lesson_reviews = LessonReview.query.order_by(LessonReview.created_at.desc()).all()
+    db_type = "SQLite" if current_app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite") else "PostgreSQL"
+
     return render_template(
         "admin/dashboard.html",
         # existing stats
@@ -152,7 +188,91 @@ def admin_dashboard():
         # new enrollment analytics
         active_learners=active_learners,
         enrollment_analytics=enrollment_analytics,
+        # DB & backup stats
+        db_type=db_type,
+        backup_count=backup_count,
+        last_backup_time=last_backup_time,
+        favorites_count=favorites_count,
+        likes_count=likes_count,
+        collections_count=collections_count,
+        # lesson reviews
+        lesson_reviews=lesson_reviews
     )
+
+
+@admin_bp.route("/admin/api/stats", endpoint="api_stats")
+@login_required
+@admin_required
+def api_stats():
+    """Returns JSON analytics data for admin dashboard monitoring charts."""
+    from datetime import datetime, timedelta
+
+    # 1. User Registrations (last 30 days)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    users_recent = (
+        db.session.query(User.created_at)
+        .filter(User.created_at >= thirty_days_ago)
+        .all()
+    )
+    user_growth = {}
+    for i in range(30):
+        d = (datetime.utcnow() - timedelta(days=i)).date()
+        user_growth[d.isoformat()] = 0
+        
+    for u in users_recent:
+        if u.created_at:
+            d_str = u.created_at.date().isoformat()
+            if d_str in user_growth:
+                user_growth[d_str] += 1
+                
+    user_growth_sorted = [{"date": k, "count": v} for k, v in sorted(user_growth.items())]
+
+    # 2. Course Enrollments
+    courses = Course.query.all()
+    enrollment_data = []
+    for c in courses:
+        count = CourseEnrollment.query.filter_by(course_id=c.id).count()
+        enrollment_data.append({"course": c.title, "count": count})
+
+    # 3. Prompt Categories
+    categories_data = []
+    try:
+        cat_counts = (
+            db.session.query(Prompt.category, func.count(Prompt.id))
+            .group_by(Prompt.category)
+            .all()
+        )
+        for cat, count in cat_counts:
+            categories_data.append({"category": cat or "General", "count": count})
+    except Exception:
+        categories_data = []
+
+    # 4. Lesson Completions (last 15 days)
+    fifteen_days_ago = datetime.utcnow() - timedelta(days=15)
+    completions_recent = (
+        db.session.query(LessonProgress.completed_at)
+        .filter(LessonProgress.completed == True, LessonProgress.completed_at >= fifteen_days_ago)
+        .all()
+    )
+    completions_map = {}
+    for i in range(15):
+        d = (datetime.utcnow() - timedelta(days=i)).date()
+        completions_map[d.isoformat()] = 0
+        
+    for c in completions_recent:
+        if c.completed_at:
+            d_str = c.completed_at.date().isoformat()
+            if d_str in completions_map:
+                completions_map[d_str] += 1
+                
+    completions_sorted = [{"date": k, "count": v} for k, v in sorted(completions_map.items())]
+
+    return jsonify({
+        "user_growth": user_growth_sorted,
+        "course_enrollments": enrollment_data,
+        "prompt_categories": categories_data,
+        "lesson_completions": completions_sorted
+    })
 
 # ==========================================
 # COURSES MANAGEMENT
@@ -219,7 +339,7 @@ def create_course():
         db.session.commit()
         
         flash(f"Course '{title}' created successfully.", "success")
-        return redirect(url_for("admin.manage_courses"))
+        return redirect(url_for("admin.courses"))
     
     return render_template("admin/create_course.html")
 
@@ -247,7 +367,7 @@ def edit_course(course_id):
         
         db.session.commit()
         flash(f"Course '{course.title}' updated.", "success")
-        return redirect(url_for("admin.manage_courses"))
+        return redirect(url_for("admin.courses"))
     
     return render_template("admin/edit_course.html", course=course)
 
@@ -263,7 +383,7 @@ def delete_course(course_id):
     db.session.commit()
     
     flash(f"Course '{course_title}' deleted.", "success")
-    return redirect(url_for("admin.manage_courses"))
+    return redirect(url_for("admin.courses"))
 
 # ==========================================
 # LESSONS MANAGEMENT
@@ -363,9 +483,20 @@ def create_lesson():
         db.session.commit()
         
         flash(f"Lesson '{title}' created successfully.", "success")
-        return redirect(url_for("admin.manage_lessons"))
+        return redirect(url_for("admin.lessons"))
     
-    return render_template("admin/create_lesson.html", courses=courses)
+    default_course_id = request.args.get('course_id', type=int)
+    next_day_number = 1
+    if default_course_id:
+        max_day = db.session.query(db.func.max(CourseDay.day_number)).filter_by(course_id=default_course_id).scalar()
+        next_day_number = (max_day or 0) + 1
+        
+    return render_template(
+        "admin/create_lesson.html", 
+        courses=courses, 
+        default_course_id=default_course_id,
+        next_day_number=next_day_number
+    )
 
 @admin_bp.route("/admin/lessons/<int:lesson_id>/edit", methods=["GET", "POST"], endpoint="edit_lesson")
 @login_required
@@ -401,7 +532,7 @@ def edit_lesson(lesson_id):
         
         db.session.commit()
         flash(f"Lesson '{lesson.title}' updated.", "success")
-        return redirect(url_for("admin.manage_lessons"))
+        return redirect(url_for("admin.lessons"))
     
     return render_template("admin/edit_lesson.html", lesson=lesson, courses=courses)
 
@@ -414,11 +545,29 @@ def delete_lesson(lesson_id):
     lesson_title = lesson.title
     course_id = lesson.course_id
     
+    # Delete uploaded content file if it exists on disk
+    if lesson.content and lesson.content.startswith("uploads/"):
+        file_path = os.path.join(current_app.root_path, "static", lesson.content)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                current_app.logger.error("Failed to delete lesson content file: %s", e)
+                
+    # Delete uploaded lesson image if it exists on disk
+    if lesson.image and lesson.image.startswith("uploads/"):
+        img_path = os.path.join(current_app.root_path, "static", lesson.image)
+        if os.path.exists(img_path):
+            try:
+                os.remove(img_path)
+            except Exception as e:
+                current_app.logger.error("Failed to delete lesson image file: %s", e)
+                
     db.session.delete(lesson)
     db.session.commit()
     
     flash(f"Lesson '{lesson_title}' deleted.", "success")
-    return redirect(url_for("admin.manage_lessons", course_id=course_id))
+    return redirect(url_for("admin.lessons", course_id=course_id))
 
 @admin_bp.route("/admin/lessons/reorder", methods=["POST"], endpoint="reorder_lessons")
 @login_required
@@ -436,6 +585,62 @@ def reorder_lessons():
     
     db.session.commit()
     return jsonify({"success": True, "message": "Lessons reordered."})
+
+# ==========================================
+# LEARNING HISTORY (Who has learned what & when)
+# ==========================================
+
+@admin_bp.route("/admin/learning-history", endpoint="learning_history")
+@login_required
+@admin_required
+def learning_history():
+    """List all completed lessons with user details and timestamps."""
+    search = request.args.get('search', '')
+    course_id = request.args.get('course_id', type=int)
+    page = request.args.get('page', 1, type=int)
+    
+    courses = Course.query.all()
+    query = LessonProgress.query.filter_by(completed=True)
+    
+    if course_id:
+        query = query.join(CourseDay).filter(CourseDay.course_id == course_id)
+        
+    if search:
+        query = query.join(User).join(CourseDay).filter(or_(
+            User.username.ilike(f'%{search}%'),
+            User.email.ilike(f'%{search}%'),
+            CourseDay.title.ilike(f'%{search}%')
+        ))
+        
+    # Order by completion time descending (latest completions first)
+    history = (
+        query.order_by(LessonProgress.completed_at.desc())
+        .paginate(page=page, per_page=25)
+    )
+    
+    return render_template(
+        "admin/learning_history.html",
+        history=history,
+        courses=courses,
+        course_id=course_id,
+        search=search
+    )
+
+@admin_bp.route("/admin/learning-history/<int:progress_id>/delete", methods=["POST"], endpoint="delete_progress_record")
+@login_required
+@admin_required
+def delete_progress_record(progress_id):
+    """Delete a specific lesson completion progress record (mark it as incomplete)."""
+    record = LessonProgress.query.get_or_404(progress_id)
+    username = record.user.username if record.user else "User"
+    lesson_title = record.course_day.title if record.course_day else "Lesson"
+    
+    db.session.delete(record)
+    db.session.commit()
+    
+    flash(f"Successfully marked '{lesson_title}' as incomplete for '{username}'.", "success")
+    return redirect(request.referrer or url_for("admin.learning_history"))
+
 
 # ==========================================
 # USERS MANAGEMENT
@@ -475,7 +680,7 @@ def verify_user(user_id):
     user.is_verified = True
     db.session.commit()
     flash(f"✅ {user.username} verified.", "success")
-    return redirect(request.referrer or url_for("admin.manage_users"))
+    return redirect(request.referrer or url_for("admin.users"))
 
 @admin_bp.route("/admin/users/<int:user_id>/delete", methods=["POST"], endpoint="delete_user")
 @login_required
@@ -486,13 +691,13 @@ def delete_user_admin(user_id):
     
     if user.email == current_app.config["ADMIN_EMAIL"]:
         flash("Cannot delete admin user.", "danger")
-        return redirect(url_for("admin.manage_users"))
+        return redirect(url_for("admin.users"))
     
     username = user.username
     db.session.delete(user)
     db.session.commit()
     flash(f"User '{username}' deleted.", "success")
-    return redirect(request.referrer or url_for("admin.manage_users"))
+    return redirect(request.referrer or url_for("admin.users"))
 
 # ==========================================
 # ENROLLMENTS MANAGEMENT
@@ -540,7 +745,7 @@ def create_enrollment():
         db.session.commit()
         
         flash("Enrollment created.", "success")
-        return redirect(url_for("admin.manage_enrollments"))
+        return redirect(url_for("admin.enrollments"))
     
     return render_template("admin/create_enrollment.html", users=users, courses=courses)
 
@@ -553,7 +758,7 @@ def delete_enrollment(enrollment_id):
     db.session.delete(enrollment)
     db.session.commit()
     flash("Enrollment removed.", "success")
-    return redirect(request.referrer or url_for("admin.manage_enrollments"))
+    return redirect(request.referrer or url_for("admin.enrollments"))
 
 @admin_bp.route("/admin/enrollments/<int:enrollment_id>/reset", methods=["POST"], endpoint="reset_progress")
 @login_required
@@ -576,7 +781,7 @@ def reset_progress(enrollment_id):
     
     db.session.commit()
     flash("Progress reset for this enrollment.", "success")
-    return redirect(request.referrer or url_for("admin.manage_enrollments"))
+    return redirect(request.referrer or url_for("admin.enrollments"))
 
 # ==========================================
 # PROMPTS MANAGEMENT (in Admin)
@@ -610,7 +815,7 @@ def delete_prompt_admin(prompt_id):
     db.session.delete(prompt)
     db.session.commit()
     flash(f"Prompt '{prompt_title}' deleted.", "success")
-    return redirect(request.referrer or url_for("admin.manage_prompts"))
+    return redirect(request.referrer or url_for("admin.admin_prompts"))
 
 # ==========================================
 # DATABASE BACKUP & EXPORT
@@ -891,3 +1096,15 @@ def download_backup(relpath):
 def backup_restore():
     """Render restore instructions page."""
     return render_template('admin/backup_restore.html')
+
+
+@admin_bp.route("/admin/reviews/<int:review_id>/delete", methods=["POST"], endpoint="delete_review")
+@login_required
+@admin_required
+def delete_review(review_id):
+    """Delete a lesson review."""
+    review = LessonReview.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    flash("Review deleted successfully.", "success")
+    return redirect(url_for("admin.admin"))

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Users</h1>
+      <p>View, verify, and moderate registered users on RohithBuilds.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.admin') }}" class="btn-ghost">← Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="admin-section" style="padding: 20px; margin-bottom: 24px;">
+    <form method="GET" action="{{ url_for('admin.users') }}" style="display:grid; grid-template-columns: 2fr 1fr auto auto; gap:12px; align-items:center;">
+      
+      <!-- Search Input -->
+      <div>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by username or email..." class="form-input" style="margin-bottom:0;">
+      </div>
+
+      <!-- Verification Filter -->
+      <div>
+        <select name="verified" class="form-select" onchange="this.form.submit()" style="margin-bottom:0;">
+          <option value="">-- All Statuses --</option>
+          <option value="verified" {% if verified == 'verified' %}selected{% endif %}>Verified Only</option>
+          <option value="unverified" {% if verified == 'unverified' %}selected{% endif %}>Unverified Only</option>
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="btn-primary" style="padding:12px 20px;">Search</button>
+      </div>
+      
+      {% if search or verified %}
+        <div>
+          <a href="{{ url_for('admin.users') }}" class="btn-ghost">Clear</a>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <div class="admin-section">
+    {% if users.items %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Email</th>
+              <th>Registered On</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users.items %}
+              <tr>
+                <td class="td-muted">{{ u.id }}</td>
+                <td>
+                  <div class="td-user">
+                    <div class="td-avatar">{{ u.username[0].upper() }}</div>
+                    <strong>{{ u.username }}</strong>
+                  </div>
+                </td>
+                <td class="td-muted">{{ u.email }}</td>
+                <td class="td-muted">
+                  {{ u.created_at.strftime('%b %d, %Y') if u.created_at else '—' }}
+                </td>
+                <td>
+                  {% if u.is_verified %}
+                    <span class="badge-verified">Verified</span>
+                  {% else %}
+                    <span class="badge-unverified">Unverified</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="td-actions">
+                    {% if not u.is_verified %}
+                      <form method="POST" action="{{ url_for('admin.verify_user', user_id=u.id) }}" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn-admin-verify" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Verify</button>
+                      </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Are you sure you want to delete user {{ u.username }}? This action is IRREVERSIBLE and will cascade delete all their prompts, favorites, enrollments, and progress!')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if users.pages > 1 %}
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; align-items:center;">
+          {% if users.has_prev %}
+            <a href="{{ url_for('admin.users', page=users.prev_num, search=search, verified=verified) }}" class="btn-ghost btn-sm">&larr; Prev</a>
+          {% endif %}
+          
+          <span style="font-size:0.9rem; color:var(--text-light);">Page <strong>{{ users.page }}</strong> of {{ users.pages }}</span>
+          
+          {% if users.has_next %}
+            <a href="{{ url_for('admin.users', page=users.next_num, search=search, verified=verified) }}" class="btn-ghost btn-sm">Next &rarr;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="td-empty">
+        <p>No users found matching search criteria.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

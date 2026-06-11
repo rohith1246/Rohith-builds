@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Course — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page" style="max-width:800px;">
+  <div class="dash-section-header">
+    <h1>Edit Course: {{ course.title }}</h1>
+    <a href="{{ url_for('admin.courses') }}" class="link-subtle">← Back</a>
+  </div>
+
+  <div class="admin-section">
+    <form method="POST" action="{{ url_for('admin.edit_course', course_id=course.id) }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="title" class="form-label">Course Title *</label>
+        <input type="text" id="title" name="title" value="{{ course.title }}" required class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="slug" class="form-label">Slug</label>
+        <input type="text" id="slug" name="slug" value="{{ course.slug }}" disabled class="form-input" style="background:var(--surface-alt); cursor:not-allowed;">
+        <span class="td-muted" style="font-size:0.8rem; margin-top:4px;">Slug cannot be changed after creation.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="difficulty" class="form-label">Difficulty Level</label>
+        <select id="difficulty" name="difficulty" class="form-select">
+          <option value="Beginner" {% if course.difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+          <option value="Intermediate" {% if course.difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+          <option value="Advanced" {% if course.difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Thumbnail</label>
+        {% if course.thumbnail %}
+          <div style="margin-bottom:10px;">
+            <img src="{{ url_for('static', filename=course.thumbnail) }}" alt="Thumbnail" style="max-width:200px; border-radius:8px; border:1px solid var(--border);">
+          </div>
+        {% else %}
+          <div class="td-muted" style="font-size:0.9rem; margin-bottom:10px;">No thumbnail uploaded.</div>
+        {% endif %}
+        <label for="thumbnail" class="form-label">Upload New Thumbnail</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="form-input" style="padding:10px;">
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Course Description</label>
+        <textarea id="description" name="description" class="form-textarea">{{ course.description or '' }}</textarea>
+      </div>
+
+      <div class="form-group" style="flex-direction:row; gap:10px; align-items:center; margin-bottom:28px;">
+        <input type="checkbox" id="is_published" name="is_published" {% if course.is_published %}checked{% endif %} style="width:20px; height:20px; cursor:pointer;">
+        <label for="is_published" class="form-label" style="margin-bottom:0; cursor:pointer;">Publish Course (Visible to users)</label>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary" style="flex:1;">Save Changes</button>
+        <a href="{{ url_for('admin.courses') }}" class="btn-ghost" style="flex:1;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

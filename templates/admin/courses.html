@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Courses — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Courses</h1>
+      <p>Create, update, and publish learning courses on RohithBuilds.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.admin') }}" class="btn-ghost">← Dashboard</a>
+      <a href="{{ url_for('admin.create_course') }}" class="btn-primary">+ Create Course</a>
+    </div>
+  </div>
+
+  <!-- Search Filter -->
+  <div class="admin-section" style="padding: 20px; margin-bottom: 24px;">
+    <form method="GET" action="{{ url_for('admin.courses') }}" style="display:flex; gap:12px; align-items:center;">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search courses by title or slug..." class="form-input" style="flex:1; margin-bottom:0;">
+      <button type="submit" class="btn-primary" style="padding:12px 24px;">Search</button>
+      {% if search %}
+        <a href="{{ url_for('admin.courses') }}" class="btn-ghost">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Courses Table -->
+  <div class="admin-section">
+    {% if courses.items %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Thumbnail</th>
+              <th>Course Title</th>
+              <th>Difficulty</th>
+              <th>Status</th>
+              <th>Lessons</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in courses.items %}
+              <tr>
+                <td class="td-muted">{{ c.id }}</td>
+                <td>
+                  {% if c.thumbnail %}
+                    <img src="{{ url_for('static', filename=c.thumbnail) }}" alt="Thumbnail" style="width:60px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border);">
+                  {% else %}
+                    <div style="width:60px; height:40px; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-light); font-weight:700;">No Image</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong>{{ c.title }}</strong>
+                  <div class="td-muted" style="font-size:0.8rem; margin-top:2px;">/{{ c.slug }}</div>
+                </td>
+                <td>
+                  <span class="badge-pill badge-primary">{{ c.difficulty }}</span>
+                </td>
+                <td>
+                  {% if c.is_published %}
+                    <span class="badge-verified">Published</span>
+                  {% else %}
+                    <span class="badge-unverified">Draft</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ url_for('admin.lessons', course_id=c.id) }}" class="td-link">
+                    {{ c.days|length }} Days →
+                  </a>
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <a href="{{ url_for('admin.create_lesson', course_id=c.id) }}" class="btn-ghost btn-sm" style="padding: 6px 12px; font-size:0.85rem; border-color: var(--success); color: var(--success);">+ Add Day</a>
+                    <a href="{{ url_for('admin.edit_course', course_id=c.id) }}" class="btn-ghost btn-sm" style="padding: 6px 12px; font-size:0.85rem;">Edit</a>
+                    <form method="POST" action="{{ url_for('admin.delete_course', course_id=c.id) }}" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this course, all its lessons, and progress data?')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if courses.pages > 1 %}
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; align-items:center;">
+          {% if courses.has_prev %}
+            <a href="{{ url_for('admin.courses', page=courses.prev_num, search=search) }}" class="btn-ghost btn-sm">&larr; Prev</a>
+          {% endif %}
+          
+          <span style="font-size:0.9rem; color:var(--text-light);">Page <strong>{{ courses.page }}</strong> of {{ courses.pages }}</span>
+          
+          {% if courses.has_next %}
+            <a href="{{ url_for('admin.courses', page=courses.next_num, search=search) }}" class="btn-ghost btn-sm">Next &rarr;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="td-empty">
+        <p>No courses found.</p>
+        <a href="{{ url_for('admin.create_course') }}" style="color:var(--primary);">Create a new course &rarr;</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

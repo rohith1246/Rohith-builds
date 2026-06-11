@@ -77,3 +77,28 @@ def send_password_reset_email(user):
     except Exception as e:
         print(f"[ERROR] SendGrid reset error: {e}")
         return False
+
+
+def send_lesson_review_email(user, lesson, rating):
+    try:
+        admin_email = current_app.config.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
+        html_content = f"""
+        <h3>New Lesson Review Received</h3>
+        <p><strong>Lesson:</strong> Day {lesson.day_number} — {lesson.title} ({lesson.course.title})</p>
+        <p><strong>Learner:</strong> {user.username} ({user.email})</p>
+        <p><strong>Rating:</strong> {rating} / 5 Stars</p>
+        <p>Sent from RohithBuilds Admin Review System.</p>
+        """
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
+        message = Mail(
+            from_email="rohithbuildsofficial@gmail.com",
+            to_emails=admin_email,
+            subject=f"New Rating: Day {lesson.day_number} ({rating}/5 Stars)",
+            html_content=html_content
+        )
+        response = sg.send(message)
+        print(f"[OK] SendGrid review email sent: {response.status_code}")
+        return True
+    except Exception as e:
+        print(f"[ERROR] SendGrid review email error: {e}")
+        return False

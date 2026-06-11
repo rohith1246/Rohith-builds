@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Enrollments — Admin{% endblock %}
+
+{% block content %}
+<div class="container admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Course Enrollments</h1>
+      <p>Enroll users in courses, monitor enrollment dates, and reset progress indicators.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('admin.admin') }}" class="btn-ghost">← Dashboard</a>
+      <a href="{{ url_for('admin.create_enrollment') }}" class="btn-primary">+ Enroll User</a>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="admin-section" style="padding: 20px; margin-bottom: 24px;">
+    <form method="GET" action="{{ url_for('admin.enrollments') }}" style="display:flex; gap:16px; align-items:center;">
+      
+      <!-- Course Filter -->
+      <div style="flex:1;">
+        <select name="course_id" class="form-select" onchange="this.form.submit()" style="margin-bottom:0;">
+          <option value="">-- All Courses --</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}" {% if course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if course_id or user_id %}
+        <div>
+          <a href="{{ url_for('admin.enrollments') }}" class="btn-ghost">Clear Filter</a>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Enrollments Table -->
+  <div class="admin-section">
+    {% if enrollments.items %}
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Course Title</th>
+              <th>Enrolled Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in enrollments.items %}
+              <tr>
+                <td class="td-muted">{{ e.id }}</td>
+                <td>
+                  {% if e.user %}
+                    <div class="td-user">
+                      <div class="td-avatar">{{ e.user.username[0].upper() }}</div>
+                      <div>
+                        <strong>{{ e.user.username }}</strong>
+                        <div class="td-muted" style="font-size:0.8rem;">{{ e.user.email }}</div>
+                      </div>
+                    </div>
+                  {% else %}
+                    <span class="td-muted">User ID: {{ e.user_id }} (Account Deleted)</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if e.course %}
+                    <strong>{{ e.course.title }}</strong>
+                  {% else %}
+                    <span class="td-muted">Course ID: {{ e.course_id }} (Course Deleted)</span>
+                  {% endif %}
+                </td>
+                <td class="td-muted">
+                  {{ e.enrolled_at.strftime('%b %d, %Y %I:%M %p') if e.enrolled_at else '—' }}
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <form method="POST" action="{{ url_for('admin.reset_progress', enrollment_id=e.id) }}" style="display:inline" onsubmit="return confirm('Reset progress? This will delete all completed lessons progress and total XP earned by this user in this course!')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-admin-verify" style="padding: 6px 12px; font-size:0.85rem; background:#f59e0b;" type="submit">Reset Progress</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.delete_enrollment', enrollment_id=e.id) }}" style="display:inline" onsubmit="return confirm('Unenroll student? This will delete the enrollment and all progress data!')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-admin-delete" style="padding: 6px 12px; font-size:0.85rem;" type="submit">Cancel Enrollment</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if enrollments.pages > 1 %}
+        <div style="display:flex; justify-content:center; gap:8px; margin-top:24px; align-items:center;">
+          {% if enrollments.has_prev %}
+            <a href="{{ url_for('admin.enrollments', page=enrollments.prev_num, course_id=course_id, user_id=user_id) }}" class="btn-ghost btn-sm">&larr; Prev</a>
+          {% endif %}
+          
+          <span style="font-size:0.9rem; color:var(--text-light);">Page <strong>{{ enrollments.page }}</strong> of {{ enrollments.pages }}</span>
+          
+          {% if enrollments.has_next %}
+            <a href="{{ url_for('admin.enrollments', page=enrollments.next_num, course_id=course_id, user_id=user_id) }}" class="btn-ghost btn-sm">Next &rarr;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="td-empty">
+        <p>No enrollments found.</p>
+        <a href="{{ url_for('admin.create_enrollment') }}" style="color:var(--primary);">Enroll a user now &rarr;</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

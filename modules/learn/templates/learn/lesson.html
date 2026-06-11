@@ -149,8 +149,109 @@ window.LESSON_SLUG = "{{ day.slug }}";
 
 </section>
 
+{% if current_user.is_authenticated %}
+<!-- FLOATING RATING POPUP -->
+<div id="review-popup" class="review-popup">
+  <div class="review-popup-content">
+    <button class="review-popup-close" onclick="closeReviewPopup()">✕</button>
+    <span class="review-popup-title">Enjoyed this lesson?</span>
+    <p class="review-popup-sub">Rate it to help us improve!</p>
+    <div class="review-stars">
+      <span class="review-star" data-value="1">☆</span>
+      <span class="review-star" data-value="2">☆</span>
+      <span class="review-star" data-value="3">☆</span>
+      <span class="review-star" data-value="4">☆</span>
+      <span class="review-star" data-value="5">☆</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 
 <style>
+  /* FLOATING REVIEW POPUP */
+  .review-popup {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent); /* Brand Black */
+    color: white;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1020;
+    width: 280px;
+    transform: translateY(150%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0;
+  }
+
+  .review-popup.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .review-popup-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .review-popup-close {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: var(--transition);
+  }
+
+  .review-popup-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--primary);
+  }
+
+  .review-popup-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary); /* Brand Yellow */
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  .review-popup-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 8px;
+    font-size: 1.8rem;
+    cursor: pointer;
+  }
+
+  .review-star {
+    color: rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+  }
+
+  .review-star:hover,
+  .review-star.active {
+    color: var(--primary); /* Yellow */
+    transform: scale(1.15);
+  }
   .copy-btn {
     position: absolute;
     top: 8px;
@@ -175,6 +276,15 @@ window.LESSON_SLUG = "{{ day.slug }}";
       font-size: 10px;
       top: 4px;
       right: 4px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .review-popup {
+      bottom: 16px;
+      right: 16px;
+      left: 16px;
+      width: auto;
     }
   }
 </style>
@@ -210,6 +320,95 @@ window.LESSON_SLUG = "{{ day.slug }}";
       }
     });
   });
+
+  // Review Popup Handler
+  {% if current_user.is_authenticated %}
+  function closeReviewPopup() {
+    const popup = document.getElementById("review-popup");
+    if (popup) {
+      popup.classList.remove("show");
+      setTimeout(() => popup.remove(), 400);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById("review-popup");
+    if (!popup) return;
+
+    // Show popup after 3 seconds
+    setTimeout(() => {
+      popup.classList.add("show");
+    }, 3000);
+
+    const stars = document.querySelectorAll(".review-star");
+    let selectedRating = 0;
+
+    stars.forEach(star => {
+      star.addEventListener("mouseover", function() {
+        const val = parseInt(this.getAttribute("data-value"));
+        highlightStars(val);
+      });
+
+      star.addEventListener("mouseout", function() {
+        highlightStars(selectedRating);
+      });
+
+      star.addEventListener("click", function() {
+        const val = parseInt(this.getAttribute("data-value"));
+        selectedRating = val;
+        highlightStars(val);
+        submitRating(val);
+      });
+    });
+
+    function highlightStars(count) {
+      stars.forEach(star => {
+        const val = parseInt(star.getAttribute("data-value"));
+        if (val <= count) {
+          star.textContent = "★";
+          star.classList.add("active");
+        } else {
+          star.textContent = "☆";
+          star.classList.remove("active");
+        }
+      });
+    }
+
+    function submitRating(rating) {
+      // Disable clicks to prevent duplicate submissions
+      document.querySelector(".review-stars").style.pointerEvents = "none";
+      
+      fetch("{{ url_for('learn.submit_review', day_id=day.id) }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({ rating: rating })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const content = document.querySelector(".review-popup-content");
+          content.innerHTML = `
+            <span class="review-popup-title">Thank you! ❤️</span>
+            <p class="review-popup-sub" style="margin-bottom:0;">Your feedback helps us make RohithBuilds better.</p>
+          `;
+          // Close and remove the popup after 3 seconds
+          setTimeout(closeReviewPopup, 3000);
+        } else {
+          alert("Error: " + data.message);
+          document.querySelector(".review-stars").style.pointerEvents = "auto";
+        }
+      })
+      .catch(err => {
+        console.error("Failed to submit rating: ", err);
+        alert("An error occurred while saving your rating.");
+        document.querySelector(".review-stars").style.pointerEvents = "auto";
+      });
+    }
+  });
+  {% endif %}
 </script>
 
 {% endblock %}

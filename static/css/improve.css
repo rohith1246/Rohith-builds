@@ -58,7 +58,7 @@
 
 .improve-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
   outline: none;
 }
 
@@ -69,8 +69,8 @@
 .improve-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, var(--primary), #1d4ed8);
-  color: white;
+  background: var(--primary);
+  color: var(--accent);
   border: none;
   border-radius: var(--radius-sm);
   font-size: 1.1rem;
@@ -81,8 +81,10 @@
 }
 
 .improve-btn:hover {
+  background: var(--accent);
+  color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 10px 25px rgba(17, 24, 39, 0.4);
 }
 
 .improve-btn:active {
@@ -140,7 +142,7 @@
 .copy-btn {
   padding: 8px 18px;
   background: var(--primary);
-  color: white;
+  color: var(--accent);
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -150,7 +152,8 @@
 }
 
 .copy-btn:hover {
-  background: var(--primary-hover);
+  background: var(--accent);
+  color: var(--primary);
   transform: translateY(-2px);
 }
 
