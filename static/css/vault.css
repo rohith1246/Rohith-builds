@@ -1540,3 +1540,281 @@
     }
 
 }
+
+/* ==================================================
+   DARK THEME OVERRIDES FOR VAULT & COLLECTIONS
+   ================================================== */
+
+/* Headers */
+.page-title {
+  color: var(--text) !important;
+}
+.page-subtitle {
+  color: var(--text-light) !important;
+}
+
+/* Search Bar */
+.search-input {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.search-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
+}
+.search-btn {
+  background: var(--primary) !important;
+  color: #111827 !important;
+}
+.search-btn:hover {
+  background: var(--primary-hover) !important;
+  color: #111827 !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Category Filters */
+.cat-pill {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.cat-pill:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--primary) !important;
+  color: var(--text) !important;
+}
+.cat-pill.active {
+  background: var(--primary) !important;
+  color: #111827 !important;
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Prompt Card / pcard & Collections prompt-card */
+.pcard, .prompt-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.pcard:hover, .prompt-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+.pcard-title, .prompt-card h3 {
+  color: var(--text) !important;
+}
+.pcard-preview, .prompt-card p {
+  color: var(--text-light) !important;
+}
+.pcard-footer, .prompt-card-footer {
+  border-top: 1px solid var(--border) !important;
+}
+
+/* Badges */
+.pcat {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.pcat.primary {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+}
+
+/* Author Info */
+.author-dot {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
+}
+.author-name {
+  color: var(--text) !important;
+}
+.author-date {
+  color: var(--text-muted) !important;
+}
+
+/* Favorite Button */
+.pfav-btn {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.pfav-btn:hover, .pfav-btn.active {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+}
+
+/* Action Buttons inside Card */
+.paction {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.paction:hover {
+  background: var(--surface-hover) !important;
+  color: var(--text) !important;
+}
+.paction.like-btn:hover, .paction.like-btn.liked {
+  color: var(--danger) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+.paction.copy-btn:hover, .paction.copy-btn.copied {
+  color: var(--success) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+/* Search count labels */
+.search-label {
+  color: var(--text-light) !important;
+}
+.search-count {
+  color: var(--primary) !important;
+}
+.search-filter-note {
+  color: var(--text-muted) !important;
+}
+
+/* Pagination */
+.page-number {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.page-number:hover {
+  background: var(--surface-hover) !important;
+  color: var(--text) !important;
+  border-color: var(--primary) !important;
+}
+.page-number.active {
+  background: var(--primary) !important;
+  color: #111827 !important;
+  border-color: var(--primary) !important;
+}
+.page-btn {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.page-btn:hover {
+  background: var(--surface-hover) !important;
+  color: var(--text) !important;
+  border-color: var(--primary) !important;
+}
+
+/* Prompt Detail Page Overrides */
+.detail-title {
+  color: var(--text) !important;
+}
+.breadcrumb, .detail-meta, .detail-date, .detail-likes {
+  color: var(--text-light) !important;
+}
+.breadcrumb a {
+  color: var(--primary) !important;
+}
+.breadcrumb a:hover {
+  color: var(--primary-hover) !important;
+}
+.mini-avatar {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
+}
+.detail-content-box {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+.detail-content-header {
+  border-bottom: 1px solid var(--border) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+}
+.detail-content-label {
+  color: var(--text) !important;
+}
+.detail-prompt-text {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Sidebar & Stats Card in Detail Page */
+.detail-sidebar .sidebar-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+.detail-sidebar h3, .detail-sidebar h4 {
+  color: var(--text) !important;
+}
+.detail-sidebar p {
+  color: var(--text-light) !important;
+}
+
+/* Detail Buttons */
+.btn-copy-lg, .btn-like-lg, .btn-fav-lg, .btn-ghost {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+.btn-copy-lg:hover, .btn-like-lg:hover, .btn-fav-lg:hover, .btn-ghost:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--primary) !important;
+}
+.btn-copy-lg {
+  background: var(--primary) !important;
+  color: #111827 !important;
+  border-color: var(--primary) !important;
+}
+.btn-copy-lg:hover {
+  background: var(--primary-hover) !important;
+  color: #111827 !important;
+}
+.btn-fav-lg.active {
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+}
+
+/* Form Overrides */
+.form-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.form-card-header h1 {
+  color: var(--text) !important;
+}
+.form-card-header p {
+  color: var(--text-light) !important;
+}
+.form-label {
+  color: var(--text) !important;
+}
+.form-input, .form-select, .form-textarea {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15) !important;
+}
+.form-hint {
+  color: var(--text-muted) !important;
+}
+.form-tips {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+.form-tips h3 {
+  color: var(--text) !important;
+}
+.form-tips li {
+  color: var(--text-light) !important;
+}
