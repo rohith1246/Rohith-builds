@@ -1,357 +1,448 @@
 {% extends "base.html" %}
-{% block title %}RohithBuilds — AI Prompts & Lessons{% endblock %}
+{% block title %}RohithBuilds — AI Prompts, Lessons & Jobs{% endblock %}
 
 {% block content %}
+<!-- Add body class to override navbar/footer styles to dark mode -->
+<script>
+  document.body.classList.add('home-page-theme');
+</script>
 
-<!-- HERO -->
-
-<section class="hero">
-  <div class="hero-inner">
-
-
-<div class="hero-badge">
-  🚀 Built for Students, Developers & AI Learners
-</div>
-
-<h1 class="hero-title">
-  Stop Watching AI Tutorials.
-  <span class="gradient-text">
-    Start Building With AI.
-  </span>
-</h1>
-
-<!-- LEARNING ROADMAP SECTION -->
-<section class="roadmap-section">
-
-    <h2>Your Complete AI Journey</h2>
-    <p class="roadmap-subtitle">From zero to building real AI systems — one week at a time.</p>
-
-    <div class="roadmap-timeline">
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 1–4</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Python Basics</span>
+<div class="home-page-wrapper">
+  
+  <!-- SECTION 1: HERO -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-icon">🚀</span> Zero to AI Developer
         </div>
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 5–7</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Web & Databases</span>
+        <h1 class="hero-title">
+          Stop Watching AI Tutorials.
+          <span class="highlight-yellow">Start Building With AI.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Practical Python, prompt engineering, and real-world AI projects designed specifically for students and developers. Join free to unlock structured learning.
+        </p>
+        <div class="hero-actions">
+          <a href="/register" class="btn-primary-hero">Start Learning Free</a>
+          <a href="/jobs" class="btn-secondary-hero">Browse Jobs ({{ total_jobs }}+)</a>
         </div>
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 8–9</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Data Science</span>
-        </div>
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 10</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Machine Learning</span>
-        </div>
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 11</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Deep Learning</span>
-        </div>
-
-        <div class="roadmap-item">
-            <span class="roadmap-week">Week 12</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">AI & LLMs</span>
-        </div>
-
-        <div class="roadmap-item highlight">
-            <span class="roadmap-week">Week 13+</span>
-            <span class="roadmap-arrow">→</span>
-            <span class="roadmap-topic">Advanced AI Systems</span>
-        </div>
-
-    </div>
-
-    
-       <a href="/learn/course/python-ai-course" class="btn-primary roadmap-cta">
-    Start Free Today →
-</a>
-
-</section>
-
-
-
-<div class="hero-ctas">
-
-  <a
-    href="{{ url_for('learn.learn') }}"
-    class="btn-primary large"
-  >
-    Start Learning →
-  </a>
-
-  <a
-    href="{{ url_for('prompts.vault') }}"
-    class="btn-secondary large"
-  >
-    Explore Prompt Vault
-  </a>
-
-</div>
-
-<div class="hero-stats">
-
-  <div class="stat">
-    <span class="stat-number">{{ prompt_count }}+</span>
-    <span class="stat-label">Curated Prompts</span>
-  </div>
-
-  <div class="stat">
-    <span class="stat-number">{{ lesson_count }}</span>
-    <span class="stat-label">Lessons Live</span>
-  </div>
-
-  <div class="stat">
-    <span class="stat-number">12</span>
-    <span class="stat-label">Learning Packs</span>
-  </div>
-
-</div>
-
-
-  </div>
-</section>
-
-<!-- FEATURES -->
-
-<section class="features">
-  <div class="container">
-
-
-<h2 class="section-title">
-  Everything You Need To Learn AI
-</h2>
-
-<div class="features-grid">
-
-  <div class="feature-card">
-
-    <div class="feature-icon">📚</div>
-
-    <h3>Structured Learning</h3>
-
-   <p>
-  Go from zero to building real AI projects.
-  Practical lessons, no fluff, no theory overload.
-</p>
-
-    <a
-      href="{{ url_for('learn.learn') }}"
-      class="feature-link"
-    >
-      Start Learning →
-    </a>
-
-  </div>
-
-  <div class="feature-card">
-
-    <div class="feature-icon">🔐</div>
-
-    <h3>Prompt Vault</h3>
-
-    <p>
-  Copy proven prompts. Skip the trial and error.
-  166+ prompts organized by outcome, not category.
-</p>
-
-    <a
-      href="{{ url_for('prompts.vault') }}"
-      class="feature-link"
-    >
-      Explore Vault →
-    </a>
-
-  </div>
-
-  <div class="feature-card improve-highlight">
-
-    <div class="feature-icon">✨</div>
-
-    <h3>AI Prompt Improver</h3>
-
-   <p>
-  Type a weak prompt. Get a powerful one instantly.
-  See the difference before you even open ChatGPT.
-</p>
-    <a
-      href="{{ url_for('improve.improve_page') }}"
-      class="feature-link"
-    >
-      Improve Prompt →
-    </a>
-
-  </div>
-
-</div>
-
-
-  </div>
-</section>
-<!-- FEATURED COURSE -->
-<section class="featured-course">
-  <div class="container">
-    <div class="featured-course-inner">
-      <div class="featured-course-left">
-        <span class="featured-badge">🔥 Most Popular Course</span>
-        <h2>Build an AI Agent in 7 Days</h2>
-        <p>Go from zero to a deployed AI agent. Real Python code, real tools, live on the internet by Day 7.</p>
-        <ul class="course-highlights">
-          <li>🐍 Python + Groq API</li>
-          <li>🧠 Memory + Tools</li>
-          <li>🌐 Flask Web UI</li>
-          <li>🚀 Deployed on Render</li>
-        </ul>
-        <div class="course-ctas">
-          <a href="/learn/course/ai-agent-course" class="btn-primary">Start This Course →</a>
-          <a href="https://ai-agent-skng.onrender.com" target="_blank" class="btn-outline-white">See It Live →</a>
+        <div class="social-proof">
+          <p class="social-proof-text">Join students and developers learning from:</p>
+          <div class="social-proof-logos">
+            <span class="logo-pill">Google</span>
+            <span class="logo-pill">IBM</span>
+            <span class="logo-pill">Microsoft</span>
+            <span class="logo-pill">TCS</span>
+            <span class="logo-pill">IITs</span>
+            <span class="logo-pill">BITS</span>
+          </div>
         </div>
       </div>
-      <div class="featured-course-right">
-        <div class="day-timeline">
-          <div class="day-item">📦 Day 1 — Setup</div>
-          <div class="day-item">🤖 Day 2 — Groq API</div>
-          <div class="day-item">🧠 Day 3 — Memory</div>
-          <div class="day-item">🔧 Day 4 — Tools</div>
-          <div class="day-item">🔍 Day 5 — Research Agent</div>
-          <div class="day-item">🌐 Day 6 — Web UI</div>
-          <div class="day-item highlight">📦🤖🚀 Day 7 — Deploy</div>
+      
+      <div class="hero-mockup">
+        <div class="macbook-frame">
+          <div class="macbook-header">
+            <div class="macbook-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="macbook-title">Day_5_Build_AI_Agent.py</div>
+          </div>
+          <div class="macbook-body">
+            <pre class="code-area"><code><span class="code-keyword">from</span> groq <span class="code-keyword">import</span> Groq
+<span class="code-keyword">from</span> agents <span class="code-keyword">import</span> AIAgent
+
+client = Groq()
+
+<span class="code-comment"># Initialize autonomous agent</span>
+agent = AIAgent(
+    model=<span class="code-string">"llama3-70b-versatile"</span>,
+    tools=[search_web, read_url_content],
+    memory_enabled=<span class="code-keyword">True</span>
+)
+
+<span class="code-keyword">print</span>(<span class="code-string">"Agent active..."</span>)
+agent.run(<span class="code-string">"Find early-career developer roles in Bangalore"</span>)</code></pre>
+            <div class="terminal-area">
+              <div class="terminal-line"><span class="term-prompt">&gt;</span> python Day_5_Build_AI_Agent.py</div>
+              <div class="terminal-line term-success">[Agent] Agent active...</div>
+              <div class="terminal-line term-info">[Agent] Searching web for 'early-career developer roles Bangalore'...</div>
+              <div class="terminal-line term-info">[Agent] Found 15 matching job listings.</div>
+              <div class="terminal-line term-info">[Agent] Filtering by skills: Python, SQL, REST APIs...</div>
+              <div class="terminal-line term-success">[Agent] Analysis complete. 3 high-match roles identified.</div>
+              <div class="terminal-line term-blink">█</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- PROMPT IMPROVER -->
-
-<section class="improver-showcase">
-
-  <div class="container">
-
-
-<div class="showcase-grid">
-
-  <div class="showcase-left">
-
-    <span class="mini-badge">
-      ⚡ AI Prompt Improver
-    </span>
-
-    <h2>
-      Turn weak prompts into powerful AI instructions
-    </h2>
-
-    <p>
-      Most people write vague prompts and get mediocre AI results.
-      Learn how better prompt structure creates better outputs.
-    </p>
-
-    <ul class="showcase-list">
-      <li>✅ Better ChatGPT responses</li>
-      <li>✅ Clearer AI outputs</li>
-      <li>✅ Stronger prompt engineering</li>
-      <li>✅ Faster workflows</li>
-    </ul>
-
-    <a
-      href="{{ url_for('improve.improve_page') }}"
-      class="btn-primary"
-    >
-      Try The Improver
-    </a>
-
-  </div>
-
-  <div class="showcase-right">
-
-    <div class="prompt-demo-card">
-
-      <div class="prompt-demo-header">
-        Before
+  <!-- SECTION 2: STATS BAR -->
+  <section class="stats-bar-section">
+    <div class="stats-bar-container">
+      <div class="stat-col">
+        <span class="stat-number" data-count="{{ total_lessons }}">0</span>
+        <span class="stat-label">Lessons Live</span>
       </div>
-
-      <div class="prompt-demo-content weak">
-        "write me instagram captions"
+      <div class="stat-col">
+        <span class="stat-number" data-count="{{ total_jobs }}">0</span>
+        <span class="stat-label">Developer Jobs</span>
       </div>
-
+      <div class="stat-col">
+        <span class="stat-number" data-count="{{ total_prompts }}">0</span>
+        <span class="stat-label">Curated Prompts</span>
+      </div>
+      <div class="stat-col">
+        <span class="stat-number" data-count="{{ total_users }}">0</span>
+        <span class="stat-label">Active Builders</span>
+      </div>
     </div>
+  </section>
 
-    <div class="prompt-arrow">↓</div>
-
-    <div class="prompt-demo-card improved">
-
-      <div class="prompt-demo-header">
-        After Improvement
+  <!-- SECTION 3: FEATURE GRID -->
+  <section class="features-section">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-badge">PLATFORM FEATURES</span>
+        <h2 class="section-title-premium">Everything You Need to Become an AI Developer</h2>
+        <p class="section-subtitle-premium">Stop reading theories. Build agents, refine prompts, and land jobs.</p>
       </div>
-
-      <div class="prompt-demo-content strong">
-        Generate 10 high-engagement Instagram captions
-        for a tech creator audience. Use curiosity hooks,
-        concise language, and CTA variations.
+      <div class="features-grid-premium">
+        
+        <!-- Feature 1 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">📚</div>
+          <h3>Python-to-AI Lessons</h3>
+          <p>Go from python fundamentals to writing advanced LLM pipelines. Self-paced, bite-sized lessons with code exercises.</p>
+          <a href="/learn" class="feature-link-premium">Start Learning <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">🤖</div>
+          <h3>Rohi AI Tutor</h3>
+          <p>Get instant code reviews, prompt feedback, and debugger support from our dedicated AI assistant.</p>
+          <a href="/register" class="feature-link-premium">Chat with Rohi <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">💼</div>
+          <h3>AI & Developer Jobs</h3>
+          <p>Find internships and entry-level positions filtered for Python, Backend, and AI engineering.</p>
+          <a href="/jobs" class="feature-link-premium">Browse Jobs <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">⚡</div>
+          <h3>Prompt Vault</h3>
+          <p>Copy production-ready prompt templates for data extraction, code generation, and agentic workflows.</p>
+          <a href="/vault" class="feature-link-premium">Explore Vault <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 5 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">🚀</div>
+          <h3>7-Day AI Agent Course</h3>
+          <p>Step-by-step masterclass to build and deploy an autonomous AI researcher live on Render.</p>
+          <a href="/learn" class="feature-link-premium">Learn to Build Agents <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 6 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">✨</div>
+          <h3>AI Prompt Improver</h3>
+          <p>Input a simple prompt and watch the optimizer restructure it with clear roles, constraints, and instructions.</p>
+          <a href="/improve" class="feature-link-premium">Try Prompt Improver <span class="arrow">→</span></a>
+        </div>
+        
       </div>
-
     </div>
+  </section>
 
-  </div>
+  <!-- SECTION 4: LEARNING PATH ROADMAP -->
+  <section class="roadmap-section-premium">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-badge">CURRICULUM FLOW</span>
+        <h2 class="section-title-premium">Your Complete Roadmap</h2>
+        <p class="section-subtitle-premium">From zero coding knowledge to building agentic AI products in weeks.</p>
+      </div>
+      
+      <div class="roadmap-flowchart">
+        
+        <div class="roadmap-step">
+          <div class="step-num">01</div>
+          <div class="step-card">
+            <h4>Python Basics</h4>
+            <span class="step-time">Week 1–2</span>
+            <p>Syntax, variables, loops, functions, lists, dicts.</p>
+          </div>
+        </div>
+        
+        <div class="roadmap-connector">➔</div>
+        
+        <div class="roadmap-step">
+          <div class="step-num">02</div>
+          <div class="step-card">
+            <h4>Backend & APIs</h4>
+            <span class="step-time">Week 3–4</span>
+            <p>HTTP requests, REST APIs, JSON parsing, Flask servers.</p>
+          </div>
+        </div>
+        
+        <div class="roadmap-connector">➔</div>
+        
+        <div class="roadmap-step">
+          <div class="step-num">03</div>
+          <div class="step-card">
+            <h4>Databases & SQL</h4>
+            <span class="step-time">Week 5–6</span>
+            <p>Database schema, queries, Postgres, SQL operations.</p>
+          </div>
+        </div>
+        
+        <div class="roadmap-connector">➔</div>
+        
+        <div class="roadmap-step">
+          <div class="step-num">04</div>
+          <div class="step-card font-highlight">
+            <h4>AI & LLMs</h4>
+            <span class="step-time">Week 7–8</span>
+            <p>API keys, prompts, streaming, completion APIs.</p>
+          </div>
+        </div>
+        
+        <div class="roadmap-connector">➔</div>
+        
+        <div class="roadmap-step">
+          <div class="step-num">05</div>
+          <div class="step-card font-highlight">
+            <h4>AI Agents</h4>
+            <span class="step-time">Week 9–10</span>
+            <p>Agent loops, tool calling, memory management.</p>
+          </div>
+        </div>
+        
+        <div class="roadmap-connector">➔</div>
+        
+        <div class="roadmap-step">
+          <div class="step-num">06</div>
+          <div class="step-card golden-glowing">
+            <h4>Launch Products</h4>
+            <span class="step-time">Week 11+</span>
+            <p>Deploying apps, Render, real-world users.</p>
+          </div>
+        </div>
+        
+      </div>
+      
+      <div class="text-center mt-3xl">
+        <a href="/learn" class="btn-primary-hero">Start Learning Roadmap</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: JOBS BOARD PREVIEW -->
+  <section class="jobs-preview-section">
+    <div class="section-container">
+      <div class="section-header-split">
+        <div class="header-left">
+          <span class="section-badge">JOB BOARD</span>
+          <h2 class="section-title-premium text-left">Fresh AI & Developer Opportunities</h2>
+          <p class="section-subtitle-premium text-left">Real jobs and internships filtered for students and early-career developers.</p>
+        </div>
+        <div class="header-right">
+          <a href="/jobs" class="btn-outline-gold">View All Jobs</a>
+        </div>
+      </div>
+      
+      <div class="jobs-preview-grid">
+        {% for job in recent_jobs %}
+        <div class="job-card-premium">
+          <div class="job-card-top">
+            <div class="company-logo-avatar">
+              {{ job.company[0] | upper }}
+            </div>
+            <div class="job-title-company">
+              <h3>{{ job.title }}</h3>
+              <span class="job-company">{{ job.company }}</span>
+            </div>
+            <span class="job-badge-new">New</span>
+          </div>
+          <div class="job-card-meta">
+            <span class="meta-tag"><span class="meta-icon">📍</span> {{ job.location }}</span>
+            <span class="meta-tag"><span class="meta-icon">💼</span> {{ job.job_type }}</span>
+            {% if job.salary %}
+            <span class="meta-tag"><span class="meta-icon">💰</span> {{ job.salary }}</span>
+            {% endif %}
+            <span class="meta-tag"><span class="meta-icon">🎓</span> {{ job.target_batch }} Batch</span>
+          </div>
+          <div class="job-card-skills">
+            {% for skill in job.skills.split(',') %}
+            <span class="skill-tag">{{ skill.strip() }}</span>
+            {% endfor %}
+          </div>
+          <div class="job-card-bottom">
+            <a href="/jobs?id={{ job.id }}" class="job-apply-link">View Details & Apply</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="fallback-empty-card">
+          <p>No active jobs found. New developer jobs are added daily.</p>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <div class="jobs-preview-footer text-center">
+        {% if total_jobs > 3 %}
+        <p class="more-jobs-count">+{{ total_jobs - 3 }} more jobs updated today.</p>
+        {% endif %}
+        <a href="/jobs" class="btn-primary-hero">Browse All {{ total_jobs }} Jobs</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: AI TUTOR SHOWCASE -->
+  <section class="tutor-showcase-section">
+    <div class="section-container">
+      <div class="tutor-showcase-grid">
+        <div class="tutor-info">
+          <span class="section-badge">ROHI AI TUTOR</span>
+          <h2 class="section-title-premium text-left">An AI Tutor That Knows How to Code</h2>
+          <p class="section-subtitle-premium text-left">Stuck on a bug? Need help writing a prompt? Rohi AI is integrated directly to help you succeed.</p>
+          
+          <ul class="tutor-checklist">
+            <li>
+              <span class="check-icon">💡</span>
+              <div>
+                <strong>Learn by Doing</strong>
+                <p>Guided, conversational explanations that help you understand concepts, instead of just copy-pasting code.</p>
+              </div>
+            </li>
+            <li>
+              <span class="check-icon">🛠️</span>
+              <div>
+                <strong>Real-World API Support</strong>
+                <p>Master invoking complex integrations like Swiggy, Groq, Stripe, or OpenWeather APIs in Python.</p>
+              </div>
+            </li>
+            <li>
+              <span class="check-icon">💬</span>
+              <div>
+                <strong>Code Debugging</strong>
+                <p>Paste your traceback errors directly and receive clean, step-by-step troubleshooting instructions.</p>
+              </div>
+            </li>
+          </ul>
+          
+          <div class="mt-xl">
+            <a href="/register" class="btn-primary-hero">Start Chatting Free</a>
+          </div>
+        </div>
+        
+        <div class="tutor-chat-mockup">
+          <div class="chat-mockup-frame">
+            <div class="chat-mockup-header">
+              <span class="chat-status-dot"></span>
+              <span class="chat-header-name">Rohi AI Tutor</span>
+            </div>
+            <div class="chat-mockup-messages">
+              
+              <!-- Message 1 (User) -->
+              <div class="chat-msg user-msg">
+                <p>How do I fetch the Swiggy restaurant menu using requests in Python?</p>
+              </div>
+              
+              <!-- Message 2 (AI) -->
+              <div class="chat-msg ai-msg">
+                <p>To call Swiggy's API, you need to simulate a real browser request by passing a <code>User-Agent</code> header. Otherwise, Swiggy's API blocks standard Python requests with a 403 Forbidden error.</p>
+                <p>Here is how you do it using the <code>requests</code> library:</p>
+                <pre class="chat-code"><code>import requests
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+}
+url = 'https://www.swiggy.com/dapi/menu/pl?page-type=REGULAR_MENU&lat=12.9716&lng=77.5946&restaurantId=12345'
+
+response = requests.get(url, headers=headers)
+menu_data = response.json()
+print("Success! Parsed menu json.")</code></pre>
+                <p>Give that a try! If you still get blocked, let me know.</p>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: PROMPT VAULT PREVIEW -->
+  <section class="prompt-preview-section">
+    <div class="section-container">
+      <div class="section-header-split">
+        <div class="header-left">
+          <span class="section-badge">PROMPT VAULT</span>
+          <h2 class="section-title-premium text-left">Production-Ready Prompt Templates</h2>
+          <p class="section-subtitle-premium text-left">Stop guessing how to instruct models. Copy proven templates for your tasks.</p>
+        </div>
+        <div class="header-right">
+          <a href="/vault" class="btn-outline-gold">Browse Entire Vault</a>
+        </div>
+      </div>
+      
+      <div class="prompts-preview-grid">
+        {% for prompt in popular_prompts %}
+        <div class="prompt-card-premium">
+          <div class="prompt-card-header">
+            <span class="prompt-category-tag">{{ prompt.category }}</span>
+            <span class="prompt-views-count">👁️ {{ prompt.view_count }} views</span>
+          </div>
+          <h3 class="prompt-card-title">{{ prompt.title }}</h3>
+          <div class="prompt-card-preview-text">
+            {{ prompt.content | truncate(140) }}
+          </div>
+          <div class="prompt-card-actions">
+            <!-- Reuse standard copyPrompt function from main.js -->
+            <button onclick="copyPrompt({{ prompt.id }}, `{{ prompt.content | replace('`', '\\\\`') | replace('\\n', '\\\\n') }}`)" class="btn-copy-prompt-premium">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Prompt</span>
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div class="fallback-empty-card">
+          <p>No popular prompts found. Explore the vault for all templates.</p>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <div class="text-center mt-3xl">
+        <a href="/vault" class="btn-primary-hero">Explore Prompt Vault</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8: FINAL CTA -->
+  <section class="final-cta-section">
+    <div class="section-container">
+      <div class="final-cta-box-premium">
+        <h2 class="final-cta-title">Ready to Stop Watching and Start Building?</h2>
+        <p class="final-cta-subtitle">Join thousands of builders today. Learn Python, build AI projects, and land jobs. 100% free.</p>
+        <div class="final-cta-actions">
+          <a href="/register" class="btn-primary-hero large-hero">Start Learning Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </div>
-
-
-  </div>
-
-</section>
-
-<!-- FINAL CTA -->
-
-<section class="final-cta">
-
-  <div class="container">
-
-
-<div class="final-cta-box">
-
- <h2>
-  Ready to Stop Watching and Start Building?
-</h2>
-
-  <p>
-    Learn prompting, build projects,
-    and develop practical AI skills through
-    structured learning.
-  </p>
-
-  <div class="hero-ctas">
-
-    <a
-      href="{{ url_for('learn.learn') }}"
-      class="btn-primary large"
-    >
-      Start Learning
-    </a>
-
-    <a
-      href="{{ url_for('prompts.vault') }}"
-      class="btn-secondary large"
-    >
-      Explore Vault
-    </a>
-
-  </div>
-
-</div>
-
-  </div>
-
-</section>
-
 {% endblock %}

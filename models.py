@@ -60,6 +60,8 @@ class Prompt(db.Model):
 
     copies = db.Column(db.Integer, default=0)
 
+    view_count = db.Column(db.Integer, default=0)
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
@@ -385,3 +387,28 @@ class LessonReview(db.Model):
         "User",
         backref=db.backref("reviews", cascade="all, delete-orphan", lazy=True)
     )
+
+
+class Job(db.Model):
+    __tablename__ = "jobs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    company = db.Column(db.String(200), nullable=False)
+    logo_url = db.Column(db.String(300), nullable=True)
+    location = db.Column(db.String(200), nullable=False)
+    job_type = db.Column(db.String(50), nullable=False, default="Job")  # e.g., Job, Internship
+    category = db.Column(db.String(100), nullable=False, default="Python")  # e.g., Python, Backend, AI / LLM
+    experience_level = db.Column(db.String(100), nullable=False, default="Freshers")  # e.g., Freshers, 0-2 years
+    salary = db.Column(db.String(100), nullable=True)  # e.g., "₹5,00,000 - ₹8,00,000 / year"
+    skills = db.Column(db.String(300), nullable=False)  # Comma-separated, e.g., "Python, Flask, Groq"
+    description = db.Column(db.Text, nullable=False)
+    course_match = db.Column(db.String(300), nullable=True)  # e.g., "7-Day AI Agent course"
+    apply_url = db.Column(db.String(500), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    clicks = db.Column(db.Integer, default=0)
+    target_batch = db.Column(db.String(100), nullable=False, default="2025, 2026")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Job {self.title} at {self.company}>"

@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from sqlalchemy import func, or_
 from models import (
     db, User, Prompt, Course, CourseDay, CourseEnrollment, 
-    LessonProgress, UserCourseProgress, PromptLike, PromptCollection, PromptCollectionItem, LessonReview
+    LessonProgress, UserCourseProgress, PromptLike, PromptCollection, PromptCollectionItem, LessonReview,
+    Job
 )
 from . import admin_bp
 import os
@@ -56,6 +57,12 @@ def admin_dashboard():
     prompt_count = Prompt.query.count()
     total_likes = db.session.query(func.coalesce(func.sum(Prompt.likes), 0)).scalar() or 0
     total_copies = db.session.query(func.coalesce(func.sum(Prompt.copies), 0)).scalar() or 0
+
+    # ── Job stats ────────────────────────────────────────────────────────────
+    try:
+        job_count = Job.query.count()
+    except Exception:
+        job_count = 0
 
     # ── Lesson completion stats ───────────────────────────────────────────────
     total_completed_lessons = LessonProgress.query.filter_by(completed=True).count()
@@ -196,7 +203,9 @@ def admin_dashboard():
         likes_count=likes_count,
         collections_count=collections_count,
         # lesson reviews
-        lesson_reviews=lesson_reviews
+        lesson_reviews=lesson_reviews,
+        # jobs stats
+        job_count=job_count
     )
 
 

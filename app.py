@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 # Shared extensions and models
 from extensions import db, csrf, login_manager, migrate
-from models import db, User, Prompt, Favorite
+from models import db, User, Prompt, Favorite, Job
 from werkzeug.security import generate_password_hash
 
 # Blueprints
@@ -18,6 +18,7 @@ from modules.prompts import prompts_bp
 from modules.improve import improve_bp
 from modules.auth import auth_bp
 from modules.admin import admin_bp
+from modules.jobs import jobs_bp
 
 load_dotenv(override=True)
 
@@ -63,6 +64,7 @@ app.register_blueprint(prompts_bp)
 app.register_blueprint(improve_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(jobs_bp)
 
 # Database Seeding
 SEED_PROMPTS = [
@@ -104,21 +106,41 @@ def _initialize_database():
 
             # PROMPTS TABLE
             if "prompts" in table_names:
-                if "copies" not in [col["name"] for col in inspector.get_columns("prompts")]:
+                columns = [col["name"] for col in inspector.get_columns("prompts")]
+                if "copies" not in columns:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE prompts ADD COLUMN copies INTEGER DEFAULT 0"))
+                        conn.commit()
+                if "view_count" not in columns:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE prompts ADD COLUMN view_count INTEGER DEFAULT 0"))
+                        conn.commit()
 
             # USERS TABLE
             if "users" in table_names:
                 if "is_verified" not in [col["name"] for col in inspector.get_columns("users")]:
                     with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0"))
+                        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
+                        conn.commit()
 
             # COURSE DAYS TABLE
             if "course_days" in table_names:
                 if "image" not in [col["name"] for col in inspector.get_columns("course_days")]:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE course_days ADD COLUMN image VARCHAR(300)"))
+                        conn.commit()
+
+            # JOBS TABLE
+            if "jobs" in table_names:
+                columns = [col["name"] for col in inspector.get_columns("jobs")]
+                if "clicks" not in columns:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE jobs ADD COLUMN clicks INTEGER DEFAULT 0"))
+                        conn.commit()
+                if "target_batch" not in columns:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE jobs ADD COLUMN target_batch VARCHAR(100) DEFAULT '2025, 2026'"))
+                        conn.commit()
 
             # seed only when tables exist
             seed_database()

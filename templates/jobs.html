@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+{% block title %}Indian Tech Jobs & Internships Aggregator — RohithBuilds{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="jobs-container">
+    <!-- Compact Header -->
+    <div class="jobs-header">
+        <span class="jobs-header-badge">🚀 Placement Portal</span>
+        <h1 class="jobs-title">Tech Jobs &amp; Internships</h1>
+        <p class="jobs-subtitle">Curated roles in India matching your Rohith Builds course syllabus and outcomes.</p>
+    </div>
+
+    <!-- Main Board Layout -->
+    <div class="jobs-board-layout">
+        
+        <!-- Sticky Sidebar Filters -->
+        <aside class="jobs-sidebar" id="jobsSidebar">
+            <div class="sidebar-header-mobile">
+                <h3>Filters</h3>
+                <button class="close-sidebar-btn" onclick="toggleMobileSidebar()">✕</button>
+            </div>
+
+            <!-- Search Group -->
+            <div class="sidebar-group">
+                <h4 class="sidebar-group-title">Search</h4>
+                <form action="{{ url_for('jobs.board') }}" method="GET" class="sidebar-search-form">
+                    <input type="hidden" name="batch" value="{{ selected_batch }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <input type="hidden" name="role" value="{{ selected_role }}">
+                    <input type="hidden" name="location" value="{{ selected_location }}">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon-span">🔍</span>
+                        <input 
+                            type="text" 
+                            name="search" 
+                            placeholder="Company, skill, keyword..." 
+                            value="{{ search_query }}"
+                            class="sidebar-search-input"
+                        >
+                        {% if search_query %}
+                        <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location=selected_location) }}" class="search-clear-btn">✕</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Graduation Batch Section -->
+            <div class="sidebar-group">
+                <h4 class="sidebar-group-title">Target Audience</h4>
+                <div class="sidebar-links">
+                    <a href="{{ url_for('jobs.board', batch='All', type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_batch == 'All' %}active{% endif %}">
+                        All Tech Jobs
+                    </a>
+                    <a href="{{ url_for('jobs.board', batch='2025', type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_batch == '2025' %}active{% endif %}">
+                        🎓 2025 Graduates
+                    </a>
+                    <a href="{{ url_for('jobs.board', batch='2026', type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_batch == '2026' %}active{% endif %}">
+                        🎓 2026 Graduates
+                    </a>
+                    <a href="{{ url_for('jobs.board', batch='2027', type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_batch == '2027' %}active{% endif %}">
+                        🎓 2027 Graduates
+                    </a>
+                    <a href="{{ url_for('jobs.board', batch='Experience', type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_batch == 'Experience' %}active{% endif %}">
+                        💼 Experienced Roles
+                    </a>
+                </div>
+            </div>
+
+            <!-- Job Type Section -->
+            <div class="sidebar-group">
+                <h4 class="sidebar-group-title">Job Type</h4>
+                <div class="sidebar-links">
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type='All', role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_type == 'All' %}active{% endif %}">All Types</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type='Job', role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_type == 'Job' %}active{% endif %}">Full-time Job</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type='Internship', role=selected_role, location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_type == 'Internship' %}active{% endif %}">Internship</a>
+                </div>
+            </div>
+
+            <!-- Role/Category Section -->
+            <div class="sidebar-group">
+                <h4 class="sidebar-group-title">Category</h4>
+                <div class="sidebar-links">
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='All', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'All' %}active{% endif %}">All Categories</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='python', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'python' %}active{% endif %}">Python Developer</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='backend', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'backend' %}active{% endif %}">Backend Developer</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='ai_llm', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'ai_llm' %}active{% endif %}">AI &amp; LLMs</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='frontend', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'frontend' %}active{% endif %}">Frontend Developer</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='fullstack', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'fullstack' %}active{% endif %}">Fullstack Developer</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='qa_testing', location=selected_location, search=search_query) }}" 
+                       class="sidebar-link {% if selected_role == 'qa_testing' %}active{% endif %}">QA / Testing</a>
+                </div>
+            </div>
+
+            <!-- Location Section -->
+            <div class="sidebar-group">
+                <h4 class="sidebar-group-title">Workplace</h4>
+                <div class="sidebar-links">
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location='All', search=search_query) }}" 
+                       class="sidebar-link {% if selected_location == 'All' %}active{% endif %}">All Locations</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location='remote', search=search_query) }}" 
+                       class="sidebar-link {% if selected_location == 'remote' %}active{% endif %}">Remote</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location='hybrid', search=search_query) }}" 
+                       class="sidebar-link {% if selected_location == 'hybrid' %}active{% endif %}">Hybrid</a>
+                    <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location='onsite', search=search_query) }}" 
+                       class="sidebar-link {% if selected_location == 'onsite' %}active{% endif %}">On-site</a>
+                </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            {% if selected_batch != 'All' or selected_type != 'All' or selected_role != 'All' or selected_location != 'All' or search_query %}
+            <div style="margin-top: 1.5rem;">
+                <a href="{{ url_for('jobs.board') }}" class="sidebar-reset-btn">✕ Reset Filters</a>
+            </div>
+            {% endif %}
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="jobs-main-content">
+            
+            <!-- Results Bar -->
+            <div class="jobs-results-header">
+                <span class="total-jobs-text">
+                    {% if filters_active %}
+                        Showing <span class="total-jobs-badge">{{ jobs|length }}</span> of <span class="total-jobs-badge">{% if pagination %}{{ pagination.total }}{% else %}{{ total_jobs_count }}{% endif %}</span> Curated Jobs
+                    {% else %}
+                        Total Curated Jobs: <span class="total-jobs-badge">{% if pagination %}{{ pagination.total }}{% else %}{{ total_jobs_count }}{% endif %}</span>
+                    {% endif %}
+                </span>
+                
+                <!-- Mobile Filter Trigger -->
+                <button class="mobile-filter-trigger-btn" onclick="toggleMobileSidebar()">
+                    <span>🔍</span> Filters &amp; Search
+                </button>
+            </div>
+
+            <!-- Jobs List -->
+            {% if jobs %}
+            <div class="jobs-list-layout">
+                {% for job in jobs %}
+                <div class="job-card-new" id="job-card-{{ job.id }}" onclick="openJobModal({{ job.id }}, event)">
+                    <!-- Card Top Header -->
+                    <div class="job-card-top">
+                        <div class="job-card-logo-container">
+                            {% if job.logo_url %}
+                            <img src="{{ job.logo_url }}" alt="{{ job.company }}" class="job-card-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            {% endif %}
+                            <span class="job-card-logo-fallback" style="{% if job.logo_url %}display: none;{% else %}display: flex;{% endif %}">
+                                {{ job.company[:2] | upper }}
+                            </span>
+                        </div>
+                        
+                        <div class="job-card-header-details">
+                            <div class="job-card-title-row">
+                                <h3 class="job-card-title">{{ job.title }}</h3>
+                                {% if job.created_at and (now - job.created_at).days < 4 %}
+                                <span class="badge-new-job">✨ New</span>
+                                {% endif %}
+                            </div>
+                            <span class="job-card-company">{{ job.company }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Meta Tags Row (Compact) -->
+                    <div class="job-card-meta-tags">
+                        <span class="meta-tag-badge type">💼 {{ job.job_type }}</span>
+                        <span class="meta-tag-badge location">📍 {{ job.location }}</span>
+                        <span class="meta-tag-badge experience">🎓 {{ job.experience_level }}</span>
+                    </div>
+
+                    <!-- Skills (Sleek pills) -->
+                    <div class="job-card-skills-row">
+                        {% for skill in job.skills.split(',')[:4] %}
+                        <span class="job-card-skill-badge">{{ skill.strip() }}</span>
+                        {% endfor %}
+                        {% if job.skills.split(',')|length > 4 %}
+                        <span class="job-card-skill-badge-more">+{{ job.skills.split(',')|length - 4 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Syllabus Fit (Minimal & Elegant) -->
+                    {% if job.course_match %}
+                    <div class="job-card-syllabus-fit">
+                        <span class="syllabus-fit-label">🎓 Syllabus Fit:</span>
+                        <p class="syllabus-fit-desc">{{ job.course_match }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Card Footer -->
+                    <div class="job-card-footer-new">
+                        <div class="job-card-views-info">
+                            <span>Added {{ job.created_at.strftime('%b %d') if job.created_at else '-' }}</span>
+                            <span class="bullet-divider">•</span>
+                            <span id="clicks-count-{{ job.id }}">👁️ {{ job.clicks or 0 }} views</span>
+                        </div>
+                        <div class="job-card-actions-new">
+                            <button class="btn-secondary-details" onclick="openJobModal({{ job.id }}, event)">Details</button>
+                            <a href="{{ job.apply_url }}" target="_blank" class="btn-primary-apply" onclick="recordJobClick({{ job.id }}, event)">Apply Now ↗</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden attributes for modal extraction -->
+                    <span id="job-desc-{{ job.id }}" style="display:none;">{{ job.description }}</span>
+                    <span id="job-salary-{{ job.id }}" style="display:none;">{{ job.salary or "Not Disclosed" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls -->
+            {% if pagination and pagination.pages > 1 %}
+            <div class="jobs-pagination">
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('jobs.board', page=pagination.prev_num, batch=selected_batch, type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" class="page-nav-btn">← Previous</a>
+                {% else %}
+                <span class="page-nav-btn disabled">← Previous</span>
+                {% endif %}
+
+                <div class="page-numbers">
+                    {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                        {% if page_num %}
+                            {% if page_num == pagination.page %}
+                            <span class="page-number active">{{ page_num }}</span>
+                            {% else %}
+                            <a href="{{ url_for('jobs.board', page=page_num, batch=selected_batch, type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" class="page-number">{{ page_num }}</a>
+                            {% endif %}
+                        {% else %}
+                        <span class="page-dots">...</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if pagination.has_next %}
+                <a href="{{ url_for('jobs.board', page=pagination.next_num, batch=selected_batch, type=selected_type, role=selected_role, location=selected_location, search=search_query) }}" class="page-nav-btn">Next →</a>
+                {% else %}
+                <span class="page-nav-btn disabled">Next →</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <!-- Empty State -->
+            <div class="jobs-empty-state">
+                <div class="empty-state-icon">💼</div>
+                <h3>No jobs match your filters</h3>
+                <p>Try resetting some filter categories or searching for a different keyword to see active developer postings.</p>
+                <a href="{{ url_for('jobs.board') }}" class="btn-reset-empty">Clear All Filters</a>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<!-- Slide-Out Details Drawer -->
+<div class="job-drawer-overlay" id="jobDrawerOverlay" onclick="closeJobModal()"></div>
+<div class="job-details-drawer" id="jobDetailsDrawer">
+    <div class="drawer-header">
+        <div class="drawer-header-left">
+            <div class="drawer-logo-container" id="drawerLogo">
+                CO
+            </div>
+            <div class="drawer-header-title-block">
+                <h2 class="drawer-job-title" id="drawerJobTitle">Job Title</h2>
+                <p class="drawer-company-name" id="drawerCompanyName">Company Name</p>
+            </div>
+        </div>
+        <button class="drawer-close-btn" onclick="closeJobModal()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+        
+        <!-- Syllabus Match Callout -->
+        <div class="drawer-section syllabus-match-section" id="drawerCourseFitRow">
+            <div class="syllabus-match-heading">
+                <span>🎓 Syllabus Fit &amp; Course Relevance</span>
+            </div>
+            <p class="syllabus-match-text" id="drawerCourseFit">Details about how this matching job supports your learnings on the platform.</p>
+        </div>
+
+        <!-- Job Overview Info Cards -->
+        <div class="drawer-section">
+            <h4 class="drawer-section-title">Job Summary</h4>
+            <div class="drawer-meta-grid">
+                <div class="drawer-meta-card">
+                    <span class="meta-card-label">Workplace</span>
+                    <span class="meta-card-value" id="drawerLocation">Location</span>
+                </div>
+                <div class="drawer-meta-card">
+                    <span class="meta-card-label">Type</span>
+                    <span class="meta-card-value" id="drawerType">Type</span>
+                </div>
+                <div class="drawer-meta-card">
+                    <span class="meta-card-label">Experience</span>
+                    <span class="meta-card-value" id="drawerExperience">Experience</span>
+                </div>
+                <div class="drawer-meta-card">
+                    <span class="meta-card-label">Salary Range</span>
+                    <span class="meta-card-value" id="drawerSalary">Salary</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="drawer-section">
+            <h4 class="drawer-section-title">Required Core Skills</h4>
+            <div class="skills-list" id="drawerSkills">
+                <!-- Badges -->
+            </div>
+        </div>
+
+        <!-- Job Description Section -->
+        <div class="drawer-section last">
+            <h4 class="drawer-section-title">Description &amp; Requirements</h4>
+            <div class="drawer-description-text" id="drawerDescription">
+                Job details loader...
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Drawer Footer -->
+    <div class="drawer-footer">
+        <a href="#" target="_blank" class="drawer-apply-btn" id="drawerApplyBtn" onclick="recordJobClick(activeJobId, event)">Apply on Company Website ↗</a>
+    </div>
+</div>
+
+<script>
+let activeJobId = null;
+
+function recordJobClick(jobId, event) {
+    if (event) {
+        event.stopPropagation(); // Prevent card click trigger
+    }
+    if (!jobId) return;
+    
+    fetch(`/api/jobs/${jobId}/click`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data && data.success) {
+            // Update views label on card
+            const countEl = document.querySelector(`#clicks-count-${jobId}`);
+            if (countEl) {
+                countEl.innerText = `👁️ ${data.clicks_count} views`;
+            }
+        }
+    })
+    .catch(err => console.error("Error recording click:", err));
+}
+
+function openJobModal(jobId, event) {
+    if (event) {
+        // Prevent opening if clicking an anchor or button inside card
+        if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+            return;
+        }
+    }
+    activeJobId = jobId;
+    recordJobClick(jobId);
+    
+    // Retrieve card elements
+    const card = document.getElementById(`job-card-${jobId}`);
+    const title = card.querySelector('.job-card-title').innerText;
+    const company = card.querySelector('.job-card-company').innerText;
+    const location = card.querySelector('.meta-tag-badge.location').innerText.replace('📍 ', '');
+    const type = card.querySelector('.meta-tag-badge.type').innerText.replace('💼 ', '');
+    const experience = card.querySelector('.meta-tag-badge.experience').innerText.replace('🎓 ', '');
+    const salary = document.getElementById(`job-salary-${jobId}`).innerText;
+    const rawSkills = Array.from(card.querySelectorAll('.job-card-skill-badge')).map(el => el.innerText);
+    const description = document.getElementById(`job-desc-${jobId}`).innerText;
+    
+    const courseMatchEl = card.querySelector('.syllabus-fit-desc');
+    const courseMatch = courseMatchEl ? courseMatchEl.innerText : null;
+    const applyUrl = card.querySelector('.btn-primary-apply').getAttribute('href');
+
+    // Populate drawer elements
+    document.getElementById('drawerJobTitle').innerText = title;
+    document.getElementById('drawerCompanyName').innerText = company;
+    document.getElementById('drawerLocation').innerText = location;
+    document.getElementById('drawerType').innerText = type;
+    document.getElementById('drawerExperience').innerText = experience;
+    document.getElementById('drawerSalary').innerText = salary;
+    
+    // Handle logo placeholder in drawer
+    const logoImgEl = card.querySelector('.job-card-logo');
+    const logoContainer = document.getElementById('drawerLogo');
+    if (logoImgEl && logoImgEl.style.display !== 'none') {
+        logoContainer.innerHTML = `<img src="${logoImgEl.getAttribute('src')}" alt="${company}" class="job-card-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span class="job-card-logo-fallback" style="display: none;">${company.substring(0, 2).toUpperCase()}</span>`;
+    } else {
+        logoContainer.innerHTML = `<span class="job-card-logo-fallback" style="display: flex;">${company.substring(0, 2).toUpperCase()}</span>`;
+    }
+
+    // Convert newlines in description to proper lists or paragraphs
+    const descFormatted = description.split('\n').map(line => {
+        if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
+            return `<li>${line.replace(/^[-*]\s*/, '')}</li>`;
+        }
+        return line.trim() ? `<p>${line}</p>` : '';
+    }).join('');
+    
+    let descFinal = descFormatted;
+    if (descFormatted.includes('<li>')) {
+        descFinal = descFormatted.replace(/(<li>.*?<\/li>)+/g, match => `<ul>${match}</ul>`);
+    }
+    document.getElementById('drawerDescription').innerHTML = descFinal;
+
+    // Set Skills
+    const skillsContainer = document.getElementById('drawerSkills');
+    skillsContainer.innerHTML = '';
+    rawSkills.forEach(skill => {
+        if(skill.trim()) {
+            const span = document.createElement('span');
+            span.className = 'job-card-skill-badge';
+            span.innerText = skill;
+            skillsContainer.appendChild(span);
+        }
+    });
+
+    // Syllabus Course Match
+    const courseRow = document.getElementById('drawerCourseFitRow');
+    if (courseMatch) {
+        courseRow.style.display = 'block';
+        document.getElementById('drawerCourseFit').innerText = courseMatch;
+    } else {
+        courseRow.style.display = 'none';
+    }
+
+    // Apply Button Link
+    document.getElementById('drawerApplyBtn').setAttribute('href', applyUrl);
+
+    // Slide out Drawer
+    document.getElementById('jobDetailsDrawer').classList.add('active');
+    document.getElementById('jobDrawerOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeJobModal() {
+    document.getElementById('jobDetailsDrawer').classList.remove('active');
+    document.getElementById('jobDrawerOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('jobsSidebar');
+    sidebar.classList.toggle('active');
+}
+
+// Close drawer on escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeJobModal();
+    }
+});
+</script>
+{% endblock %}
