@@ -52,3 +52,8 @@ dist/
 # Local Admin Dashboard (Ignored from GitHub / Local Only)
 admin_dashboard/
 local_admin/
+
+# Local scratch and backup folders
+scratch/
+backups/
+database_backups/
