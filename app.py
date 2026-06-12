@@ -192,5 +192,114 @@ def _block_if_db_unavailable():
             # Fallback plain-text response if template rendering itself fails
             return f"Database unavailable: {error_message}", 503
 
+@app.route("/robots.txt")
+def robots_txt():
+    content = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
+    response = app.make_response(content)
+    response.headers["Content-Type"] = "text/plain"
+    return response
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    from datetime import datetime, timezone
+    
+    # Base URL of the site
+    base_url = "https://rohith-builds.onrender.com"
+    
+    # We will build sitemap.xml dynamically
+    urls = []
+    
+    # 1. Static/Public Main Pages
+    # format: (url_path, changefreq, priority)
+    static_pages = [
+        ("/", "daily", "1.0"),
+        ("/learn", "weekly", "0.9"),
+        ("/jobs", "daily", "0.9"),
+        ("/prompts", "daily", "0.8"),
+        ("/prompts/collections", "weekly", "0.7"),
+        ("/improve", "monthly", "0.6"),
+    ]
+    
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    for path, changefreq, priority in static_pages:
+        urls.append({
+            "loc": f"{base_url}{path}",
+            "lastmod": now_str,
+            "changefreq": changefreq,
+            "priority": priority
+        })
+        
+    # 2. Dynamic Course Pages
+    try:
+        from models import Course, CourseDay
+        courses = Course.query.filter_by(is_published=True).all()
+        for course in courses:
+            urls.append({
+                "loc": f"{base_url}/learn/course/{course.slug}",
+                "lastmod": now_str,
+                "changefreq": "weekly",
+                "priority": "0.8"
+            })
+            
+            # Dynamic Lesson Pages for this course
+            lessons = CourseDay.query.filter_by(course_id=course.id, is_published=True).all()
+            for lesson in lessons:
+                urls.append({
+                    "loc": f"{base_url}/learn/{course.slug}/{lesson.slug}",
+                    "lastmod": now_str,
+                    "changefreq": "weekly",
+                    "priority": "0.7"
+                })
+    except Exception as e:
+        app.logger.error("Error generating sitemap courses: %s", e)
+        
+    # 3. Dynamic Prompt Pages
+    try:
+        from models import Prompt
+        prompts = Prompt.query.all()
+        for prompt in prompts:
+            urls.append({
+                "loc": f"{base_url}/prompt/{prompt.id}",
+                "lastmod": now_str,
+                "changefreq": "weekly",
+                "priority": "0.6"
+            })
+    except Exception as e:
+        app.logger.error("Error generating sitemap prompts: %s", e)
+        
+    # 4. Dynamic Collection Pages
+    try:
+        from models import PromptCollection
+        collections = PromptCollection.query.all()
+        for col in collections:
+            urls.append({
+                "loc": f"{base_url}/collections/{col.slug}",
+                "lastmod": now_str,
+                "changefreq": "weekly",
+                "priority": "0.7"
+            })
+    except Exception as e:
+        app.logger.error("Error generating sitemap collections: %s", e)
+        
+    # Build XML
+    xml_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    for url in urls:
+        xml_lines.append("  <url>")
+        xml_lines.append(f"    <loc>{url['loc']}</loc>")
+        xml_lines.append(f"    <lastmod>{url['lastmod']}</lastmod>")
+        xml_lines.append(f"    <changefreq>{url['changefreq']}</changefreq>")
+        xml_lines.append(f"    <priority>{url['priority']}</priority>")
+        xml_lines.append("  </url>")
+    xml_lines.append("</urlset>")
+    
+    xml_content = "\n".join(xml_lines)
+    response = app.make_response(xml_content)
+    response.headers["Content-Type"] = "application/xml"
+    return response
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")

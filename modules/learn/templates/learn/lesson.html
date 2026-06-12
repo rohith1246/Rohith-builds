@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% block title %}Day {{ day.day_number }}: {{ day.title }} | {{ course.title }} | Rohith Builds{% endblock %}
+{% block meta_description %}{{ day.short_description or 'Learn Day ' + day.day_number|string + ': ' + day.title + ' in the ' + course.title + ' course.' }}{% endblock %}
 
 {% block content %}
 

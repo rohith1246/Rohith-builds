@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}
-{{ collection.name }}
-{% endblock %}
+{% block title %}{{ collection.name }} | AI Prompt Collection | Rohith Builds{% endblock %}
+{% block meta_description %}{{ collection.description or 'A curated collection of practical AI prompts for ' + collection.name + '.' }}{% endblock %}
 
 {% block content %}
 

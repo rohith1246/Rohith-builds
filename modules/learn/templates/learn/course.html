@@ -1,4 +1,22 @@
 {% extends "base.html" %}
+{% block title %}{{ course.title }} | Rohith Builds{% endblock %}
+{% block meta_description %}{{ course.description or 'Learn ' + course.title + ' through step-by-step practical lessons, coding challenges, and interactive AI tutoring.' }}{% endblock %}
+
+{% block og_image %}
+  {% if course.thumbnail %}
+    {{ url_for('static', filename=course.thumbnail, _external=True) }}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block twitter_image %}
+  {% if course.thumbnail %}
+    {{ url_for('static', filename=course.thumbnail, _external=True) }}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 

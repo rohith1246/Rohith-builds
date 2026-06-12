@@ -4,7 +4,22 @@
   <meta charset="UTF-8"/>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Learn AI, Prompt Engineering, Python, and Automation through practical lessons, projects, and curated prompts.">
+  <meta name="description" content="{% block meta_description %}Learn AI, Prompt Engineering, Python, and Automation through practical lessons, projects, and curated prompts.{% endblock %}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/logo.png', _external=True) }}{% endblock %}">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="{{ request.url }}">
+  <meta property="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+  <meta property="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+  <meta property="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/logo.png', _external=True) }}{% endblock %}">
+
   <title>{% block title %}RohithBuilds — AI Prompts & Lessons{% endblock %}</title>
 
   <!-- Google Analytics -->

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ prompt.title }} — RohithBuilds{% endblock %}
+{% block title %}{{ prompt.title }} | AI Prompt Template | Rohith Builds{% endblock %}
+{% block meta_description %}{{ prompt.content[:150] }}...{% endblock %}
 
 {% block content %}
 <div class="container detail-page">
