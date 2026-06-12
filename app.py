@@ -192,6 +192,10 @@ def _block_if_db_unavailable():
             # Fallback plain-text response if template rendering itself fails
             return f"Database unavailable: {error_message}", 503
 
+@app.route("/blog/how-to-learn-python-free-india")
+def how_to_learn_python_free_india():
+    return render_template("blog/how-to-learn-python-free-india.html")
+
 @app.route("/robots.txt")
 def robots_txt():
     content = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
@@ -218,6 +222,7 @@ def sitemap_xml():
         ("/prompts", "daily", "0.8"),
         ("/prompts/collections", "weekly", "0.7"),
         ("/improve", "monthly", "0.6"),
+        ("/blog/how-to-learn-python-free-india", "weekly", "0.8"),
     ]
     
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")

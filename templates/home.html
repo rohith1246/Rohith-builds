@@ -2,6 +2,37 @@
 {% block title %}Free Python to AI Course for Indian Developers | Rohith Builds{% endblock %}
 {% block meta_description %}Master Python and AI agents through practical lessons, projects, and prompts designed specifically for Indian developers. Start learning for free today!{% endblock %}
 
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://rohith-builds.onrender.com/#organization",
+      "name": "Rohith Builds",
+      "url": "https://rohith-builds.onrender.com",
+      "logo": "https://rohith-builds.onrender.com/static/images/logo.png",
+      "sameAs": [
+        "https://twitter.com/rohithbuilds",
+        "https://github.com/rohithbuilds"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://rohith-builds.onrender.com/#website",
+      "url": "https://rohith-builds.onrender.com",
+      "name": "Rohith Builds",
+      "description": "Master Python and AI agents through practical lessons, projects, and prompts designed specifically for Indian developers.",
+      "publisher": {
+        "@id": "https://rohith-builds.onrender.com/#organization"
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <!-- Add body class to override navbar/footer styles to dark mode -->
 <script>

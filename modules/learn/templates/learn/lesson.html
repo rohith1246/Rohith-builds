@@ -2,6 +2,42 @@
 {% block title %}Day {{ day.day_number }}: {{ day.title }} | {{ course.title }} | Rohith Builds{% endblock %}
 {% block meta_description %}{{ day.short_description or 'Learn Day ' + day.day_number|string + ': ' + day.title + ' in the ' + course.title + ' course.' }}{% endblock %}
 
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "@id": "{{ request.url }}#breadcrumb",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ url_for('home.home', _external=True) }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Learn",
+      "item": "{{ url_for('learn.learn', _external=True) }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ course.title }}",
+      "item": "{{ url_for('learn.course_page', course_slug=course.slug, _external=True) }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Day {{ day.day_number }}: {{ day.title }}",
+      "item": "{{ request.url }}"
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 
 <script>

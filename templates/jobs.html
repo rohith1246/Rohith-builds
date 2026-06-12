@@ -156,6 +156,39 @@
             {% if jobs %}
             <div class="jobs-list-layout">
                 {% for job in jobs %}
+                <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "JobPosting",
+                  "title": {{ job.title | tojson }},
+                  "description": {{ job.description | tojson }},
+                  "datePosted": "{{ job.created_at.strftime('%Y-%m-%d') if job.created_at else '' }}",
+                  "validThrough": "2026-12-31",
+                  "employmentType": "{% if job.job_type == 'Internship' %}INTERN{% else %}FULL_TIME{% endif %}",
+                  "hiringOrganization": {
+                    "@type": "Organization",
+                    "name": {{ job.company | tojson }},
+                    "sameAs": "https://rohith-builds.onrender.com"
+                  },
+                  "jobLocation": {
+                    "@type": "Place",
+                    "address": {
+                      "@type": "PostalAddress",
+                      "addressLocality": {{ job.location | tojson }},
+                      "addressCountry": "IN"
+                    }
+                  },
+                  "baseSalary": {
+                    "@type": "MonetaryAmount",
+                    "currency": "INR",
+                    "value": {
+                      "@type": "QuantitativeValue",
+                      "value": "{{ job.salary or 'Not Disclosed' }}",
+                      "unitText": "YEAR"
+                    }
+                  }
+                }
+                </script>
                 <div class="job-card-new" id="job-card-{{ job.id }}" onclick="openJobModal({{ job.id }}, event)">
                     <!-- Card Top Header -->
                     <div class="job-card-top">
@@ -469,6 +502,18 @@ function toggleMobileSidebar() {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeJobModal();
+    }
+});
+
+// Auto-open job modal on page load if ?id=xxx is in URL
+document.addEventListener("DOMContentLoaded", function() {
+    const params = new URLSearchParams(window.location.search);
+    const jobId = params.get("id");
+    if (jobId) {
+        const card = document.getElementById(`job-card-${jobId}`);
+        if (card) {
+            openJobModal(jobId);
+        }
     }
 });
 </script>

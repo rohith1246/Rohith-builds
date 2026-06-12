@@ -2,6 +2,61 @@
 {% block title %}{{ course.title }} | Rohith Builds{% endblock %}
 {% block meta_description %}{{ course.description or 'Learn ' + course.title + ' through step-by-step practical lessons, coding challenges, and interactive AI tutoring.' }}{% endblock %}
 
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Course",
+      "@id": "{{ request.url }}#course",
+      "name": "{{ course.title }}",
+      "description": "{{ course.description or 'Learn ' + course.title + ' through step-by-step practical lessons, coding challenges, and interactive AI tutoring.' }}",
+      "provider": {
+        "@type": "Organization",
+        "name": "Rohith Builds",
+        "sameAs": "https://rohith-builds.onrender.com"
+      },
+      "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": "Online",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR",
+          "category": "Free"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ request.url }}#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ url_for('home.home', _external=True) }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Learn",
+          "item": "{{ url_for('learn.learn', _external=True) }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ course.title }}",
+          "item": "{{ request.url }}"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block og_image %}
   {% if course.thumbnail %}
     {{ url_for('static', filename=course.thumbnail, _external=True) }}
