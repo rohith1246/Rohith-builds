@@ -204,6 +204,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-light);
@@ -226,14 +228,21 @@
 
 .mobile-filter-trigger-btn {
     display: none;
-    background: var(--accent);
-    color: #fff;
+    background: var(--primary);
+    color: #111827;
     border: none;
     padding: 8px 16px;
     border-radius: 30px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.mobile-filter-trigger-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
 }
 
 /* Job Cards Stack (New Layout) */
@@ -823,6 +832,7 @@
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
+        padding-right: 64px; /* Leave space for floating chatbot toggle */
     }
 
     .job-card-views-info {

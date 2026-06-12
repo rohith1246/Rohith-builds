@@ -88,6 +88,28 @@ window.LESSON_SLUG = null;
          class="nav-link {% if request.endpoint == 'improve.improve_page' %}active{% endif %}">
         Improve Prompt
       </a>
+
+      <!-- Mobile-only links -->
+      {% if current_user.is_authenticated %}
+        {% if is_admin %}
+        <a href="{{ url_for('admin.admin') }}" class="nav-link nav-show-mobile {% if request.blueprint == 'admin' %}active{% endif %}">
+          Admin Dashboard
+        </a>
+        {% endif %}
+        <a href="{{ url_for('prompts.create_prompt') }}" class="nav-link nav-show-mobile">
+          Create Prompt
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="nav-link nav-show-mobile" style="color: var(--danger) !important;">
+          Logout
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="nav-link nav-show-mobile {% if request.endpoint == 'auth.login' %}active{% endif %}">
+          Login
+        </a>
+        <a href="{{ url_for('auth.register') }}" class="nav-link nav-show-mobile {% if request.endpoint == 'auth.register' %}active{% endif %}">
+          Register
+        </a>
+      {% endif %}
     </div>
 
     <div class="nav-right">
@@ -95,13 +117,13 @@ window.LESSON_SLUG = null;
       {% if current_user.is_authenticated %}
 
         {% if is_admin %}
-        <a href="{{ url_for('admin.admin') }}" class="nav-link {% if request.blueprint == 'admin' %}active{% endif %}" style="margin-right: 8px;">
+        <a href="{{ url_for('admin.admin') }}" class="nav-link nav-hide-mobile {% if request.blueprint == 'admin' %}active{% endif %}" style="margin-right: 8px;">
           Admin
         </a>
         {% endif %}
 
         {% if request.blueprint != 'learn' %}
-        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">
+        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary nav-hide-mobile">
           + New Prompt
         </a>
         {% endif %}
@@ -112,7 +134,7 @@ window.LESSON_SLUG = null;
         </a>
         {% endif %}
 
-        <a href="{{ url_for('auth.logout') }}" class="nav-link">
+        <a href="{{ url_for('auth.logout') }}" class="nav-link nav-hide-mobile">
           Logout
         </a>
 
@@ -132,7 +154,7 @@ window.LESSON_SLUG = null;
 
         {% else %}
 
-          <a href="{{ url_for('auth.login') }}" class="nav-link">
+          <a href="{{ url_for('auth.login') }}" class="nav-link nav-hide-mobile">
             Login
           </a>
 
@@ -145,6 +167,13 @@ window.LESSON_SLUG = null;
       {% endif %}
 
     </div>
+
+    <!-- HAMBURGER BUTTON -->
+    <button class="nav-hamburger" id="nav-hamburger-btn" aria-label="Toggle Navigation Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
    
 
@@ -256,6 +285,28 @@ window.LESSON_SLUG = null;
 </div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+  // Mobile Navbar Hamburger Menu Toggle
+  document.addEventListener("DOMContentLoaded", function() {
+    const hamburger = document.getElementById('nav-hamburger-btn');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+      
+      // Close mobile menu if clicked outside
+      document.addEventListener('click', function(e) {
+        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+          hamburger.classList.remove('active');
+          navLinks.classList.remove('active');
+        }
+      });
+    }
+  });
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>
