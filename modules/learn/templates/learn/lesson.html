@@ -174,8 +174,8 @@ window.LESSON_SLUG = "{{ day.slug }}";
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: var(--accent); /* Brand Black */
-    color: white;
+    background: var(--surface); /* Dark surface background */
+    color: var(--text);
     border-radius: var(--radius-md);
     padding: 20px;
     box-shadow: var(--shadow-lg);
@@ -183,7 +183,7 @@ window.LESSON_SLUG = "{{ day.slug }}";
     width: 280px;
     transform: translateY(150%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
     opacity: 0;
   }
 

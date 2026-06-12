@@ -13,7 +13,7 @@
 ================================================== */
 
 .dash-header {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 32px;
@@ -94,7 +94,7 @@
 }
 
 .stat-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 32px 20px;
@@ -166,7 +166,7 @@
 }
 
 .joined-course-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -219,7 +219,7 @@
 }
 
 .dash-prompt-row {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 22px;
@@ -335,7 +335,7 @@
 }
 
 .admin-quick-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
@@ -383,8 +383,9 @@
 }
 
 .verification-content {
-  background: linear-gradient(135deg, var(--accent-light), #fef9e7);
-  border: 1px solid var(--accent);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(17, 24, 39, 0.8)) !important;
+  border: 1px solid rgba(251, 191, 36, 0.2) !important;
+  color: var(--text) !important;
   border-radius: var(--radius-md);
   padding: 24px;
   display: flex;
@@ -417,7 +418,7 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   padding: 14px;
   border-radius: var(--radius-md);
@@ -458,11 +459,18 @@
    ADDITIONAL DASHBOARD ELEMENTS & BRAND OVERRIDES
 ================================================== */
 
-.dashboard-page {
-  --primary: #000000;
-  --accent: #FFD54A;
-  --accent-hover: #ffbf24;
-  --text: #000000;
+.dash-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .dash-split-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }
 
 .course-card {
@@ -511,7 +519,7 @@
 }
 
 .achievement-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
@@ -539,7 +547,7 @@
   display:flex;
   gap:12px;
   align-items:center;
-  background:white;
+  background:var(--surface);
   border:1px solid var(--border);
   padding:12px;
   border-radius:12px;
