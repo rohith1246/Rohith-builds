@@ -429,3 +429,152 @@ def dashboard():
         achievements=achievements,
         suggested_courses=suggested_courses
     )
+
+
+import secrets
+import re
+import urllib.parse
+import requests
+from flask import session, abort
+
+@auth_bp.route("/login/google")
+def google_login():
+    client_id = current_app.config.get("GOOGLE_CLIENT_ID")
+    if not client_id:
+        flash("Google OAuth is not configured on this server.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    state = secrets.token_urlsafe(32)
+    session["oauth_state"] = state
+    
+    redirect_uri = url_for("auth.google_callback", _external=True)
+    
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "prompt": "select_account"
+    }
+    
+    auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
+    return redirect(auth_url)
+
+
+@auth_bp.route("/login/google/callback")
+def google_callback():
+    # Verify state
+    session_state = session.pop("oauth_state", None)
+    request_state = request.args.get("state")
+    if not session_state or session_state != request_state:
+        abort(400, "Invalid OAuth state parameter.")
+        
+    code = request.args.get("code")
+    if not code:
+        flash("Failed to authenticate with Google.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    client_id = current_app.config.get("GOOGLE_CLIENT_ID")
+    client_secret = current_app.config.get("GOOGLE_CLIENT_SECRET")
+    
+    if not client_id or not client_secret:
+        flash("Google OAuth is not configured on this server.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    redirect_uri = url_for("auth.google_callback", _external=True)
+    
+    # Exchange authorization code for tokens
+    token_url = "https://oauth2.googleapis.com/token"
+    data = {
+        "code": code,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "redirect_uri": redirect_uri,
+        "grant_type": "authorization_code"
+    }
+    
+    try:
+        token_resp = requests.post(token_url, data=data, timeout=10)
+        token_resp.raise_for_status()
+        token_data = token_resp.json()
+    except Exception as e:
+        current_app.logger.error(f"Google OAuth token exchange failed: {e}")
+        flash("Failed to retrieve access token from Google.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    access_token = token_data.get("access_token")
+    if not access_token:
+        flash("Google did not return an access token.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    # Get user profile information
+    userinfo_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    try:
+        userinfo_resp = requests.get(userinfo_url, headers=headers, timeout=10)
+        userinfo_resp.raise_for_status()
+        userinfo = userinfo_resp.json()
+    except Exception as e:
+        current_app.logger.error(f"Google OAuth userinfo request failed: {e}")
+        flash("Failed to retrieve user profile info from Google.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    email = userinfo.get("email")
+    email_verified = userinfo.get("email_verified")
+    name = userinfo.get("name", "")
+    google_id = userinfo.get("sub")
+    
+    if not email or not email_verified:
+        flash("Google account must have a verified email address.", "danger")
+        return redirect(url_for("auth.login"))
+        
+    # Find existing user by Google ID or by Email
+    user = None
+    if google_id:
+        user = User.query.filter_by(google_id=google_id).first()
+        
+    if not user:
+        user = User.query.filter_by(email=email).first()
+        if user and google_id:
+            # Link Google ID to existing account
+            user.google_id = google_id
+            db.session.commit()
+            
+    if user:
+        # Log existing user in
+        if not user.is_verified:
+            user.is_verified = True
+            db.session.commit()
+        login_user(user)
+        flash(f"Welcome back, {user.username}!", "success")
+        return redirect(url_for("auth.dashboard"))
+        
+    # Register new user
+    base_username = name.lower().replace(" ", "")
+    if not base_username:
+        base_username = email.split("@")[0]
+    base_username = re.sub(r"[^a-zA-Z0-9]", "", base_username)
+    
+    username = base_username
+    suffix = 1
+    while User.query.filter_by(username=username).first():
+        username = f"{base_username}{suffix}"
+        suffix += 1
+        
+    random_pass = secrets.token_urlsafe(32)
+    password_hash = generate_password_hash(random_pass)
+    
+    new_user = User(
+        username=username,
+        email=email,
+        password_hash=password_hash,
+        is_verified=True,
+        google_id=google_id
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    
+    login_user(new_user)
+    flash("Your account has been created successfully with Google!", "success")
+    return redirect(url_for("auth.dashboard"))
