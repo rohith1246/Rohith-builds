@@ -17,6 +17,7 @@
 
     <!-- Main Board Layout -->
     <div class="jobs-board-layout">
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
         
         <!-- Sticky Sidebar Filters -->
         <aside class="jobs-sidebar" id="jobsSidebar">
@@ -495,7 +496,16 @@ function closeJobModal() {
 
 function toggleMobileSidebar() {
     const sidebar = document.getElementById('jobsSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     sidebar.classList.toggle('active');
+    if (backdrop) {
+        backdrop.classList.toggle('active');
+    }
+    if (sidebar.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 }
 
 // Close drawer on escape key

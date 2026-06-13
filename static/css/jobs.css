@@ -68,6 +68,27 @@
     transition: all 0.3s ease;
 }
 
+/* Sidebar Backdrop Overlay on Mobile */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1009; /* sits just below mobile sidebar z-index 1010 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 .sidebar-header-mobile {
     display: none;
 }
