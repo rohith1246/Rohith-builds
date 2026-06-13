@@ -224,6 +224,10 @@ def ai_engineer_roadmap_freshers():
 def best_ai_projects_students():
     return render_template("blog/best-ai-projects-students.html")
 
+@app.route("/health")
+def health_check():
+    return jsonify({"status": "ok"}), 200
+
 @app.route("/robots.txt")
 def robots_txt():
     content = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
