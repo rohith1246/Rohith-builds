@@ -67,7 +67,8 @@ window.LESSON_SLUG = null;
         Home
       </a>
 
-      <div class="nav-item-dropdown">
+      <!-- Desktop Prompts Dropdown -->
+      <div class="nav-item-dropdown nav-hide-mobile">
         <a href="{{ url_for('prompts.vault') }}"
            class="nav-link {% if request.blueprint == 'prompts' %}active{% endif %}">
           Prompts <span class="nav-caret">▼</span>
@@ -90,6 +91,12 @@ window.LESSON_SLUG = null;
         </div>
       </div>
 
+      <!-- Mobile Prompts Direct Link -->
+      <a href="{{ url_for('prompts.vault') }}"
+         class="nav-link nav-show-mobile {% if request.blueprint == 'prompts' %}active{% endif %}">
+        Prompts
+      </a>
+
       <a href="{{ url_for('learn.learn') }}"
          class="nav-link {% if request.endpoint == 'learn.learn' %}active{% endif %}">
         Learn
@@ -100,8 +107,13 @@ window.LESSON_SLUG = null;
         Jobs
       </a>
 
+      <a href="/blog"
+         class="nav-link {% if request.path.startswith('/blog') %}active{% endif %}">
+        Blog
+      </a>
+
       <a href="{{ url_for('improve.improve_page') }}"
-         class="nav-link {% if request.endpoint == 'improve.improve_page' %}active{% endif %}">
+         class="nav-link nav-hide-mobile {% if request.endpoint == 'improve.improve_page' %}active{% endif %}">
         Improve Prompt
       </a>
 
@@ -112,8 +124,8 @@ window.LESSON_SLUG = null;
           Admin Dashboard
         </a>
         {% endif %}
-        <a href="{{ url_for('prompts.create_prompt') }}" class="nav-link nav-show-mobile">
-          Create Prompt
+        <a href="{{ url_for('auth.dashboard') }}" class="nav-link nav-show-mobile {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+          Dashboard
         </a>
         <a href="{{ url_for('auth.logout') }}" class="nav-link nav-show-mobile" style="color: var(--danger) !important;">
           Logout
@@ -145,7 +157,7 @@ window.LESSON_SLUG = null;
         {% endif %}
 
         {% if request.endpoint != 'auth.dashboard' %}
-        <a href="{{ url_for('auth.dashboard') }}" class="btn-primary">
+        <a href="{{ url_for('auth.dashboard') }}" class="btn-primary nav-hide-mobile">
           Dashboard
         </a>
         {% endif %}
@@ -158,13 +170,13 @@ window.LESSON_SLUG = null;
 
         {% if request.endpoint == 'auth.login' %}
 
-          <a href="{{ url_for('auth.register') }}" class="btn-primary">
+          <a href="{{ url_for('auth.register') }}" class="btn-primary nav-hide-mobile">
             Get Started
           </a>
 
         {% elif request.endpoint == 'auth.register' %}
 
-          <a href="{{ url_for('auth.login') }}" class="nav-link">
+          <a href="{{ url_for('auth.login') }}" class="nav-link nav-hide-mobile">
             Login
           </a>
 
@@ -174,7 +186,7 @@ window.LESSON_SLUG = null;
             Login
           </a>
 
-          <a href="{{ url_for('auth.register') }}" class="btn-primary">
+          <a href="{{ url_for('auth.register') }}" class="btn-primary nav-hide-mobile">
             Get Started
           </a>
 
@@ -306,19 +318,51 @@ window.LESSON_SLUG = null;
   document.addEventListener("DOMContentLoaded", function() {
     const hamburger = document.getElementById('nav-hamburger-btn');
     const navLinks = document.querySelector('.nav-links');
+    
+    // Create and append backdrop overlay
+    const backdrop = document.createElement('div');
+    backdrop.className = 'nav-backdrop';
+    const navContainer = document.querySelector('.nav-container');
+    if (navContainer) {
+      navContainer.appendChild(backdrop);
+    } else {
+      document.body.appendChild(backdrop);
+    }
+    
     if (hamburger && navLinks) {
-      hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
+      function toggleMenu() {
         hamburger.classList.toggle('active');
         navLinks.classList.toggle('active');
+        backdrop.classList.toggle('active');
+        
+        if (navLinks.classList.contains('active')) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
+        }
+      }
+      
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleMenu();
       });
       
-      // Close mobile menu if clicked outside
-      document.addEventListener('click', function(e) {
-        if (!navLinks.contains(e.target) && !hamburger.contains(e.target)) {
+      // Close mobile menu if clicked on backdrop
+      backdrop.addEventListener('click', function() {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+      
+      // Close menu if a link is clicked
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
           hamburger.classList.remove('active');
           navLinks.classList.remove('active');
-        }
+          backdrop.classList.remove('active');
+          document.body.style.overflow = '';
+        });
       });
     }
   });

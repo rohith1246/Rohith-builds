@@ -166,9 +166,9 @@ def _initialize_database():
 
 @app.before_request
 def _block_if_db_unavailable():
-    # Allow static assets and simple health paths to load even when DB is down
+    # Allow static assets, robots.txt, sitemap.xml and simple health paths to load even when DB is down
     path = request.path or ""
-    if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico":
+    if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico" or path == "/robots.txt" or path == "/sitemap.xml":
         return None
 
     # Initialize DB on first real request (some Flask installs don't expose
@@ -192,9 +192,37 @@ def _block_if_db_unavailable():
             # Fallback plain-text response if template rendering itself fails
             return f"Database unavailable: {error_message}", 503
 
+@app.route("/blog")
+def blog_hub():
+    return render_template("blog/index.html")
+
 @app.route("/blog/how-to-learn-python-free-india")
 def how_to_learn_python_free_india():
     return render_template("blog/how-to-learn-python-free-india.html")
+
+@app.route("/blog/best-python-projects-freshers-resume-india")
+def best_python_projects_freshers_resume_india():
+    return render_template("blog/best-python-projects-freshers-resume-india.html")
+
+@app.route("/blog/how-to-get-ai-internship-india")
+def how_to_get_ai_internship_india():
+    return render_template("blog/how-to-get-ai-internship-india.html")
+
+@app.route("/blog/top-python-interview-questions-freshers")
+def top_python_interview_questions_freshers():
+    return render_template("blog/top-python-interview-questions-freshers.html")
+
+@app.route("/blog/python-roadmap-beginners-2026")
+def python_roadmap_beginners_2026():
+    return render_template("blog/python-roadmap-beginners-2026.html")
+
+@app.route("/blog/ai-engineer-roadmap-freshers")
+def ai_engineer_roadmap_freshers():
+    return render_template("blog/ai-engineer-roadmap-freshers.html")
+
+@app.route("/blog/best-ai-projects-students")
+def best_ai_projects_students():
+    return render_template("blog/best-ai-projects-students.html")
 
 @app.route("/robots.txt")
 def robots_txt():
@@ -222,7 +250,14 @@ def sitemap_xml():
         ("/prompts", "daily", "0.8"),
         ("/prompts/collections", "weekly", "0.7"),
         ("/improve", "monthly", "0.6"),
+        ("/blog", "weekly", "0.8"),
         ("/blog/how-to-learn-python-free-india", "weekly", "0.8"),
+        ("/blog/best-python-projects-freshers-resume-india", "weekly", "0.8"),
+        ("/blog/how-to-get-ai-internship-india", "weekly", "0.8"),
+        ("/blog/top-python-interview-questions-freshers", "weekly", "0.8"),
+        ("/blog/python-roadmap-beginners-2026", "weekly", "0.8"),
+        ("/blog/ai-engineer-roadmap-freshers", "weekly", "0.8"),
+        ("/blog/best-ai-projects-students", "weekly", "0.8"),
     ]
     
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -303,7 +338,7 @@ def sitemap_xml():
     
     xml_content = "\n".join(xml_lines)
     response = app.make_response(xml_content)
-    response.headers["Content-Type"] = "application/xml"
+    response.headers["Content-Type"] = "application/xml; charset=utf-8"
     return response
 
 if __name__ == "__main__":

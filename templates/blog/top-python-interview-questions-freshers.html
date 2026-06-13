@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Top Python Interview Questions for Freshers in India — 2026 Placements{% endblock %}
+
+{% block meta_description %}Ace your placements with the top Python interview questions for freshers in India. Core syntax, OOPS, data structures, and practical coding tips.{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": "https://rohith-builds.onrender.com/blog/top-python-interview-questions-freshers/#article",
+      "isPartOf": {
+        "@id": "https://rohith-builds.onrender.com/#website"
+      },
+      "headline": "Top Python Interview Questions for Freshers in India — 2026 Placements",
+      "description": "Ace your placements with the top Python interview questions for freshers in India. Core syntax, OOPS, data structures, and practical coding tips.",
+      "inLanguage": "en-US",
+      "mainEntityOfPage": "https://rohith-builds.onrender.com/blog/top-python-interview-questions-freshers",
+      "datePublished": "2026-06-12T00:00:00+05:30",
+      "dateModified": "2026-06-12T00:00:00+05:30",
+      "author": {
+        "@type": "Person",
+        "name": "Rohith Builds"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Rohith Builds",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://rohith-builds.onrender.com/static/images/logo.png"
+        }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://rohith-builds.onrender.com/blog/top-python-interview-questions-freshers/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between a list and a tuple in Python?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Lists are mutable, meaning their elements can be modified, added, or removed after creation, and are defined using square brackets []. Tuples are immutable, meaning they cannot be modified after creation, use parentheses (), and are slightly faster and consume less memory."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are decorators in Python?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Decorators are a powerful design pattern in Python that allow you to modify or extend the behavior of a function or class without permanently modifying its code. They wrap another function and run code before or after the wrapped function executes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does memory management work in Python?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Python manages memory dynamically through a private heap space. It uses reference counting to track the number of references to an object, and a cyclic garbage collector to clean up objects that are no longer accessible, preventing memory leaks."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://rohith-builds.onrender.com/blog/top-python-interview-questions-freshers/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://rohith-builds.onrender.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://rohith-builds.onrender.com/blog/top-python-interview-questions-freshers"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.blog-container {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+.blog-post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3xl);
+  box-shadow: var(--shadow-lg);
+}
+.blog-badge {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.blog-header h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.blog-meta {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin-bottom: var(--spacing-2xl);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--spacing-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.blog-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.blog-body {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #e5e7eb;
+}
+.blog-body h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: var(--spacing-3xl);
+  margin-bottom: var(--spacing-md);
+  color: var(--primary);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+  padding-bottom: 8px;
+}
+.blog-body h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text);
+}
+.blog-body p {
+  margin-bottom: var(--spacing-xl);
+}
+.blog-body ul, .blog-body ol {
+  margin-bottom: var(--spacing-xl);
+  padding-left: var(--spacing-2xl);
+}
+.blog-body li {
+  margin-bottom: var(--spacing-sm);
+}
+.blog-body blockquote {
+  border-left: 4px solid var(--primary);
+  background: rgba(251, 191, 36, 0.05);
+  padding: var(--spacing-md) var(--spacing-xl);
+  margin: var(--spacing-xl) 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--text-light);
+}
+.blog-body strong {
+  color: #fff;
+  font-weight: 700;
+}
+.blog-body code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: var(--primary);
+}
+.blog-body pre {
+  background: #111827;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--spacing-xl);
+  border: 1px solid var(--border);
+}
+.blog-body pre code {
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  font-size: 0.9em;
+}
+.blog-cta {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(31, 41, 55, 0.95));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  margin-top: var(--spacing-3xl);
+  text-align: center;
+}
+.blog-cta h3 {
+  color: var(--primary);
+  font-size: 1.6rem;
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+}
+.blog-cta p {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.05rem;
+}
+.blog-cta .btn-cta {
+  display: inline-block;
+  background: var(--primary);
+  color: #111827;
+  padding: 14px 30px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+.blog-cta .btn-cta:hover {
+  background: #111827;
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+@media (max-width: 768px) {
+  .blog-container {
+    padding: var(--spacing-lg) var(--spacing-sm);
+  }
+  .blog-post {
+    padding: var(--spacing-lg);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-container">
+  <article class="blog-post">
+    <!-- Header -->
+    <header class="blog-header">
+      <span class="blog-badge">Placement Prep</span>
+      <h1>Top Python Interview Questions for Freshers in India — 2026 Placements</h1>
+      <div class="blog-meta">
+        <span>👤 By Rohith Builds</span>
+        <span>📅 Updated: June 2026</span>
+        <span>⏱️ 12 Min Read</span>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="blog-body">
+      <p>
+        If you are gearing up for campus placements or applying to off-campus roles at service companies (like TCS, CTS, Infosys) or fast-growing startups in India, Python is one of the most frequently tested languages. 
+      </p>
+      <p>
+        Recruiters don't just want you to write syntax; they want to test your understanding of how Python manages memory, handles data collections, and structures object-oriented logic. 
+      </p>
+      <p>
+        In this guide, we have compiled the absolute **top python interview questions for freshers** that you are guaranteed to face in your placements. We will cover core concept questions, OOPS definitions, and common coding round challenges. Let's get your <strong>python interview prep india</strong> started.
+      </p>
+
+      <h2>1. What is the difference between a list and a tuple in Python?</h2>
+      <p>
+        This is a classic question. The main differences are:
+      </p>
+      <ul>
+        <li><strong>Mutability:</strong> Lists are mutable (their values can be changed after creation using methods like <code>append()</code> or index assignment). Tuples are immutable (their values cannot be changed once defined).</li>
+        <li><strong>Syntax:</strong> Lists use square brackets <code>[1, 2, 3]</code>, while tuples use parentheses <code>(1, 2, 3)</code>.</li>
+        <li><strong>Performance:</strong> Tuples are slightly faster and consume less memory than lists because they are stored in a single block of memory.</li>
+      </ul>
+
+      <h2>2. How is memory managed in Python?</h2>
+      <p>
+        Understanding memory management is key for advanced roles:
+      </p>
+      <ul>
+        <li><strong>Private Heap:</strong> Python allocates all objects and data structures in a private heap space. Developers do not have direct access to this heap; it is managed by the Python memory manager.</li>
+        <li><strong>Reference Counting:</strong> Python keeps track of the number of references pointing to an object. When an object's reference count drops to zero, the memory occupied by the object is automatically deallocated.</li>
+        <li><strong>Garbage Collector:</strong> Python has an internal cyclic garbage collector that identifies and cleans up reference cycles (e.g., two objects referencing each other) that reference counting alone cannot clean.</li>
+      </ul>
+
+      <h2>3. What are Decorators and how do they work?</h2>
+      <p>
+        Decorators are a powerful feature used to modify the behavior of a function or class method without changing its source code. They take another function as an argument, wrap its execution, and return a modified function.
+      </p>
+      <p>
+        Here is a simple example:
+      </p>
+      <pre><code>def log_decorator(func):
+    def wrapper():
+        print("Function starts...")
+        func()
+        print("Function ends.")
+    return wrapper
+
+@log_decorator
+def say_hello():
+    print("Hello World!")
+
+say_hello()
+# Output:
+# Function starts...
+# Hello World!
+# Function ends.</code></pre>
+
+      <h2>4. What is the difference between a Deep Copy and a Shallow Copy?</h2>
+      <p>
+        When copying compound objects (objects containing other objects, like lists of lists):
+      </p>
+      <ul>
+        <li><strong>Shallow Copy:</strong> Constructs a new compound object and inserts references to the original nested objects. If you modify a nested object in the copy, it also changes the original. You create one using <code>copy.copy()</code>.</li>
+        <li><strong>Deep Copy:</strong> Recursively copies the compound object and all of its nested objects. Modifying the copy will have no effect on the original. You create one using <code>copy.deepcopy()</code>.</li>
+      </ul>
+
+      <h2>5. Common Placement Coding Challenges</h2>
+      <p>
+        Be prepared to write code on the spot for these basic questions:
+      </p>
+
+      <h3>Challenge A: Reverse a String without using built-in library functions</h3>
+      <pre><code>def reverse_string(s):
+    reversed_str = ""
+    for char in s:
+        reversed_str = char + reversed_str
+    return reversed_str
+
+print(reverse_string("rohith")) # Output: htihor</code></pre>
+
+      <h3>Challenge B: Find duplicates in a list in O(N) linear time</h3>
+      <pre><code>def find_duplicates(lst):
+    seen = set()
+    duplicates = set()
+    for item in lst:
+        if item in seen:
+            duplicates.add(item)
+        else:
+            seen.add(item)
+    return list(duplicates)
+
+print(find_duplicates([1, 2, 3, 1, 2, 4])) # Output: [1, 2]</code></pre>
+
+      <div class="related-guides-box" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin: var(--spacing-xl) 0;">
+        <h4 style="color: var(--primary); font-weight: 700; margin-bottom: var(--spacing-sm); font-size: 1.1rem; margin-top: 0;">📚 Related Career Guides:</h4>
+        <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
+          <li style="margin-bottom: 8px;"><a href="/blog/how-to-learn-python-free-india" style="color: #fff; text-decoration: underline; font-weight: 600;">How to Learn Python for Free in India — 100 Day Complete Roadmap</a></li>
+          <li><a href="/blog/best-python-projects-freshers-resume-india" style="color: #fff; text-decoration: underline; font-weight: 600;">Best Python Projects for Freshers Resume in India</a></li>
+        </ul>
+      </div>
+
+      <div class="blog-cta">
+        <h3>Ready to Ace Your Technical Placements?</h3>
+        <p>
+          Practice your coding skills, read detailed OOPS and SQL definitions, and get instant feedback on your code from Rohi, our interactive AI Tutor, for free.
+        </p>
+        <a href="/learn" class="btn-cta">Prepare on Rohith Builds</a>
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}

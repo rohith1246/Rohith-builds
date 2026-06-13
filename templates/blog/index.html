@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Developer Blog & Career Guides | Rohith Builds{% endblock %}
+
+{% block meta_description %}Explore comprehensive career guides, learning roadmaps, Python project ideas, and interview preparation guides for freshers.{% endblock %}
+
+{% block extra_css %}
+<style>
+.blog-hub-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+.blog-hub-header {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+}
+.blog-hub-badge {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.blog-hub-header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.5px;
+}
+.blog-hub-header p {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  max-width: 600px;
+  margin: 0 auto;
+}
+.blog-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+  padding-bottom: 8px;
+}
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+  margin-bottom: var(--spacing-4xl);
+}
+.blog-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+}
+.blog-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+.blog-card-visual {
+  height: 160px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(31, 41, 55, 0.95));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
+}
+.blog-card-body {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.blog-card-tag {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+  margin-bottom: var(--spacing-sm);
+}
+.blog-card-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text);
+  line-height: 1.4;
+}
+.blog-card-body p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: var(--spacing-lg);
+  flex-grow: 1;
+}
+.blog-card-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-md);
+}
+.blog-card-link {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+}
+.blog-card-link:hover {
+  color: var(--primary-hover);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-hub-container">
+  
+  <header class="blog-hub-header">
+    <span class="blog-hub-badge">Resources</span>
+    <h1>Developer Blog</h1>
+    <p>Actionable career guides, tech roadmaps, and placement prep sheets curated by senior developers.</p>
+  </header>
+
+  <h2 class="blog-section-title">Career Guides &amp; Roadmaps</h2>
+  
+  <div class="blog-grid">
+    
+    <!-- Card 1 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🗺️</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Roadmap</span>
+        <h3>How to Learn Python for Free in India</h3>
+        <p>A complete 100-day Python-to-AI roadmap. Learn loops, functions, databases, and build fully autonomous AI agents step-by-step.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 15 Min Read</div>
+        <a href="/blog/how-to-learn-python-free-india" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🛠️</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Resume</span>
+        <h3>Best Python Projects for Freshers Resume</h3>
+        <p>Go beyond simple calculators. Discover 5 resume-worthy projects like AI research agents and Flask job scrapers to impress recruiters.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 10 Min Read</div>
+        <a href="/blog/best-python-projects-freshers-resume-india" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">💼</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Internship</span>
+        <h3>How to Get an AI Internship in India</h3>
+        <p>A 2026 guide for tech students. Learn the difference between AI research vs. AI engineering, essential skills, and how to apply.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 8 Min Read</div>
+        <a href="/blog/how-to-get-ai-internship-india" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🎯</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Placements</span>
+        <h3>Top Python Interview Questions for Freshers</h3>
+        <p>Ace your technical rounds. Core questions on lists, tuples, memory management, garbage collection, and live coding challenges.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 12 Min Read</div>
+        <a href="/blog/top-python-interview-questions-freshers" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🚀</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Roadmap</span>
+        <h3>Python Roadmap for Beginners 2026</h3>
+        <p>Your step-by-step path to Python mastery in 2026. Transition from basic syntax to databases, API design, and AI agent orchestration.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 15 Min Read</div>
+        <a href="/blog/python-roadmap-beginners-2026" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🤖</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Career</span>
+        <h3>AI Engineer Roadmap for Freshers</h3>
+        <p>The ultimate guide to building a career in AI Engineering in 2026. Learn APIs, vector stores, RAG search systems, and agent orchestration.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 15 Min Read</div>
+        <a href="/blog/ai-engineer-roadmap-freshers" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="blog-card">
+      <div class="blog-card-visual">🔬</div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Projects</span>
+        <h3>Best AI Projects for Students</h3>
+        <p>Tired of basic calculators? Build resume-worthy RAG engines, autonomous Pull Request reviewers, and multi-agent corporate analysts.</p>
+        <div class="blog-card-meta">📅 June 2026 • ⏱️ 15 Min Read</div>
+        <a href="/blog/best-ai-projects-students" class="blog-card-link">Read Guide →</a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

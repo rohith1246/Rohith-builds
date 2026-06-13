@@ -367,6 +367,8 @@ p {
   background: none;
   border: none;
   padding: 0;
+  z-index: 10000;
+  position: relative;
 }
 
 .nav-hamburger span {
@@ -379,7 +381,7 @@ p {
 }
 
 .nav-hamburger.active span:nth-child(1) {
-  transform: rotate(45deg) translate(8px, 8px);
+  transform: translateY(6px) rotate(45deg);
 }
 
 .nav-hamburger.active span:nth-child(2) {
@@ -387,7 +389,28 @@ p {
 }
 
 .nav-hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -7px);
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* BACKDROP OVERLAY FOR MOBILE NAV */
+.nav-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.nav-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ==================================================
@@ -786,69 +809,92 @@ p {
   }
 
   .nav-links {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface);
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 85%;
+    height: 100vh;
+    background: rgba(17, 24, 39, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9999;
+    padding: 90px var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
     flex-direction: column;
     gap: 0;
-    border-bottom: 1px solid var(--border);
-    padding: var(--spacing-xl) var(--spacing-lg);
-    animation: slideDown 0.3s ease;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    border-left: 1px solid var(--border);
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    align-items: flex-start !important;
   }
 
   .nav-links.active {
-    display: flex;
+    right: 0;
   }
 
   .nav-link {
+    width: 100%;
     padding: var(--spacing-md) 0;
     border-bottom: 1px solid var(--border-light);
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-align: left;
+    display: block;
+    color: var(--text-light);
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--primary) !important;
   }
 
   .nav-item-dropdown {
     width: 100%;
     display: block;
-    text-align: center;
+    text-align: left !important;
   }
 
   .nav-item-dropdown:hover .nav-dropdown-menu,
   .nav-dropdown-menu {
     position: static !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column;
     visibility: visible !important;
     opacity: 1 !important;
     transform: none !important;
     pointer-events: auto !important;
     box-shadow: none !important;
     border: none !important;
-    padding: var(--spacing-sm) 0 !important;
+    padding: var(--spacing-xs) 0 var(--spacing-sm) var(--spacing-md) !important;
     background: transparent !important;
     min-width: unset !important;
+    gap: var(--spacing-sm) !important;
   }
 
   .nav-dropdown-item {
-    padding: var(--spacing-sm) 0 !important;
+    padding: var(--spacing-xs) 0 !important;
     border-bottom: none !important;
-    justify-content: center !important;
-    text-align: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    display: flex !important;
+    gap: var(--spacing-sm) !important;
   }
 
   .nav-dropdown-text {
-    align-items: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .nav-dropdown-text strong {
+    font-size: 1rem !important;
+    color: var(--text) !important;
+  }
+
+  .nav-dropdown-text span {
+    font-size: 0.78rem !important;
+    color: var(--text-light) !important;
   }
   
   .nav-caret {
@@ -1015,8 +1061,15 @@ pre, code, .result-text, .prompt-content-box, .code-editor-area {
   border-top: 1px solid var(--border) !important;
 }
 
-.nav-links {
-  background-color: var(--surface) !important;
+@media (min-width: 769px) {
+  .nav-links {
+    background-color: transparent !important;
+  }
+}
+@media (max-width: 768px) {
+  .nav-links {
+    background-color: rgba(17, 24, 39, 0.98) !important;
+  }
 }
 
 .nav-hamburger span {
