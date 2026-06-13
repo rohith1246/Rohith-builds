@@ -1,11 +1,10 @@
-
 {% extends "base.html" %}
 {% block title %}Student Dashboard | Rohith Builds{% endblock %}
 {% block meta_description %}Track your learning progress, completed lessons, and saved prompt templates.{% endblock %}
 
 {% block content %}
 <div class="container dashboard-page">
-
+  
   {% if not current_user.is_verified %}
   <div class="verification-banner">
     <div class="verification-content">
@@ -22,232 +21,301 @@
   </div>
   {% endif %}
 
-  <!-- Welcome + Quick Stats -->
-  <div class="dash-header">
-    <div class="dash-avatar">{{ current_user.username[0].upper() }}</div>
-    <div class="dash-info">
-      <h1>{{ current_user.username }}</h1>
-      <p class="dash-email">{{ current_user.email }}</p>
-      <p class="dash-joined">Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
-    </div>
-
-    <div class="dash-header-actions">
-      <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">+ New Prompt</a>
-      {% if current_user.email == config.ADMIN_EMAIL %}
-        <a href="{{ url_for('admin.admin') }}" class="btn-admin-panel">Admin Panel</a>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- Learning Stats Cards -->
-  <div class="dash-stats">
-    <div class="stat-card">
-      <span class="stat-num">{{ total_enrolled }}</span>
-      <span class="stat-label">Enrolled Courses</span>
-    </div>
-
-    <div class="stat-card">
-      <span class="stat-num">{{ completed_lessons }}</span>
-      <span class="stat-label">Completed Lessons</span>
-    </div>
-
-    <div class="stat-card">
-      <span class="stat-num">{{ total_xp }}</span>
-      <span class="stat-label">XP Earned</span>
-    </div>
-
-    <div class="stat-card">
-      <span class="stat-num">{{ completion_rate }}%</span>
-      <span class="stat-label">Completion Rate</span>
+  <!-- Premium Banner Header -->
+  <div class="dash-hero-banner">
+    <div class="dash-hero-overlay"></div>
+    <div class="dash-hero-content">
+      <div class="dash-avatar-container">
+        <div class="dash-avatar-glove"></div>
+        <div class="dash-avatar-main">{{ current_user.username[0].upper() }}</div>
+      </div>
+      <div class="dash-user-details">
+        <div class="dash-badge-container">
+          <span class="dash-badge-pill">Student Member</span>
+          {% if current_user.email == config.ADMIN_EMAIL %}
+            <span class="dash-badge-pill admin-badge">🛡️ Admin</span>
+          {% endif %}
+        </div>
+        <h1 class="dash-welcome-title">Welcome back, {{ current_user.username }}!</h1>
+        <p class="dash-email-sub">📧 {{ current_user.email }}</p>
+        <span class="dash-meta-joined">Learning since {{ current_user.created_at.strftime('%B %Y') }}</span>
+      </div>
+      <div class="dash-hero-actions">
+        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary-glow">+ New Prompt</a>
+        {% if current_user.email == config.ADMIN_EMAIL %}
+          <a href="{{ url_for('admin.admin') }}" class="btn-admin-glow">Admin Panel</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 
-  <!-- Continue Learning removed per user request -->
-
-  <!-- My Courses -->
-  <div class="dash-section">
-    <div class="dash-section-header">
-      <h2>My Courses</h2>
-      <a href="{{ url_for('learn.learn') }}" class="link-subtle">Manage Courses →</a>
-    </div>
-    {% if courses_info %}
-      <div class="joined-course-grid">
-        {% for info in courses_info %}
-          <div class="joined-course-card course-summary">
-            <div class="joined-course-icon" style="background-image: url('{{ url_for('static', filename=info.course.thumbnail) if info.course.thumbnail else url_for('static', filename='images/lessons/default.png') }}'); background-size: cover; background-position: center;"></div>
-            <div class="joined-course-content">
-              <h3>{{ info.course.title }}</h3>
-              <p class="muted">{{ (info.course.short_description or info.course.description or '')[:140] }}{% if info.course.description and info.course.description|length > 140 %}...{% endif %}</p>
-              <div class="progress-track small">
-                <div class="progress-fill" style="width: {{ info.progress }}%;"></div>
-              </div>
-              <div style="margin-top:12px;">
-                <a href="{{ url_for('learn.course_page', course_slug=info.course.slug) }}" class="btn-ghost btn-sm">Open Course</a>
-              </div>
-            </div>
+  <!-- Premium Grid Layout -->
+  <div class="dash-main-grid">
+    <!-- Left Main Column (Courses, Tabs for Prompts) -->
+    <div class="dash-col-main">
+      
+      <!-- Quick Stats Card Section -->
+      <div class="dash-stats-grid">
+        <div class="stat-card-premium">
+          <div class="stat-card-bg-glow yellow"></div>
+          <div class="stat-icon-wrap">📘</div>
+          <div class="stat-card-text">
+            <span class="stat-num">{{ total_enrolled }}</span>
+            <span class="stat-label">Enrolled Courses</span>
           </div>
-        {% endfor %}
+        </div>
+        
+        <div class="stat-card-premium">
+          <div class="stat-card-bg-glow green"></div>
+          <div class="stat-icon-wrap">✅</div>
+          <div class="stat-card-text">
+            <span class="stat-num">{{ completed_lessons }}</span>
+            <span class="stat-label">Completed Lessons</span>
+          </div>
+        </div>
+        
+        <div class="stat-card-premium">
+          <div class="stat-card-bg-glow purple"></div>
+          <div class="stat-icon-wrap">⚡</div>
+          <div class="stat-card-text">
+            <span class="stat-num">{{ total_xp }}</span>
+            <span class="stat-label">XP Earned</span>
+          </div>
+        </div>
+        
+        <div class="stat-card-premium">
+          <div class="stat-card-bg-glow blue"></div>
+          <div class="stat-icon-wrap">📈</div>
+          <div class="stat-card-text">
+            <span class="stat-num">{{ completion_rate }}%</span>
+            <span class="stat-label">Completion Rate</span>
+          </div>
+        </div>
       </div>
 
-      {% if suggested_courses %}
-        <div style="margin-top:18px;">
-          <div class="dash-section-header" style="margin-bottom:8px;">
-            <h3>Suggested Courses</h3>
-            <span class="muted">Courses you haven't joined yet</span>
-          </div>
-          <div class="suggested-grid">
-            {% for course in suggested_courses %}
-              <div class="suggested-card">
-                <div class="suggested-thumb" style="background-image:url('{{ url_for('static', filename=course.thumbnail) if course.thumbnail else url_for('static', filename='images/lessons/default.png') }}'); background-size:cover; background-position:center;"></div>
-                <div class="suggested-body">
-                  <h4>{{ course.title }}</h4>
-                  <p class="muted">{{ (course.short_description or course.description or '')[:120] }}{% if course.description and course.description|length > 120 %}...{% endif %}</p>
-                  <div style="margin-top:8px;">
-                    <a href="{{ url_for('learn.course_page', course_slug=course.slug) }}" class="btn-ghost btn-sm">View</a>
-                    <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}" class="btn-primary btn-sm">Join</a>
+      <!-- Enrolled Courses Section -->
+      <div class="dash-section-premium">
+        <div class="dash-section-header">
+          <h2>My Courses</h2>
+          <a href="{{ url_for('learn.learn') }}" class="link-glow">Manage Courses →</a>
+        </div>
+
+        {% if courses_info %}
+          <div class="course-list-premium">
+            {% for info in courses_info %}
+              <div class="course-row-card">
+                <div class="course-row-thumb" style="background-image: url('{{ url_for('static', filename=info.course.thumbnail) if info.course.thumbnail else url_for('static', filename='images/lessons/default.png') }}');"></div>
+                <div class="course-row-info">
+                  <h3>{{ info.course.title }}</h3>
+                  <p>{{ (info.course.short_description or info.course.description or '')[:120] }}{% if info.course.description and info.course.description|length > 120 %}...{% endif %}</p>
+                  
+                  <div class="course-row-progress-container">
+                    <div class="progress-track-premium">
+                      <div class="progress-fill-premium" style="width: {{ info.progress }}%;"></div>
+                    </div>
+                    <span class="progress-pct">{{ info.progress }}% Complete</span>
                   </div>
+                </div>
+                <div class="course-row-actions">
+                  <a href="{{ url_for('learn.course_page', course_slug=info.course.slug) }}" class="btn-glow-resume">
+                    {% if info.progress == 100 %}Review Course{% else %}Resume Learning{% endif %}
+                  </a>
                 </div>
               </div>
             {% endfor %}
           </div>
+        {% else %}
+          <div class="empty-state-premium">
+            <div class="empty-icon-glow">📘</div>
+            <h3>No enrolled courses yet</h3>
+            <p>Ready to start building? Join one of our premium programming courses today.</p>
+            <a href="{{ url_for('learn.learn') }}" class="btn-primary-glow">Explore Courses</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Tabs for My Prompts / Favorites -->
+      <div class="dash-section-premium">
+        <div class="tabs-control-header">
+          <div class="tabs-buttons">
+            <button class="tab-trigger active" onclick="switchDashTab(event, 'tab-prompts')">My Prompts ({{ prompts|length }})</button>
+            <button class="tab-trigger" onclick="switchDashTab(event, 'tab-favorites')">Favorites ({{ fav_prompts|length }})</button>
+          </div>
+          <a id="tabs-view-all" href="{{ url_for('prompts.vault') }}" class="link-glow">View Vault →</a>
         </div>
+
+        <!-- My Prompts Tab Content -->
+        <div id="tab-prompts" class="tab-panel active">
+          {% if prompts %}
+            <div class="prompt-rows-container">
+              {% for prompt in prompts %}
+                <div class="prompt-row-premium">
+                  <div class="prompt-row-meta-col">
+                    <span class="prompt-tag cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
+                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="prompt-row-title">{{ prompt.title }}</a>
+                    <span class="prompt-row-details">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes · {{ prompt.copies }} copies</span>
+                  </div>
+                  <div class="prompt-row-actions">
+                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost-glow">View</a>
+                    <a href="{{ url_for('prompts.edit_prompt', prompt_id=prompt.id) }}" class="btn-ghost-glow">Edit</a>
+                    <form method="POST" action="{{ url_for('prompts.delete_prompt', prompt_id=prompt.id) }}" style="display:inline" onsubmit="return confirm('Delete this prompt?')">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn-danger-glow">Delete</button>
+                    </form>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state-premium small-padding">
+              <div class="empty-icon-glow">✍️</div>
+              <h3>No prompts created yet</h3>
+              <p>Share your prompts with our developer community.</p>
+              <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary-glow">Create Prompt</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Favorite Prompts Tab Content -->
+        <div id="tab-favorites" class="tab-panel">
+          {% if fav_prompts %}
+            <div class="prompt-rows-container">
+              {% for prompt in fav_prompts %}
+                <div class="prompt-row-premium">
+                  <div class="prompt-row-meta-col">
+                    <span class="prompt-tag cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
+                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="prompt-row-title">{{ prompt.title }}</a>
+                    <span class="prompt-row-details">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes</span>
+                  </div>
+                  <div class="prompt-row-actions">
+                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost-glow">View</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state-premium small-padding">
+              <div class="empty-icon-glow">💜</div>
+              <h3>No favorites saved yet</h3>
+              <p>Favorite community prompts to keep them saved here.</p>
+              <a href="{{ url_for('prompts.vault') }}" class="btn-primary-glow">Browse Prompts</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar Column (Achievements, Suggested Courses, Activity) -->
+    <div class="dash-col-side">
+      
+      <!-- Achievements Box -->
+      <div class="side-panel-premium">
+        <div class="side-panel-header">
+          <h2>Achievements</h2>
+        </div>
+        <div class="achieve-grid-premium">
+          <div class="achieve-badge {% if achievements.first_lesson %}unlocked{% else %}locked{% endif %}" title="First Lesson Completed">
+            <div class="badge-icon-wrap">🎯</div>
+            <span class="badge-label">First Lesson</span>
+          </div>
+          <div class="achieve-badge {% if achievements.ten_lessons %}unlocked{% else %}locked{% endif %}" title="10 Lessons Completed">
+            <div class="badge-icon-wrap">🏅</div>
+            <span class="badge-label">10 Lessons</span>
+          </div>
+          <div class="achieve-badge {% if achievements.first_prompt %}unlocked{% else %}locked{% endif %}" title="First Community Prompt Created">
+            <div class="badge-icon-wrap">✍️</div>
+            <span class="badge-label">First Prompt</span>
+          </div>
+          <div class="achieve-badge {% if achievements.first_course_complete %}unlocked{% else %}locked{% endif %}" title="First Full Course Finished">
+            <div class="badge-icon-wrap">🏁</div>
+            <span class="badge-label">Course Finished</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggested Courses Box -->
+      {% if suggested_courses %}
+      <div class="side-panel-premium">
+        <div class="side-panel-header">
+          <h2>Suggested Courses</h2>
+        </div>
+        <div class="suggested-list-premium">
+          {% for course in suggested_courses %}
+            <div class="suggest-row-card">
+              <div class="suggest-row-thumb" style="background-image: url('{{ url_for('static', filename=course.thumbnail) if course.thumbnail else url_for('static', filename='images/lessons/default.png') }}');"></div>
+              <div class="suggest-row-body">
+                <h4>{{ course.title }}</h4>
+                <p>{{ (course.short_description or course.description or '')[:80] }}{% if course.description and course.description|length > 80 %}...{% endif %}</p>
+                <div class="suggest-row-buttons">
+                  <a href="{{ url_for('learn.course_page', course_slug=course.slug) }}" class="btn-ghost-sm">View</a>
+                  <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}" class="btn-primary-sm">Join</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
       {% endif %}
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">📘</div>
-        <h3>No enrolled courses yet</h3>
-        <p>Explore available courses and join to start learning.</p>
-        <a href="{{ url_for('learn.learn') }}" class="btn-primary">Go to Courses</a>
-      </div>
-    {% endif %}
-  </div>
 
-  <!-- My Prompts -->
-  <div class="dash-section">
-    <div class="dash-section-header">
-      <h2>My Prompts</h2>
-      <a href="{{ url_for('prompts.vault') }}" class="link-subtle">View All Prompts →</a>
-    </div>
-
-    {% if prompts %}
-      <div class="dash-prompts-list">
-        {% for prompt in prompts %}
-          <div class="dash-prompt-row">
-            <div class="dash-prompt-info">
-              <span class="card-cat cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
-              <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="dash-prompt-title">{{ prompt.title }}</a>
-              <span class="dash-prompt-meta">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes · {{ prompt.copies }} copies</span>
-            </div>
-            <div class="dash-prompt-actions">
-              <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost btn-sm">View</a>
-              <a href="{{ url_for('prompts.edit_prompt', prompt_id=prompt.id) }}" class="btn-ghost btn-sm">Edit</a>
-              <form method="POST" action="{{ url_for('prompts.delete_prompt', prompt_id=prompt.id) }}" style="display:inline" onsubmit="return confirm('Delete this prompt?')">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-sm btn-danger">Delete</button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">✍️</div>
-        <h3>No prompts yet</h3>
-        <p>Share your first AI prompt with the community!</p>
-        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">Create Prompt</a>
-      </div>
-    {% endif %}
-  </div>
-
-  <!-- Favorite Prompts -->
-  <div class="dash-section">
-    <div class="dash-section-header">
-      <h2>Favorite Prompts</h2>
-      <a href="{{ url_for('prompts.favorites') }}" class="link-subtle">View Favorites →</a>
-    </div>
-
-    {% if fav_prompts %}
-      <div class="dash-prompts-list">
-        {% for prompt in fav_prompts %}
-          <div class="dash-prompt-row">
-            <div class="dash-prompt-info">
-              <span class="card-cat cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
-              <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="dash-prompt-title">{{ prompt.title }}</a>
-              <span class="dash-prompt-meta">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes</span>
-            </div>
-            <div class="dash-prompt-actions">
-              <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost btn-sm">View</a>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">💜</div>
-        <h3>No favorites yet</h3>
-        <p>Save prompts to your favorites to revisit them later.</p>
-        <a href="{{ url_for('prompts.vault') }}" class="btn-primary">Browse Prompts</a>
-      </div>
-    {% endif %}
-  </div>
-
-  <!-- Recent Activity + Achievements + Quick Actions -->
-  <div class="dash-section dash-split-layout">
-
-    <div>
-      <div class="dash-section-header"><h2>Recent Activity</h2></div>
-      <div class="recent-activity">
-        {% for ev in recent_events %}
-          <div class="activity-row">
-            <div class="activity-icon">
-              {% if ev.type == 'enrolled' %}🎓{% elif ev.type == 'lesson_completed' %}✅{% elif ev.type == 'prompt_created' %}✍️{% elif ev.type == 'prompt_favorited' %}💜{% else %}•{% endif %}
-            </div>
-            <div class="activity-body">
-              <div class="activity-label">{{ ev.label }}</div>
-              <div class="activity-time">{{ ev.time.strftime('%b %d, %Y %I:%M %p') if ev.time else '—' }}</div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <aside>
-      <div class="achievements">
-        <div class="dash-section-header"><h2>Achievements</h2></div>
-        <div class="achievement-grid">
-          <div class="achievement-card {% if achievements.first_lesson %}unlocked{% else %}locked{% endif %}">
-            <div class="achievement-icon">🎯</div>
-            <div class="achievement-title">First Lesson</div>
-          </div>
-          <div class="achievement-card {% if achievements.ten_lessons %}unlocked{% else %}locked{% endif %}">
-            <div class="achievement-icon">🏅</div>
-            <div class="achievement-title">10 Lessons Completed</div>
-          </div>
-          <div class="achievement-card {% if achievements.first_prompt %}unlocked{% else %}locked{% endif %}">
-            <div class="achievement-icon">✍️</div>
-            <div class="achievement-title">First Prompt</div>
-          </div>
-          <div class="achievement-card {% if achievements.first_course_complete %}unlocked{% else %}locked{% endif %}">
-            <div class="achievement-icon">🏁</div>
-            <div class="achievement-title">First Course Completed</div>
-          </div>
+      <!-- Recent Activity Box -->
+      <div class="side-panel-premium">
+        <div class="side-panel-header">
+          <h2>Recent Activity</h2>
+        </div>
+        <div class="activity-timeline-premium">
+          {% if recent_events %}
+            {% for ev in recent_events %}
+              <div class="timeline-item-premium">
+                <div class="timeline-indicator-col">
+                  <div class="timeline-dot">
+                    {% if ev.type == 'enrolled' %}🎓{% elif ev.type == 'lesson_completed' %}✅{% elif ev.type == 'prompt_created' %}✍️{% elif ev.type == 'prompt_favorited' %}💜{% else %}•{% endif %}
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-body-col">
+                  <span class="timeline-desc">{{ ev.label }}</span>
+                  <span class="timeline-time">{{ ev.time.strftime('%b %d, %Y %I:%M %p') if ev.time else '—' }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="muted" style="text-align:center; padding: 10px 0;">No recent activity logged.</p>
+          {% endif %}
         </div>
       </div>
 
-      <div style="height:18px"></div>
-
-      <div class="quick-actions">
-        <div class="dash-section-header"><h2>Quick Actions</h2></div>
-        <div class="quick-grid">
-          <a href="{{ url_for('learn.learn') }}" class="btn-ghost">Browse Courses</a>
-          <a href="{{ url_for('prompts.vault') }}" class="btn-ghost">Prompt Vault</a>
-          <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary">Create Prompt</a>
-        </div>
-      </div>
-    </aside>
-
+    </div>
   </div>
 
 </div>
+
+<!-- Tab Switcher Script -->
+<script>
+function switchDashTab(event, tabId) {
+  // Hide all panels
+  const panels = document.querySelectorAll('.tab-panel');
+  panels.forEach(p => p.classList.remove('active'));
+
+  // Deactivate all trigger buttons
+  const triggers = document.querySelectorAll('.tab-trigger');
+  triggers.forEach(t => t.classList.remove('active'));
+
+  // Show selected panel
+  document.getElementById(tabId).classList.add('active');
+
+  // Activate clicked trigger button
+  event.currentTarget.classList.add('active');
+
+  // Update "View Vault" link behavior depending on active tab
+  const viewAllBtn = document.getElementById('tabs-view-all');
+  if (tabId === 'tab-favorites') {
+    viewAllBtn.href = "{{ url_for('prompts.favorites') }}";
+    viewAllBtn.innerText = "View Favorites →";
+  } else {
+    viewAllBtn.href = "{{ url_for('prompts.vault') }}";
+    viewAllBtn.innerText = "View Vault →";
+  }
+}
+</script>
 {% endblock %}
-```
