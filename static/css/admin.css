@@ -48,7 +48,7 @@
 }
 
 .admin-action-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
@@ -116,7 +116,7 @@
 }
 
 .astat-card {
-  background: white;
+  background: var(--surface);
   border-radius: var(--radius-md);
   padding: 24px;
   display: flex;
@@ -161,7 +161,7 @@
 ================================================== */
 
 .admin-section {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
@@ -213,7 +213,7 @@
 
 .admin-table tbody td {
   padding: 18px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
   color: var(--text);
 }
 
@@ -259,18 +259,18 @@
 }
 
 .badge-admin {
-  background: #ede9fe;
-  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.15);
+  color: #c084fc;
 }
 
 .badge-verified {
-  background: #dcfce7;
-  color: #16a34a;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
 }
 
 .badge-unverified {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
 }
 
 /* ==================================================
@@ -499,7 +499,7 @@
 }
 
 .monitor-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 20px;
@@ -550,7 +550,7 @@
 }
 
 .chart-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -586,7 +586,7 @@
   overflow-x: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: white;
+  background: var(--surface);
   margin-bottom: 32px;
 }
 
