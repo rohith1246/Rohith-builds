@@ -224,6 +224,19 @@ def ai_engineer_roadmap_freshers():
 def best_ai_projects_students():
     return render_template("blog/best-ai-projects-students.html")
 
+@app.route("/blog/backend-developer-roadmap-india")
+def backend_developer_roadmap_india():
+    return render_template("blog/backend-developer-roadmap-india.html")
+
+@app.route("/blog/python-developer-salary-india")
+def python_developer_salary_india():
+    return render_template("blog/python-developer-salary-india.html")
+
+@app.route("/blog/backend-developer-salary-india")
+def backend_developer_salary_india():
+    return render_template("blog/backend-developer-salary-india.html")
+
+
 @app.route("/health")
 def health_check():
     return jsonify({"status": "ok"}), 200
@@ -262,6 +275,9 @@ def sitemap_xml():
         ("/blog/python-roadmap-beginners-2026", "weekly", "0.8"),
         ("/blog/ai-engineer-roadmap-freshers", "weekly", "0.8"),
         ("/blog/best-ai-projects-students", "weekly", "0.8"),
+        ("/blog/backend-developer-roadmap-india", "weekly", "0.8"),
+        ("/blog/python-developer-salary-india", "weekly", "0.8"),
+        ("/blog/backend-developer-salary-india", "weekly", "0.8"),
     ]
     
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
