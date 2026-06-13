@@ -22,7 +22,8 @@ from models import (
     CourseDay,
     CourseEnrollment,
     LessonProgress,
-    LessonReview
+    LessonReview,
+    UserCourseProgress
 )
 
 
@@ -322,9 +323,34 @@ def complete_lesson(day_id):
             completed=True,
             completed_at=datetime.utcnow()
         )
-
         db.session.add(progress)
+
+        # Retrieve or initialize user course progress record
+        progress_rec = UserCourseProgress.query.filter_by(
+            user_id=current_user.id,
+            course_id=day.course_id
+        ).first()
+
+        if not progress_rec:
+            progress_rec = UserCourseProgress(
+                user_id=current_user.id,
+                course_id=day.course_id,
+                current_day=day.day_number,
+                completed_days=0,
+                total_xp=0
+            )
+            db.session.add(progress_rec)
+
+        progress_rec.completed_days += 1
+        progress_rec.total_xp += (day.xp_reward or 50)
+        progress_rec.last_completed_at = datetime.utcnow()
+
+        # Update current_day to next day in progress sequence
+        if day.day_number >= progress_rec.current_day:
+            progress_rec.current_day = day.day_number + 1
+
         db.session.commit()
+
     flash("Lesson completed!", "success")
 
     next_day = CourseDay.query.filter(

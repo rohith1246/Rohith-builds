@@ -305,9 +305,31 @@ def dashboard():
         total_days = len(course_days)
         completed_count = len(completed_by_course.get(course.id, set()))
 
-        progress_percent = 0
-        if total_days > 0:
-            progress_percent = int((completed_count / total_days) * 100)
+        # Sync UserCourseProgress / XP
+        progress_rec = UserCourseProgress.query.filter_by(
+            user_id=current_user.id,
+            course_id=course.id
+        ).first()
+
+        completed_day_ids = completed_by_course.get(course.id, set())
+        actual_xp = sum(d.xp_reward or 50 for d in course_days if d.id in completed_day_ids)
+
+        if not progress_rec:
+            progress_rec = UserCourseProgress(
+                user_id=current_user.id,
+                course_id=course.id,
+                current_day=1,
+                completed_days=completed_count,
+                total_xp=actual_xp
+            )
+            db.session.add(progress_rec)
+            db.session.commit()
+        elif progress_rec.completed_days != completed_count or progress_rec.total_xp != actual_xp:
+            progress_rec.completed_days = completed_count
+            progress_rec.total_xp = actual_xp
+            db.session.commit()
+
+        progress_percent = int((completed_count / total_days) * 100) if total_days > 0 else 0
 
         courses_info.append({
             "enrollment": enrollment,
