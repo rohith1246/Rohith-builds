@@ -412,3 +412,23 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"<Job {self.title} at {self.company}>"
+
+
+class JobApplication(db.Model):
+    __tablename__ = "job_applications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Unique constraint so a user can only apply once to a job
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "job_id", name="uq_user_job_application"),
+    )
+
+    user = db.relationship("User", backref=db.backref("job_applications", lazy="dynamic"))
+    job = db.relationship("Job", backref=db.backref("applications", lazy="dynamic"))
+
+    def __repr__(self):
+        return f"<JobApplication User:{self.user_id} Job:{self.job_id}>"

@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import or_
 import re
 from datetime import datetime
-from models import db, Job, CourseEnrollment, LessonProgress, CourseDay
+from models import db, Job, CourseEnrollment, LessonProgress, CourseDay, JobApplication
 from extensions import csrf
 from . import jobs_bp
 
@@ -82,6 +82,9 @@ def board():
     PER_PAGE = 15
     pagination = query.order_by(Job.created_at.desc()).paginate(page=page, per_page=PER_PAGE, error_out=False)
     jobs = pagination.items
+    applied_job_ids = set()
+    if current_user.is_authenticated:
+        applied_job_ids = {app.job_id for app in JobApplication.query.filter_by(user_id=current_user.id).all()}
 
     return render_template(
         "jobs.html",
@@ -94,7 +97,8 @@ def board():
         search_query=search_query,
         now=datetime.utcnow(),
         total_jobs_count=total_jobs_count,
-        filters_active=filters_active
+        filters_active=filters_active,
+        applied_job_ids=applied_job_ids
     )
 
 
@@ -103,9 +107,21 @@ def board():
 def record_job_click(job_id):
     job = Job.query.get_or_404(job_id)
     job.clicks = (job.clicks or 0) + 1
+    
+    applied = False
+    if current_user.is_authenticated:
+        existing_app = JobApplication.query.filter_by(user_id=current_user.id, job_id=job_id).first()
+        if not existing_app:
+            new_app = JobApplication(user_id=current_user.id, job_id=job_id)
+            db.session.add(new_app)
+            applied = True
+        else:
+            applied = True
+            
     db.session.commit()
     return jsonify({
         "success": True,
-        "clicks_count": job.clicks
+        "clicks_count": job.clicks,
+        "applied": applied
     })
 
