@@ -30,13 +30,13 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback-dev-key")
 app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
 app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///prompts.db")
-engine_options = {
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_size": 3,
+    "max_overflow": 2,
+    "pool_timeout": 30,
+    "pool_recycle": 1800,
     "pool_pre_ping": True,
-    "pool_recycle": 300,
 }
-if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
-    engine_options["connect_args"] = {"connect_timeout": 10}
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["ADMIN_EMAIL"] = os.environ.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
 
