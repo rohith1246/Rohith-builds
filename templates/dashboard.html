@@ -41,7 +41,6 @@
         <span class="dash-meta-joined">Learning since {{ current_user.created_at.strftime('%B %Y') }}</span>
       </div>
       <div class="dash-hero-actions">
-        <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary-glow">+ New Prompt</a>
         {% if current_user.email == config.ADMIN_EMAIL %}
           <a href="{{ url_for('admin.admin') }}" class="btn-admin-glow">Admin Panel</a>
         {% endif %}
@@ -208,6 +207,64 @@
 
     <!-- Right Sidebar Column (Achievements, Suggested Courses, Activity) -->
     <div class="dash-col-side">
+      
+      <!-- Daily Streak Box -->
+      <div class="side-panel-premium">
+        <div class="side-panel-header">
+          <h2>Daily Streak</h2>
+        </div>
+        <div class="streak-box-premium" style="display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(251, 146, 60, 0.04); border: 1px solid rgba(251, 146, 60, 0.15); border-radius: 12px; margin-top: 10px;">
+          <div class="streak-fire" style="font-size: 2.8rem; margin-right: 16px; animation: pulse-fire 2s infinite alternate; line-height: 1;">🔥</div>
+          <div style="text-align: left;">
+            <div class="streak-count" style="font-size: 1.6rem; font-weight: 700; color: #fb923c; line-height: 1.2;">{{ current_user.current_streak }} Day{{ 's' if current_user.current_streak != 1 else '' }}</div>
+            <div class="streak-label" style="font-size: 0.85rem; color: #9ca3af; margin-top: 4px; line-height: 1.3;">
+              {% if current_user.current_streak > 0 %}
+                Keep it going! Complete a lesson today.
+              {% else %}
+                Start your streak! Complete a lesson today.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP Leaderboard Box -->
+      <div class="side-panel-premium">
+        <div class="side-panel-header">
+          <h2>Global Leaderboard</h2>
+        </div>
+        <div class="leaderboard-list" style="margin-top: 10px;">
+          {% if leaderboard %}
+            {% for entry in leaderboard %}
+              <div class="leaderboard-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; background: {% if entry.username == current_user.username %}rgba(250, 204, 21, 0.08){% else %}rgba(255,255,255,0.02){% endif %}; border: {% if entry.username == current_user.username %}1px solid rgba(250, 204, 21, 0.25){% else %}1px solid rgba(255,255,255,0.05){% endif %};">
+                <div style="display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span class="leaderboard-rank" style="font-weight: bold; font-size: 0.95rem; width: 24px; text-align: center; flex-shrink: 0; color: {% if loop.index == 1 %}#facc15{% elif loop.index == 2 %}#94a3b8{% elif loop.index == 3 %}#b45309{% else %}#9ca3af{% endif %};">
+                    {% if loop.index == 1 %}👑{% else %}{{ loop.index }}{% endif %}
+                  </span>
+                  <span class="leaderboard-username" style="font-weight: 500; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: {% if entry.username == current_user.username %}#facc15{% else %}#e5e7eb{% endif %};">
+                    {{ entry.username }}
+                  </span>
+                  {% if entry.streak > 0 %}
+                    <span class="leaderboard-streak" style="margin-left: 8px; font-size: 0.8rem; flex-shrink: 0;" title="{{ entry.streak }} day streak">🔥{{ entry.streak }}</span>
+                  {% endif %}
+                </div>
+                <span class="leaderboard-xp" style="font-weight: 600; font-size: 0.9rem; color: #f3f4f6; flex-shrink: 0; margin-left: 10px;">
+                  {{ entry.xp }} XP
+                </span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="muted" style="text-align: center; padding: 10px 0;">No active rankings yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <style>
+        @keyframes pulse-fire {
+          0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 146, 60, 0.4)); }
+          100% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.7)); }
+        }
+      </style>
       
       <!-- Achievements Box -->
       <div class="side-panel-premium">

@@ -348,6 +348,18 @@ def complete_lesson(day_id: int) -> Response:
         if day.day_number >= progress_rec.current_day:
             progress_rec.current_day = day.day_number + 1
 
+        # Update user learning streak
+        today = datetime.utcnow().date()
+        if not current_user.last_active_date:
+            current_user.current_streak = 1
+        else:
+            diff = (today - current_user.last_active_date).days
+            if diff == 1:
+                current_user.current_streak += 1
+            elif diff > 1:
+                current_user.current_streak = 1
+        current_user.last_active_date = today
+
         db.session.commit()
 
     flash("Lesson completed!", "success")

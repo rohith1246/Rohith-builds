@@ -142,6 +142,14 @@ def _initialize_database() -> None:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE users ADD COLUMN rohi_last_reset_date DATE"))
                         conn.commit()
+                if "current_streak" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN current_streak INTEGER DEFAULT 0"))
+                        conn.commit()
+                if "last_active_date" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN last_active_date DATE"))
+                        conn.commit()
 
             # COURSE DAYS TABLE
             if "course_days" in table_names:

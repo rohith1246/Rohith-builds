@@ -431,6 +431,37 @@ def dashboard() -> str:
         reverse=True,
     )
 
+    # Check if current user's streak has expired
+    if current_user.last_active_date:
+        today = datetime.utcnow().date()
+        if (today - current_user.last_active_date).days > 1:
+            current_user.current_streak = 0
+            db.session.commit()
+
+    # Get leaderboard: sum total_xp from UserCourseProgress per user
+    leaderboard_data = (
+        db.session.query(User, func.sum(UserCourseProgress.total_xp).label("xp"))
+        .join(UserCourseProgress, UserCourseProgress.user_id == User.id)
+        .group_by(User.id)
+        .order_by(db.desc("xp"))
+        .limit(5)
+        .all()
+    )
+
+    leaderboard = []
+    for u, xp in leaderboard_data:
+        # Check and compute active streak
+        streak = u.current_streak
+        if u.last_active_date:
+            today = datetime.utcnow().date()
+            if (today - u.last_active_date).days > 1:
+                streak = 0
+        leaderboard.append({
+            "username": u.username,
+            "xp": xp or 0,
+            "streak": streak
+        })
+
     # Achievements
     achievements = {
         "first_lesson": total_completed_lessons >= 1,
@@ -454,7 +485,8 @@ def dashboard() -> str:
         completion_rate=completion_rate,
         recent_events=recent_events,
         achievements=achievements,
-        suggested_courses=suggested_courses
+        suggested_courses=suggested_courses,
+        leaderboard=leaderboard
     )
 
 

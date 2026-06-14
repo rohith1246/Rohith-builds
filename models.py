@@ -18,6 +18,8 @@ class User(UserMixin, db.Model):
     google_id = db.Column(db.String(100), unique=True, nullable=True)
     rohi_messages_today = db.Column(db.Integer, default=0)
     rohi_last_reset_date = db.Column(db.Date)
+    current_streak = db.Column(db.Integer, default=0)
+    last_active_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     prompts = db.relationship(
