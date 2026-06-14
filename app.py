@@ -123,9 +123,18 @@ def _initialize_database():
 
             # USERS TABLE
             if "users" in table_names:
-                if "is_verified" not in [col["name"] for col in inspector.get_columns("users")]:
+                user_cols = [col["name"] for col in inspector.get_columns("users")]
+                if "is_verified" not in user_cols:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
+                        conn.commit()
+                if "rohi_messages_today" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN rohi_messages_today INTEGER DEFAULT 0"))
+                        conn.commit()
+                if "rohi_last_reset_date" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN rohi_last_reset_date DATE"))
                         conn.commit()
 
             # COURSE DAYS TABLE

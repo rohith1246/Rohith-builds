@@ -49,6 +49,17 @@ def rohi_chat_api():
                 "message": "Please sign up to continue chatting with Rohi."
             }), 403
         session["rohi_guest_count"] = used + 1
+    else:
+        from datetime import date
+        today = date.today()
+        if current_user.rohi_last_reset_date != today:
+            current_user.rohi_messages_today = 0
+            current_user.rohi_last_reset_date = today
+            db.session.commit()
+        if current_user.rohi_messages_today >= 20:
+            return jsonify({
+                "reply": "You've reached today's limit of 20 messages. Come back tomorrow! Meanwhile explore the lessons at /learn"
+            })
 
     # Retrieve history from session
     history = session.get("rohi_history", [])
@@ -77,6 +88,11 @@ def rohi_chat_api():
         lesson_context=lesson_context,
         history=history
     )
+
+    # Increment counter for authenticated users
+    if current_user.is_authenticated:
+        current_user.rohi_messages_today += 1
+        db.session.commit()
 
     # Append to sliding history and save
     history.append({"role": "user", "content": message})

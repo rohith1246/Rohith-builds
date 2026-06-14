@@ -15,6 +15,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     google_id = db.Column(db.String(100), unique=True, nullable=True)
+    rohi_messages_today = db.Column(db.Integer, default=0)
+    rohi_last_reset_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     prompts = db.relationship(
