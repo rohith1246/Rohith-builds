@@ -1,10 +1,12 @@
+import logging
 import os
-from groq import Groq
+
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv(override=True)
 
-ROHI_SYSTEM_PROMPT = """
+ROHI_SYSTEM_PROMPT: str = """
 You are Rohi, the AI tutor for Rohith Builds.
 You are friendly, helpful, and speak like a 
 senior Indian developer mentoring a junior.
@@ -78,7 +80,7 @@ TEACHING STYLE:
 - Encourage students when they struggle
 - Always connect concepts to real projects
 - Keep answers concise (3-5 lines max)
-  unless student asks for more detail
+- Limit to 3-5 lines unless student asks for more detail
 
 CURRENT LESSON CONTEXT:
 {lesson_context}
@@ -91,9 +93,11 @@ You are the guide for the entire
 Rohith Builds platform and community.
 """
 
-def call_groq_with_fallback(messages, max_tokens=300):
-    key_primary = os.getenv("GROQ_API_KEY", "").strip()
-    key_secondary = os.getenv("GROQ_API_KEY_SECONDARY", "").strip()
+
+def call_groq_with_fallback(messages: list[dict[str, str]], max_tokens: int = 300) -> str:
+    """Call Groq API with fallback keys and models in case of rate limits."""
+    key_primary: str = os.getenv("GROQ_API_KEY", "").strip()
+    key_secondary: str = os.getenv("GROQ_API_KEY_SECONDARY", "").strip()
 
     # Fallback chain:
     # 1. Primary key + llama-3.3-70b-versatile
@@ -102,7 +106,7 @@ def call_groq_with_fallback(messages, max_tokens=300):
     # 4. Secondary key + llama-3.1-8b-instant
     # 5. Primary key + mixtral-8x7b-32768
     # 6. Secondary key + mixtral-8x7b-32768
-    steps = [
+    steps: list[tuple[str, str]] = [
         (key_primary, "llama-3.3-70b-versatile"),
         (key_primary, "llama-3.1-8b-instant"),
         (key_secondary, "llama-3.3-70b-versatile"),
@@ -111,16 +115,16 @@ def call_groq_with_fallback(messages, max_tokens=300):
         (key_secondary, "mixtral-8x7b-32768"),
     ]
 
-    valid_steps = [(k, m) for k, m in steps if k]
+    valid_steps: list[tuple[str, str]] = [(k, m) for k, m in steps if k]
     if not valid_steps:
         return "Rohi is taking a short break. Please try again in a moment."
 
-    last_err = None
+    last_err: Exception | None = None
     for key, model in valid_steps:
         try:
             client = Groq(api_key=key, timeout=5.0)
             chat_completion = client.chat.completions.create(
-                messages=messages,
+                messages=messages,  # type: ignore
                 model=model,
                 temperature=0.7,
                 max_tokens=max_tokens
@@ -128,14 +132,16 @@ def call_groq_with_fallback(messages, max_tokens=300):
             return chat_completion.choices[0].message.content.strip()
         except Exception as e:
             last_err = e
-            print(f"[Fallback] Groq model {model} failed. Trying next option. Error: {e}")
+            logging.info(f"[Fallback] Groq model {model} failed. Trying next option. Error: {e}")
             continue
 
-    print(f"[Fallback] All Groq models and keys failed. Last error: {last_err}")
+    logging.error(f"[Fallback] All Groq models and keys failed. Last error: {last_err}")
     return "Rohi is taking a short break. Please try again in a moment."
 
-def improve_prompt(user_prompt):
-    system_prompt = """
+
+def improve_prompt(user_prompt: str) -> str:
+    """Optimize a user-provided prompt using LLM fallback chain."""
+    system_prompt: str = """
     You are an expert AI prompt optimizer.
 
     Rewrite the user's prompt into a clearer,
@@ -145,25 +151,27 @@ def improve_prompt(user_prompt):
     Keep the intent same.
     Make it more specific and useful.
     """
-    messages = [
+    messages: list[dict[str, str]] = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
     return call_groq_with_fallback(messages, max_tokens=1000)
 
-def rohi_chat(message, lesson_context="", history=None):
-    history_str = ""
+
+def rohi_chat(message: str, lesson_context: str = "", history: list[dict[str, str]] | None = None) -> str:
+    """Generate a response from Rohi the AI tutor for a student message."""
+    history_str: str = ""
     if history:
         for h in history:
             role = "Student" if h["role"] == "user" else "Rohi"
             history_str += f"{role}: {h['content']}\n"
 
-    system_prompt = ROHI_SYSTEM_PROMPT.format(
+    system_prompt: str = ROHI_SYSTEM_PROMPT.format(
         lesson_context=lesson_context or "",
         history=history_str
     )
 
-    messages = [
+    messages: list[dict[str, str]] = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": message}
     ]

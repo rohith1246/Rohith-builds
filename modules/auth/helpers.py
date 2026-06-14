@@ -1,16 +1,23 @@
+import logging
 import os
+from typing import Any
+
 from flask import current_app, render_template, url_for
 from itsdangerous import URLSafeTimedSerializer
 import sendgrid
 from sendgrid.helpers.mail import Mail
 
+from models import CourseDay, User
 
-def generate_verification_token(email):
+
+def generate_verification_token(email: str) -> str:
+    """Generate a secure email verification token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     return serializer.dumps(email, salt="email-confirm-salt")
 
 
-def verify_token(token, expiration=3600):
+def verify_token(token: str, expiration: int = 3600) -> str | None:
+    """Verify and decode the email verification token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
         return serializer.loads(token, salt="email-confirm-salt", max_age=expiration)
@@ -18,12 +25,14 @@ def verify_token(token, expiration=3600):
         return None
 
 
-def generate_reset_token(email):
+def generate_reset_token(email: str) -> str:
+    """Generate a secure password reset token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     return serializer.dumps(email, salt="password-reset-salt")
 
 
-def verify_reset_token(token, expiration=3600):
+def verify_reset_token(token: str, expiration: int = 3600) -> str | None:
+    """Verify and decode the password reset token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
         return serializer.loads(token, salt="password-reset-salt", max_age=expiration)
@@ -31,11 +40,12 @@ def verify_reset_token(token, expiration=3600):
         return None
 
 
-def send_verification_email(user):
-    token = generate_verification_token(user.email)
-    verify_url = url_for("auth.verify_email", token=token, _external=True)
+def send_verification_email(user: User) -> bool:
+    """Send an email verification link to the user via SendGrid."""
+    token: str = generate_verification_token(user.email)
+    verify_url: str = url_for("auth.verify_email", token=token, _external=True)
     try:
-        html_content = render_template(
+        html_content: str = render_template(
             "email/verify_email.html",
             username=user.username.title(),
             verify_url=verify_url
@@ -48,18 +58,19 @@ def send_verification_email(user):
             html_content=html_content
         )
         response = sg.send(message)
-        print(f"[OK] SendGrid sent: {response.status_code}")
+        logging.info(f"[OK] SendGrid sent: {response.status_code}")
         return True
     except Exception as e:
-        print(f"[ERROR] SendGrid error: {e}")
+        logging.error(f"[ERROR] SendGrid error: {e}")
         return False
 
 
-def send_password_reset_email(user):
-    token = generate_reset_token(user.email)
-    reset_url = url_for("auth.reset_password", token=token, _external=True)
+def send_password_reset_email(user: User) -> bool:
+    """Send a password reset link to the user via SendGrid."""
+    token: str = generate_reset_token(user.email)
+    reset_url: str = url_for("auth.reset_password", token=token, _external=True)
     try:
-        html_content = render_template(
+        html_content: str = render_template(
             "email/reset_password.html",
             username=user.username.title(),
             reset_url=reset_url
@@ -72,17 +83,18 @@ def send_password_reset_email(user):
             html_content=html_content
         )
         response = sg.send(message)
-        print(f"[OK] SendGrid password reset sent: {response.status_code}")
+        logging.info(f"[OK] SendGrid password reset sent: {response.status_code}")
         return True
     except Exception as e:
-        print(f"[ERROR] SendGrid reset error: {e}")
+        logging.error(f"[ERROR] SendGrid reset error: {e}")
         return False
 
 
-def send_lesson_review_email(user, lesson, rating):
+def send_lesson_review_email(user: User, lesson: CourseDay, rating: int) -> bool:
+    """Send a lesson review notification to the admin via SendGrid."""
     try:
-        admin_email = current_app.config.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
-        html_content = f"""
+        admin_email: str = current_app.config.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
+        html_content: str = f"""
         <h3>New Lesson Review Received</h3>
         <p><strong>Lesson:</strong> Day {lesson.day_number} — {lesson.title} ({lesson.course.title})</p>
         <p><strong>Learner:</strong> {user.username} ({user.email})</p>
@@ -97,8 +109,9 @@ def send_lesson_review_email(user, lesson, rating):
             html_content=html_content
         )
         response = sg.send(message)
-        print(f"[OK] SendGrid review email sent: {response.status_code}")
+        logging.info(f"[OK] SendGrid review email sent: {response.status_code}")
         return True
     except Exception as e:
-        print(f"[ERROR] SendGrid review email error: {e}")
+        logging.error(f"[ERROR] SendGrid review email error: {e}")
         return False
+

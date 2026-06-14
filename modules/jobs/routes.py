@@ -1,22 +1,33 @@
-from flask import render_template, request, jsonify, current_app
-from flask_login import current_user, login_required
-from sqlalchemy import or_
-import re
 from datetime import datetime
-from models import db, Job, CourseEnrollment, LessonProgress, CourseDay, JobApplication
+import io
+import logging
+import os
+import re
+import time as time_mod
+from typing import Any
+
+from flask import current_app, jsonify, render_template, request, Response, url_for
+from flask_login import current_user, login_required
+import pypdf
+from sqlalchemy import or_
+from werkzeug.utils import secure_filename
+
 from extensions import csrf
+from models import AgentApplicationLog, AgentJobOpportunity, CourseDay, CourseEnrollment, db, Job, JobApplication, LessonProgress, UserAgentConfig
 from . import jobs_bp
+from .agent_worker import AGENT_STATUSES, run_job_agent_pipeline_async
 
 
 @jobs_bp.route("/jobs")
-def board():
+def board() -> str:
+    """Render the job board page with filters and pagination."""
     # Get filters from query parameters
-    job_type = request.args.get("type", "All")
-    category = request.args.get("role", "All")
-    location_filter = request.args.get("location", "All")
-    batch_filter = request.args.get("batch", "All")
-    search_query = request.args.get("search", "").strip()
-    page = request.args.get("page", 1, type=int)
+    job_type: str = request.args.get("type", "All")
+    category: str = request.args.get("role", "All")
+    location_filter: str = request.args.get("location", "All")
+    batch_filter: str = request.args.get("batch", "All")
+    search_query: str = request.args.get("search", "").strip()
+    page: int = request.args.get("page", 1, type=int)
 
     # Base query
     query = Job.query.filter_by(is_active=True)
@@ -55,7 +66,7 @@ def board():
             query = query.filter(Job.target_batch.ilike("%Experience%"))
         else:
             # For 2025, 2026, 2027: match explicit batch OR fresher/entry-level roles
-            batch_pattern = f"%{batch_filter}%"
+            batch_pattern: str = f"%{batch_filter}%"
             query = query.filter(
                 or_(
                     Job.target_batch.ilike(batch_pattern),
@@ -65,7 +76,7 @@ def board():
             )
 
     if search_query:
-        search_pattern = f"%{search_query}%"
+        search_pattern: str = f"%{search_query}%"
         query = query.filter(
             or_(
                 Job.title.ilike(search_pattern),
@@ -76,13 +87,13 @@ def board():
         )
 
     # Grand total of active jobs (before filters)
-    total_jobs_count = Job.query.filter_by(is_active=True).count()
-    filters_active = (job_type != "All" or category != "All" or location_filter != "All" or batch_filter != "All" or bool(search_query))
+    total_jobs_count: int = Job.query.filter_by(is_active=True).count()
+    filters_active: bool = (job_type != "All" or category != "All" or location_filter != "All" or batch_filter != "All" or bool(search_query))
 
-    PER_PAGE = 15
+    PER_PAGE: int = 15
     pagination = query.order_by(Job.created_at.desc()).paginate(page=page, per_page=PER_PAGE, error_out=False)
-    jobs = pagination.items
-    applied_job_ids = set()
+    jobs: list[Job] = pagination.items
+    applied_job_ids: set[int] = set()
     if current_user.is_authenticated:
         applied_job_ids = {app.job_id for app in JobApplication.query.filter_by(user_id=current_user.id).all()}
 
@@ -103,13 +114,14 @@ def board():
 
 
 @jobs_bp.route("/api/jobs/<int:job_id>/click", methods=["POST"])
-def record_job_click(job_id):
-    job = Job.query.get_or_404(job_id)
+def record_job_click(job_id: int) -> Response:
+    """Record click metrics and log user application interest in a job."""
+    job: Job = Job.query.get_or_404(job_id)
     job.clicks = (job.clicks or 0) + 1
     
-    applied = False
+    applied: bool = False
     if current_user.is_authenticated:
-        existing_app = JobApplication.query.filter_by(user_id=current_user.id, job_id=job_id).first()
+        existing_app: JobApplication | None = JobApplication.query.filter_by(user_id=current_user.id, job_id=job_id).first()
         if not existing_app:
             new_app = JobApplication(user_id=current_user.id, job_id=job_id)
             db.session.add(new_app)
@@ -129,33 +141,30 @@ def record_job_click(job_id):
 # AI Job Agent Routes
 # ==========================================
 
-import pypdf
-import os
-from werkzeug.utils import secure_filename
-from models import UserAgentConfig, AgentJobOpportunity, AgentApplicationLog
 
 @jobs_bp.route("/jobs/agent")
 @login_required
-def agent_dashboard():
+def agent_dashboard() -> str:
+    """Render the AI Job Agent dashboard and handle automated cleanup."""
     # Clean up any non-Placement Portal opportunities and their logs immediately on dashboard load
     try:
-        deleted_count = AgentJobOpportunity.query.filter(AgentJobOpportunity.source != "Placement Portal").delete(synchronize_session=False)
+        deleted_count: int = AgentJobOpportunity.query.filter(AgentJobOpportunity.source != "Placement Portal").delete(synchronize_session=False)
         if deleted_count > 0:
             db.session.commit()
-            print(f"Cleaned up {deleted_count} external jobs from agent_dashboard load.")
+            logging.info(f"Cleaned up {deleted_count} external jobs from agent_dashboard load.")
     except Exception as e:
         db.session.rollback()
-        print(f"Error cleaning up old agent jobs: {e}")
+        logging.error(f"Error cleaning up old agent jobs: {e}")
 
     # Fetch or create agent config
-    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+    config: UserAgentConfig | None = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
     if not config:
         config = UserAgentConfig(user_id=current_user.id)
         db.session.add(config)
         db.session.commit()
 
     # Get matched jobs logs (sorted by fit score and date desc, only from local Placement Portal)
-    matches = (AgentApplicationLog.query
+    matches: list[AgentApplicationLog] = (AgentApplicationLog.query
                .join(AgentJobOpportunity)
                .filter(AgentApplicationLog.user_id == current_user.id)
                .filter(AgentJobOpportunity.source == "Placement Portal")
@@ -173,8 +182,9 @@ def agent_dashboard():
 
 @jobs_bp.route("/jobs/agent/config", methods=["POST"])
 @login_required
-def save_agent_config():
-    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+def save_agent_config() -> Response:
+    """Save user target roles, locations, salary, and toggle state."""
+    config: UserAgentConfig | None = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
     if not config:
         config = UserAgentConfig(user_id=current_user.id)
         db.session.add(config)
@@ -184,8 +194,7 @@ def save_agent_config():
     config.min_salary = request.form.get("min_salary", "").strip()
     
     # Toggle logic (is_active can be passed as form parameter)
-    is_active = request.form.get("is_active") == "true"
-    was_active = config.is_active
+    is_active: bool = request.form.get("is_active") == "true"
     config.is_active = is_active
 
     # Delete all previous logs so they get re-evaluated with fresh pitches under new preferences
@@ -195,7 +204,6 @@ def save_agent_config():
 
     # Trigger or restart the matcher async if active and resume exists
     if config.is_active and config.resume_text:
-        from .agent_worker import run_job_agent_pipeline_async
         run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
 
     return jsonify({
@@ -207,7 +215,8 @@ def save_agent_config():
 
 @jobs_bp.route("/jobs/agent/resume", methods=["POST"])
 @login_required
-def upload_resume():
+def upload_resume() -> Response:
+    """Upload, secure, and parse resume text from PDF using pypdf."""
     if 'resume' not in request.files:
         return jsonify({"success": False, "message": "No file uploaded"}), 400
         
@@ -219,16 +228,13 @@ def upload_resume():
         return jsonify({"success": False, "message": "Only PDF files are supported"}), 400
 
     try:
-        import io
-        import time as time_mod
-
         # 1. Read bytes and parse text using pypdf
-        file_bytes = file.read()
+        file_bytes: bytes = file.read()
         if not file_bytes:
             return jsonify({"success": False, "message": "Uploaded file is empty."}), 400
 
         reader = pypdf.PdfReader(io.BytesIO(file_bytes))
-        extracted_text = ""
+        extracted_text: str = ""
         for page in reader.pages:
             extracted_text += page.extract_text() or ""
             
@@ -237,17 +243,17 @@ def upload_resume():
             return jsonify({"success": False, "message": "Could not extract text from the PDF. Ensure it is not a scanned image."}), 400
 
         # 2. Get or create agent config
-        config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+        config: UserAgentConfig | None = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
         if not config:
             config = UserAgentConfig(user_id=current_user.id)
             db.session.add(config)
 
         # 3. Save PDF file locally
-        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'resumes')
+        upload_dir: str = os.path.join(current_app.root_path, 'static', 'uploads', 'resumes')
         os.makedirs(upload_dir, exist_ok=True)
         
-        filename = secure_filename(f"resume_{current_user.id}_{int(time_mod.time())}.pdf")
-        file_path = os.path.join(upload_dir, filename)
+        filename: str = secure_filename(f"resume_{current_user.id}_{int(time_mod.time())}.pdf")
+        file_path: str = os.path.join(upload_dir, filename)
         
         # Write bytes directly to file
         with open(file_path, 'wb') as f:
@@ -264,7 +270,6 @@ def upload_resume():
 
         # Trigger async pipeline if agent is active
         if config.is_active:
-            from .agent_worker import run_job_agent_pipeline_async
             run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
 
         return jsonify({
@@ -280,12 +285,12 @@ def upload_resume():
 
 @jobs_bp.route("/jobs/agent/run", methods=["POST"])
 @login_required
-def trigger_agent_run():
-    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+def trigger_agent_run() -> Response:
+    """Manually trigger background job agent scanning and matching."""
+    config: UserAgentConfig | None = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
     if not config or not config.resume_text:
         return jsonify({"success": False, "message": "Please upload a PDF resume before running the agent."}), 400
 
-    from .agent_worker import run_job_agent_pipeline_async
     run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
 
     return jsonify({
@@ -296,8 +301,9 @@ def trigger_agent_run():
 
 @jobs_bp.route("/jobs/agent/apply/<int:log_id>", methods=["POST"])
 @login_required
-def mark_applied(log_id):
-    log = AgentApplicationLog.query.filter_by(id=log_id, user_id=current_user.id).first_or_404()
+def mark_applied(log_id: int) -> Response:
+    """API endpoint to mark a matched job status as 'Applied'."""
+    log: AgentApplicationLog = AgentApplicationLog.query.filter_by(id=log_id, user_id=current_user.id).first_or_404()
     log.status = "Applied"
     log.applied_at = datetime.utcnow()
     db.session.commit()
@@ -309,9 +315,9 @@ def mark_applied(log_id):
 
 @jobs_bp.route("/jobs/agent/status", methods=["GET"])
 @login_required
-def get_agent_status():
-    from .agent_worker import AGENT_STATUSES
-    status = AGENT_STATUSES.get(current_user.id, "Idle")
+def get_agent_status() -> Response:
+    """API endpoint to get current background running status of the agent."""
+    status: str = AGENT_STATUSES.get(current_user.id, "Idle")
     return jsonify({
         "success": True,
         "status": status

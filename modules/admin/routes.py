@@ -1,26 +1,42 @@
-from flask import render_template, redirect, url_for, flash, current_app, request, jsonify, send_file
-from flask_login import login_required, current_user
+import csv
+from datetime import datetime
+import json
+from io import BytesIO
+import os
+from typing import Any, Callable
+import zipfile
+
+from flask import Response, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
+from flask_login import current_user, login_required
 from sqlalchemy import func, or_
+from werkzeug.utils import secure_filename
+
 from models import (
-    db, User, Prompt, Course, CourseDay, CourseEnrollment, 
-    LessonProgress, UserCourseProgress, PromptLike, PromptCollection, PromptCollectionItem, LessonReview,
-    Job
+    Course,
+    CourseDay,
+    CourseEnrollment,
+    Favorite,
+    Job,
+    LessonProgress,
+    LessonReview,
+    Prompt,
+    PromptCollection,
+    PromptCollectionItem,
+    PromptLike,
+    User,
+    UserCourseProgress,
+    db,
 )
 from . import admin_bp
-import os
-import json
-from werkzeug.utils import secure_filename
-from datetime import datetime
-import csv
-from io import StringIO, BytesIO
-import zipfile
 
 # ==========================================
 # ADMIN AUTH GUARD
 # ==========================================
 
-def admin_required(f):
-    def decorated_function(*args, **kwargs):
+
+def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator to restrict access to admin users only."""
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if current_user.email != current_app.config["ADMIN_EMAIL"]:
             flash("Admin access only.", "danger")
             return redirect(url_for("auth.dashboard"))
@@ -35,7 +51,7 @@ def admin_required(f):
 @admin_bp.route("/admin", endpoint="admin")
 @login_required
 @admin_required
-def admin_dashboard():
+def admin_dashboard() -> str:
     """Main admin dashboard with all stats including enrollment analytics and system health."""
 
     # ── User stats ──────────────────────────────────────────────────────────
@@ -212,7 +228,7 @@ def admin_dashboard():
 @admin_bp.route("/admin/api/stats", endpoint="api_stats")
 @login_required
 @admin_required
-def api_stats():
+def api_stats() -> Response:
     """Returns JSON analytics data for admin dashboard monitoring charts."""
     from datetime import datetime, timedelta
 
@@ -290,7 +306,7 @@ def api_stats():
 @admin_bp.route("/admin/courses", endpoint="courses")
 @login_required
 @admin_required
-def manage_courses():
+def manage_courses() -> str:
     """List all courses."""
     search = request.args.get('search', '')
     page = request.args.get('page', 1, type=int)
@@ -308,7 +324,7 @@ def manage_courses():
 @admin_bp.route("/admin/courses/create", methods=["GET", "POST"], endpoint="create_course")
 @login_required
 @admin_required
-def create_course():
+def create_course() -> Any:
     """Create a new course."""
     if request.method == "POST":
         title = request.form.get('title', '').strip()
@@ -355,7 +371,7 @@ def create_course():
 @admin_bp.route("/admin/courses/<int:course_id>/edit", methods=["GET", "POST"], endpoint="edit_course")
 @login_required
 @admin_required
-def edit_course(course_id):
+def edit_course(course_id: int) -> Any:
     """Edit an existing course."""
     course = Course.query.get_or_404(course_id)
     
@@ -383,7 +399,7 @@ def edit_course(course_id):
 @admin_bp.route("/admin/courses/<int:course_id>/delete", methods=["POST"], endpoint="delete_course")
 @login_required
 @admin_required
-def delete_course(course_id):
+def delete_course(course_id: int) -> Response:
     """Delete a course."""
     course = Course.query.get_or_404(course_id)
     course_title = course.title
@@ -401,7 +417,7 @@ def delete_course(course_id):
 @admin_bp.route("/admin/lessons", endpoint="lessons")
 @login_required
 @admin_required
-def manage_lessons():
+def manage_lessons() -> str:
     """List all lessons."""
     course_id = request.args.get('course_id', type=int)
     search = request.args.get('search', '')
@@ -425,7 +441,7 @@ def manage_lessons():
 @admin_bp.route("/admin/lessons/create", methods=["GET", "POST"], endpoint="create_lesson")
 @login_required
 @admin_required
-def create_lesson():
+def create_lesson() -> Any:
     """Create a new lesson."""
     courses = Course.query.all()
     
@@ -510,7 +526,7 @@ def create_lesson():
 @admin_bp.route("/admin/lessons/<int:lesson_id>/edit", methods=["GET", "POST"], endpoint="edit_lesson")
 @login_required
 @admin_required
-def edit_lesson(lesson_id):
+def edit_lesson(lesson_id: int) -> Any:
     """Edit an existing lesson."""
     lesson = CourseDay.query.get_or_404(lesson_id)
     courses = Course.query.all()
@@ -548,7 +564,7 @@ def edit_lesson(lesson_id):
 @admin_bp.route("/admin/lessons/<int:lesson_id>/delete", methods=["POST"], endpoint="delete_lesson")
 @login_required
 @admin_required
-def delete_lesson(lesson_id):
+def delete_lesson(lesson_id: int) -> Response:
     """Delete a lesson."""
     lesson = CourseDay.query.get_or_404(lesson_id)
     lesson_title = lesson.title
@@ -581,7 +597,7 @@ def delete_lesson(lesson_id):
 @admin_bp.route("/admin/lessons/reorder", methods=["POST"], endpoint="reorder_lessons")
 @login_required
 @admin_required
-def reorder_lessons():
+def reorder_lessons() -> Response:
     """Reorder lessons within a course."""
     data = request.get_json()
     course_id = data.get('course_id', type=int)
@@ -602,7 +618,7 @@ def reorder_lessons():
 @admin_bp.route("/admin/learning-history", endpoint="learning_history")
 @login_required
 @admin_required
-def learning_history():
+def learning_history() -> str:
     """List all completed lessons with user details and timestamps."""
     search = request.args.get('search', '')
     course_id = request.args.get('course_id', type=int)
@@ -638,7 +654,7 @@ def learning_history():
 @admin_bp.route("/admin/learning-history/<int:progress_id>/delete", methods=["POST"], endpoint="delete_progress_record")
 @login_required
 @admin_required
-def delete_progress_record(progress_id):
+def delete_progress_record(progress_id: int) -> Response:
     """Delete a specific lesson completion progress record (mark it as incomplete)."""
     record = LessonProgress.query.get_or_404(progress_id)
     username = record.user.username if record.user else "User"
@@ -658,7 +674,7 @@ def delete_progress_record(progress_id):
 @admin_bp.route("/admin/users", endpoint="users")
 @login_required
 @admin_required
-def manage_users():
+def manage_users() -> str:
     """List all users with search and filters."""
     search = request.args.get('search', '')
     verified = request.args.get('verified', '')
@@ -683,7 +699,7 @@ def manage_users():
 @admin_bp.route("/admin/users/<int:user_id>/verify", methods=["POST"], endpoint="verify_user")
 @login_required
 @admin_required
-def verify_user(user_id):
+def verify_user(user_id: int) -> Response:
     """Verify a user."""
     user = User.query.get_or_404(user_id)
     user.is_verified = True
@@ -694,7 +710,7 @@ def verify_user(user_id):
 @admin_bp.route("/admin/users/<int:user_id>/delete", methods=["POST"], endpoint="delete_user")
 @login_required
 @admin_required
-def delete_user_admin(user_id):
+def delete_user_admin(user_id: int) -> Response:
     """Delete a user."""
     user = User.query.get_or_404(user_id)
     
@@ -715,7 +731,7 @@ def delete_user_admin(user_id):
 @admin_bp.route("/admin/enrollments", endpoint="enrollments")
 @login_required
 @admin_required
-def manage_enrollments():
+def manage_enrollments() -> str:
     """List all enrollments."""
     course_id = request.args.get('course_id', type=int)
     user_id = request.args.get('user_id', type=int)
@@ -735,7 +751,7 @@ def manage_enrollments():
 @admin_bp.route("/admin/enrollments/create", methods=["GET", "POST"], endpoint="create_enrollment")
 @login_required
 @admin_required
-def create_enrollment():
+def create_enrollment() -> Any:
     """Enroll a user in a course."""
     users = User.query.all()
     courses = Course.query.all()
@@ -761,7 +777,7 @@ def create_enrollment():
 @admin_bp.route("/admin/enrollments/<int:enrollment_id>/delete", methods=["POST"], endpoint="delete_enrollment")
 @login_required
 @admin_required
-def delete_enrollment(enrollment_id):
+def delete_enrollment(enrollment_id: int) -> Response:
     """Remove a user from a course."""
     enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
     db.session.delete(enrollment)
@@ -772,7 +788,7 @@ def delete_enrollment(enrollment_id):
 @admin_bp.route("/admin/enrollments/<int:enrollment_id>/reset", methods=["POST"], endpoint="reset_progress")
 @login_required
 @admin_required
-def reset_progress(enrollment_id):
+def reset_progress(enrollment_id: int) -> Response:
     """Reset a user's progress in a course."""
     enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
     
@@ -799,7 +815,7 @@ def reset_progress(enrollment_id):
 @admin_bp.route("/admin/prompts", endpoint="admin_prompts")
 @login_required
 @admin_required
-def manage_prompts():
+def manage_prompts() -> str:
     """List all prompts in admin."""
     search = request.args.get('search', '')
     page = request.args.get('page', 1, type=int)
@@ -817,7 +833,7 @@ def manage_prompts():
 @admin_bp.route("/admin/prompts/<int:prompt_id>/delete", methods=["POST"], endpoint="delete_prompt_admin")
 @login_required
 @admin_required
-def delete_prompt_admin(prompt_id):
+def delete_prompt_admin(prompt_id: int) -> Response:
     """Delete a prompt from admin panel."""
     prompt = Prompt.query.get_or_404(prompt_id)
     prompt_title = prompt.title
@@ -833,14 +849,14 @@ def delete_prompt_admin(prompt_id):
 @admin_bp.route("/admin/backup", endpoint="backup")
 @login_required
 @admin_required
-def backup_page():
+def backup_page() -> str:
     """Database backup & export page."""
     return render_template("admin/backup.html")
 
 @admin_bp.route("/admin/backup/export-courses", methods=["POST"], endpoint="export_courses")
 @login_required
 @admin_required
-def export_courses():
+def export_courses() -> Response:
     """Export all courses as JSON."""
     courses = Course.query.all()
     data = []
@@ -867,7 +883,7 @@ def export_courses():
 @admin_bp.route("/admin/backup/export-lessons", methods=["POST"], endpoint="export_lessons")
 @login_required
 @admin_required
-def export_lessons():
+def export_lessons() -> Response:
     """Export all lessons as JSON."""
     lessons = CourseDay.query.all()
     data = []
@@ -897,7 +913,7 @@ def export_lessons():
 @admin_bp.route("/admin/backup/export-full", methods=["POST"], endpoint="export_full_db")
 @login_required
 @admin_required
-def export_full_db():
+def export_full_db() -> Response:
     """Export full database as ZIP with courses, lessons, users, enrollments."""
     
     zip_buffer = BytesIO()
@@ -936,7 +952,7 @@ def export_full_db():
 @admin_bp.route("/admin/backups", endpoint="backups")
 @login_required
 @admin_required
-def backups_page_list():
+def backups_page_list() -> str:
     """List existing backups and provide export UI."""
     backup_root = os.path.join(current_app.root_path, "backups")
     backups = []
@@ -963,7 +979,7 @@ def backups_page_list():
 @admin_bp.route("/admin/backups/export", methods=["POST"], endpoint="export_backup")
 @login_required
 @admin_required
-def export_backup():
+def export_backup() -> Response:
     """Export specified tables to CSV, save under backups/YYYY-MM-DD/, and create ZIP."""
     backup_root = os.path.join(current_app.root_path, "backups")
     date_folder = datetime.now().strftime("%Y-%m-%d")
@@ -1089,7 +1105,7 @@ def export_backup():
 @admin_bp.route("/admin/backups/download/<path:relpath>", endpoint="download_backup")
 @login_required
 @admin_required
-def download_backup(relpath):
+def download_backup(relpath: str) -> Response:
     """Download a backup file (safe join)."""
     backup_root = os.path.join(current_app.root_path, 'backups')
     safe_path = os.path.normpath(os.path.join(backup_root, relpath))
@@ -1102,7 +1118,7 @@ def download_backup(relpath):
 @admin_bp.route("/admin/backups/restore", endpoint="backup_restore")
 @login_required
 @admin_required
-def backup_restore():
+def backup_restore() -> str:
     """Render restore instructions page."""
     return render_template('admin/backup_restore.html')
 
@@ -1110,7 +1126,7 @@ def backup_restore():
 @admin_bp.route("/admin/reviews/<int:review_id>/delete", methods=["POST"], endpoint="delete_review")
 @login_required
 @admin_required
-def delete_review(review_id):
+def delete_review(review_id: int) -> Response:
     """Delete a lesson review."""
     review = LessonReview.query.get_or_404(review_id)
     db.session.delete(review)

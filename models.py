@@ -1,12 +1,13 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import JSON
+
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 
 class User(UserMixin, db.Model):
+    """Database model for user accounts."""
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -40,11 +41,13 @@ class User(UserMixin, db.Model):
         cascade="all, delete-orphan"
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the model."""
         return f"<User {self.username}>"
 
 
 class Prompt(db.Model):
+    """Database model for user-created prompts."""
     __tablename__ = "prompts"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -91,10 +94,12 @@ class Prompt(db.Model):
         cascade="all, delete-orphan"
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the model."""
         return f"<Prompt {self.title}>"
 
 class PromptLike(db.Model):
+    """Database model representing a user like on a prompt."""
     __tablename__ = "user_likes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -128,6 +133,7 @@ class PromptLike(db.Model):
     
     
 class PromptCollection(db.Model):
+    """Database model representing a collection of prompts."""
     __tablename__ = "prompt_collections"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -146,6 +152,7 @@ class PromptCollection(db.Model):
     )
     
 class PromptCollectionItem(db.Model):
+    """Association model representing prompts inside collections."""
     __tablename__ = "prompt_collection_items"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -177,6 +184,7 @@ class PromptCollectionItem(db.Model):
     
 
 class Favorite(db.Model):
+    """Database model representing a user favorited prompt."""
     __tablename__ = "favorites"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -186,7 +194,8 @@ class Favorite(db.Model):
 
     __table_args__ = (db.UniqueConstraint("user_id", "prompt_id", name="unique_favorite"),)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the model."""
         return f"<Favorite user={self.user_id} prompt={self.prompt_id}>"
 
 
@@ -194,6 +203,7 @@ class Favorite(db.Model):
 # ==========================================
 
 class Course(db.Model):
+    """Database model for a course."""
     __tablename__ = "courses"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -221,6 +231,7 @@ class Course(db.Model):
 
 
 class CourseDay(db.Model):
+    """Database model for a single day/lesson in a course."""
     __tablename__ = "course_days"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -259,6 +270,7 @@ class CourseDay(db.Model):
 
 
 class UserCourseProgress(db.Model):
+    """Database model tracking a user's progress through a course."""
     __tablename__ = "user_course_progress"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -302,6 +314,7 @@ class UserCourseProgress(db.Model):
 
 
 class CourseEnrollment(db.Model):
+    """Database model representing a user's enrollment in a course."""
     __tablename__ = "course_enrollments"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -341,6 +354,7 @@ class CourseEnrollment(db.Model):
     
     
 class LessonProgress(db.Model):
+    """Database model tracking if a user completed a specific lesson."""
     __tablename__ = "lesson_progress"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -384,6 +398,7 @@ class LessonProgress(db.Model):
 
 
 class LessonReview(db.Model):
+    """Database model representing a user review/rating for a lesson."""
     __tablename__ = "lesson_reviews"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -421,6 +436,7 @@ class LessonReview(db.Model):
 
 
 class Job(db.Model):
+    """Database model representing a job posting."""
     __tablename__ = "jobs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -441,11 +457,13 @@ class Job(db.Model):
     target_batch = db.Column(db.String(100), nullable=False, default="2025, 2026")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the model."""
         return f"<Job {self.title} at {self.company}>"
 
 
 class JobApplication(db.Model):
+    """Database model representing a user's application to a job."""
     __tablename__ = "job_applications"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -461,11 +479,13 @@ class JobApplication(db.Model):
     user = db.relationship("User", backref=db.backref("job_applications", lazy="dynamic"))
     job = db.relationship("Job", backref=db.backref("applications", lazy="dynamic"))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a string representation of the model."""
         return f"<JobApplication User:{self.user_id} Job:{self.job_id}>"
 
 
 class UserAgentConfig(db.Model):
+    """Database model representing the user's AI job agent configuration."""
     __tablename__ = "user_agent_configs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -483,6 +503,7 @@ class UserAgentConfig(db.Model):
 
 
 class AgentJobOpportunity(db.Model):
+    """Database model representing a job opportunity fetched by the agent."""
     __tablename__ = "agent_job_opportunities"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -497,6 +518,7 @@ class AgentJobOpportunity(db.Model):
 
 
 class AgentApplicationLog(db.Model):
+    """Database model representing the match logs for the AI job agent."""
     __tablename__ = "agent_application_logs"
 
     id = db.Column(db.Integer, primary_key=True)

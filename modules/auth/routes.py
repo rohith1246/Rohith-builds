@@ -1,27 +1,25 @@
-from flask import render_template, redirect, url_for, flash, request, current_app
-from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError
+import re
+import secrets
+import urllib.parse
+from typing import Any
 
-from models import (
-    db,
-    User,
-    Prompt,
-    Favorite,
-    CourseEnrollment,
-    LessonProgress
-)
-from models import CourseDay, UserCourseProgress, Course
+from flask import abort, current_app, flash, redirect, render_template, request, Response, session, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+import requests
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from forms import RegisterForm, LoginForm, ForgotPasswordForm, ResetPasswordForm
-from .helpers import send_verification_email, verify_token, send_password_reset_email, verify_reset_token
+from forms import ForgotPasswordForm, LoginForm, RegisterForm, ResetPasswordForm
+from models import Course, CourseDay, CourseEnrollment, Favorite, LessonProgress, Prompt, User, UserCourseProgress, db
 from . import auth_bp
+from .helpers import send_password_reset_email, send_verification_email, verify_reset_token, verify_token
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
-def register():
+def register() -> Response | str:
+    """Handle new user registration."""
 
     if current_user.is_authenticated:
         return redirect(url_for("home.home"))
@@ -65,7 +63,8 @@ def register():
 
 
 @auth_bp.route("/verify-email/<token>")
-def verify_email(token):
+def verify_email(token: str) -> Response:
+    """Verify the user email using the token."""
 
     email = verify_token(token)
 
@@ -93,7 +92,8 @@ def verify_email(token):
 
 @auth_bp.route("/resend-verification", methods=["POST"])
 @login_required
-def resend_verification():
+def resend_verification() -> Response:
+    """Resend email verification link to current user."""
 
     if current_user.is_verified:
         flash("Your email is already verified!", "info")
@@ -111,7 +111,8 @@ def resend_verification():
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> Response | str:
+    """Handle user login."""
 
     if current_user.is_authenticated:
         return redirect(url_for("auth.dashboard"))
@@ -147,7 +148,8 @@ def login():
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
-def forgot_password():
+def forgot_password() -> Response | str:
+    """Request password reset link."""
 
     if current_user.is_authenticated:
         return redirect(url_for("home.home"))
@@ -171,7 +173,8 @@ def forgot_password():
 
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
-def reset_password(token):
+def reset_password(token: str) -> Response | str:
+    """Verify password reset link and reset password."""
 
     if current_user.is_authenticated:
         return redirect(url_for("home.home"))
@@ -202,7 +205,8 @@ def reset_password(token):
 
 @auth_bp.route("/logout")
 @login_required
-def logout():
+def logout() -> Response:
+    """Log out the current user."""
 
     logout_user()
 
@@ -213,7 +217,8 @@ def logout():
 
 @auth_bp.route("/dashboard")
 @login_required
-def dashboard():
+def dashboard() -> str:
+    """Render the user dashboard with stats and recent activity."""
     # Latest prompts (limit 10)
     my_prompts = (
         Prompt.query
@@ -453,14 +458,9 @@ def dashboard():
     )
 
 
-import secrets
-import re
-import urllib.parse
-import requests
-from flask import session, abort
-
 @auth_bp.route("/login/google")
-def google_login():
+def google_login() -> Response:
+    """Initiate Google OAuth login flow."""
     client_id = current_app.config.get("GOOGLE_CLIENT_ID")
     if not client_id:
         flash("Google OAuth is not configured on this server.", "danger")
@@ -485,7 +485,8 @@ def google_login():
 
 
 @auth_bp.route("/login/google/callback")
-def google_callback():
+def google_callback() -> Response:
+    """Handle Google OAuth callback and authenticate user."""
     # Verify state
     session_state = session.pop("oauth_state", None)
     request_state = request.args.get("state")

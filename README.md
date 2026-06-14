@@ -20,44 +20,35 @@ Built solo. Zero funding. No team. Just execution.
 
 ---
 
-## Platform Modules
+## Platform Modules & Features
 
 ### 1. Structured Learning Courses
-- Python + AI course (100 days, visual sketchnote-based lessons)
-- AI Agent Bootcamp (7-day practical course)
-- XP rewards and progress tracking per lesson
-- Enrollment system with completion tracking
+- **Python + AI Course:** 100 days of structured, sketchnote-based python lessons.
+- **7-Day AI Agent Course:** Real-world AI agents built with Python and Groq.
+- **XP & Progress Tracking:** Users earn XP upon completing lessons, tracked persistently in the database.
+- **Reviews:** Students can submit reviews/ratings for each course day.
 
-### 2. Prompt Vault
-- 166+ curated prompts organized by category
-- Full-text search and category filtering
-- Pagination, favorites, and likes system
-- User-contributed prompts with admin moderation
+### 2. Prompt Vault & Collections
+- **220+ Curated Prompts:** Curated AI prompts for developers spanning coding, debugging, system design, career, and productivity.
+- **Likes & Favorites:** Interactive copying, liking, and favoriting prompts.
+- **Outcome-Based Collections:** Grouped prompt packages (e.g. AI Beginner, Python Starter) to guide learning paths.
 
-### 3. Collections System
-- 12 curated learning packs (AI Beginner, Python Starter, Coding Mastery, etc.)
-- Featured collections on vault homepage
-- Complete discovery flow: Learn → Collections → Vault → Prompt
-- Outcome-based organization (not random categories)
+### 3. Rohi — AI Tutor
+- **Lesson-Aware Context:** Rohi knows which course day you are currently reading and adapts answers to the lesson.
+- **Daily Message Limits:**
+  - **Guests:** 3 messages per session with instant redirect to sign up on completion.
+  - **Registered Users:** 20 messages per day (resets automatically at midnight).
+- **Resilient Fallback Chain:** Powered by Groq API with automatic key & model rotation to prevent 429 rate limit issues. Shows clean error notices rather than raw API status codes.
 
-### 4. Rohi — AI Tutor
-- Lesson-aware AI tutor powered by Groq API
-- Answers questions based on current lesson context
-- Available globally across all pages
-- Guest usage limit (3 free questions) → signup conversion flow
-- Custom branded chat widget
+### 4. Jobs Board (`/jobs`) & AI Agent
+- **Curated Jobs List:** Junior developer jobs scraped and curated automatically.
+- **AI Job Agent:** Matches your uploaded PDF resume with listed jobs, computes match fit scores, draft cover letters, and logs applications.
 
-### 5. AI Prompt Improver
-- Transforms weak prompts into structured, high-performance AI instructions
-- Before/after demonstration
-- Instant results, no signup required
-
-### 6. Authentication System
-- User registration and login
-- Forgot password with SendGrid email integration
-- Secure reset token with 1-hour expiry
-- Email enumeration protection
-- Password strength meter
+### 5. Admin Dashboard (`admin_dashboard/`)
+- **Metrics Dashboard:** Overview of user signups, course enrollments, lesson completion history, and prompt metrics.
+- **AI Daily Report:** Automatically compiles today's signup/completion logs and drafts an AI daily narrative, compiling it into a PDF and emailing it to the admin.
+- **Reddit Marketing Harvester:** Background harvester that polls target subreddits, processes new help queries, drafts helpful responses mentoring like a senior Indian developer, and caches drafts for the admin.
+- **User & Review Moderation:** Reset student progress, approve user-submitted prompts, delete spam reviews, and download SQL backups.
 
 ---
 
@@ -65,54 +56,50 @@ Built solo. Zero funding. No team. Just execution.
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Flask (Python) |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy + Alembic |
-| AI Tutor | Groq API |
-| Email | SendGrid |
-| Auth | Flask-Login + Session Management |
-| Frontend | HTML, CSS, JavaScript, Jinja2 |
-| Deployment | Render |
+| **Backend** | Flask (Python 3.11 with full type hints & logging) |
+| **Database** | PostgreSQL / Neon DB |
+| **ORM & Migrations** | SQLAlchemy + Flask-Migrate (Alembic) |
+| **Connection Pooling** | Neon-optimized SQLAlchemy pool with pre-ping validation |
+| **AI Integration** | Groq (llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768) |
+| **PDF Generation** | ReportLab |
+| **E-mail Mailer** | SMTP / SendGrid |
+| **Frontend** | Vanilla HTML5, Vanilla CSS3 (custom dark/glass themes), Vanilla JS |
+| **Deployment** | Render / Gunicorn |
 
 ---
 
-## Database Schema (Key Tables)
+## Database Schema
 
 ```
 users
-├── id, username, email, password_hash
-├── is_admin, bio
-└── created_at
+├── id (PK), username, email, password_hash
+├── is_admin, bio, created_at, is_verified
+├── rohi_messages_today (int)
+└── rohi_last_reset_date (date)
 
 prompts
-├── id, title, content, category
-├── user_id (FK), likes_count
-└── created_at
-
-prompt_collections
-├── id, name, slug, description
-└── created_at
-
-prompt_collection_items
-├── id, collection_id (FK), prompt_id (FK)
-└── unique_collection_prompt constraint
+├── id (PK), title, content, category, likes, copies
+├── user_id (FK), created_at
+└── approved (boolean)
 
 courses
-├── id, title, slug, description
-└── is_published
+├── id (PK), title, slug, description, difficulty
+├── thumbnail, is_published, created_at
+└── slug (unique)
 
-lessons
-├── id, course_id (FK), title, slug
-├── content, order, xp_reward
-└── is_published
+course_days (lessons)
+├── id (PK), course_id (FK), day_number, title, slug
+├── short_description, image, xp_reward, estimated_minutes
+└── content, is_published, created_at
 
-user_progress
-├── id, user_id (FK), lesson_id (FK)
-├── completed, xp_earned
-└── completed_at
+lesson_progress
+├── id (PK), user_id (FK), course_day_id (FK)
+├── completed, completed_at, completion_email_sent
+└── xp_earned
 
-favorites
-└── user_id (FK), prompt_id (FK)
+jobs
+└── id (PK), title, company, location, category, description,
+    skills, url, is_active, clicks, created_at
 ```
 
 ---
@@ -120,135 +107,101 @@ favorites
 ## Project Structure
 
 ```
-rohithbuilds/
-├── app.py                  # App factory and config
+RohithBuilds/
+├── app.py                  # Main flask application factory
 ├── models.py               # SQLAlchemy models
-├── requirements.txt
-├── .env                    # Environment variables (not committed)
-├── blueprints/
-│   ├── auth/               # Login, register, forgot password
-│   ├── prompts/            # Vault, collections, prompt detail
-│   ├── learn/              # Courses, lessons, progress
-│   ├── improve/            # Prompt improver
-│   └── home/               # Homepage
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   ├── vault.html
-│   ├── collections.html
-│   ├── learn.html
-│   └── ...
-└── static/
-    ├── css/
-    ├── js/
-    │   ├── rohi.js         # AI tutor widget
-    │   └── main.js
-    └── images/
+├── extensions.py           # Shared DB and CSRF instances
+├── forms.py                # Flask WTForms definitions
+├── gemini_helper.py        # Groq Fallback / AI core helper
+├── requirements.txt        # Backend dependencies
+├── migrations/             # Database migration history
+├── static/                 # Static assets (CSS, images, JS)
+│   ├── css/                # Style directories
+│   ├── js/                 # Widget modules (rohi.js, etc.)
+│   └── uploads/            # Resumes & Thumbnails uploads
+├── modules/                # Application blueprints
+│   ├── auth/               # User Authentication & Verification
+│   ├── home/               # Landing pages and navigation
+│   ├── improve/            # AI Prompt Improver
+│   ├── learn/              # Courses, lessons, and progress
+│   ├── prompts/            # Prompt Vault and collections
+│   └── jobs/               # Jobs Board and AI Resume Agent
+└── admin_dashboard/        # Internal administrative dashboard app
+    ├── app.py              # Harvester, reporting mailer, and admin routes
+    └── templates/          # Admin-facing layouts
 ```
 
 ---
 
-## Local Setup
+## Local Setup & Run
 
 ### Prerequisites
-- Python 3.10+
+- Python 3.11+
 - PostgreSQL
 - Git
 
-### Steps
+### Installation Steps
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/rohith1246/rohithbuilds.git
-cd rohithbuilds
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/rohith1246/rohithbuilds.git
+   cd rohithbuilds
+   ```
 
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+2. **Create and activate virtual environment:**
+   ```bash
+   python -m venv venv
+   # Windows:
+   venv\Scripts\activate
+   # macOS/Linux:
+   source venv/bin/activate
+   ```
 
-# 3. Install dependencies
-pip install -r requirements.txt
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# 4. Set up environment variables
-cp .env.example .env
-# Fill in your values (see below)
+4. **Configure Environment Variables:**
+   Create a `.env` file in the root directory:
+   ```env
+   # Main Platform
+   FLASK_ENV=development
+   SECRET_KEY=your-random-super-secret-key
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/rohithbuilds
+   GROQ_API_KEY=your-primary-groq-api-key
+   GROQ_API_KEY_SECONDARY=your-backup-groq-api-key
+   ADMIN_EMAIL=admin@rohithbuilds.com
+   SMTP_EMAIL=your-gmail@gmail.com
+   SMTP_PASSWORD=your-gmail-app-password
+   
+   # Admin Dashboard credentials
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=strong-admin-password
+   ```
 
-# 5. Set up database
-flask db upgrade
+5. **Run Database Migrations:**
+   ```bash
+   flask db upgrade
+   ```
 
-# 6. Run the app
-flask run
-```
+6. **Start the applications:**
+   * **Main Student Application:**
+     ```bash
+     flask run --port=5000
+     ```
+     Access at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-### Environment Variables
-
-```env
-FLASK_ENV=development
-SECRET_KEY=your_secret_key
-DATABASE_URL=postgresql://user:password@localhost/rohithbuilds
-GROQ_API_KEY=your_groq_api_key
-SENDGRID_API_KEY=your_sendgrid_api_key
-MAIL_DEFAULT_SENDER=your_email@domain.com
-```
-
----
-
-## Key Features in Detail
-
-### Guest Limit → Conversion Funnel
-Rohi gives guests 3 free questions. After the limit, a branded modal prompts signup. This is a deliberate conversion flow — not a bug.
-
-### Lesson-Aware AI Tutor
-Rohi reads `window.COURSE_SLUG` and `window.LESSON_SLUG` injected by Flask into each lesson page. This gives Groq the exact lesson context so answers are relevant, not generic.
-
-### Collections Before Prompts
-The vault shows featured collections (AI Beginner, Coding Mastery, Student Productivity) before the raw prompt grid. This prevents information overload and creates a structured onboarding path.
-
-### Alembic Migration Safety
-All schema changes go through Alembic migrations. Before any destructive migration, a backup table (`prompts_backup_YYYYMMDD`) is created. Never run blind migrations on production.
-
----
-
-## Deployment
-
-Deployed on **Render** (free tier).
-
-```
-Build Command: pip install -r requirements.txt
-Start Command: gunicorn app:app
-Environment:   Set all .env variables in Render dashboard
-Database:      Render PostgreSQL (or external)
-```
-
-Note: Free tier has cold starts (30–60 seconds on first load after inactivity).
-
----
-
-## Roadmap
-
-- [ ] Conversation memory for Rohi
-- [ ] Quiz mode per lesson
-- [ ] Daily Rohi usage counter for logged-in users
-- [ ] Rohi learning analytics dashboard
-- [ ] Email digest — weekly new prompts
-- [ ] Monetization — premium collections
-
----
-
-## About the Builder
-
-**Rohith Vuppula** — SQL Developer at Lionix LLP, solo founder of RohithBuilds.
-
-Building in public at [@Rohith_Builds](https://twitter.com/Rohith_Builds)
-
-Portfolio: [rohith-vuppula-portfolio.vercel.app](https://rohith-vuppula-portfolio.vercel.app)
+   * **Admin Dashboard:**
+     ```bash
+     python admin_dashboard/app.py
+     ```
+     Access at [http://127.0.0.1:5000](http://127.0.0.1:5000) (if run on a different port, make sure to configure properly).
 
 ---
 
 ## License
 
-MIT License — use it, learn from it, build on it.
+MIT License. Feel free to use, modify, and build upon this codebase.
 
----
-
-*Built with Flask, PostgreSQL, Groq API, and a lot of execution.*
+*Built with Flask, PostgreSQL, Groq API, and a dedication to project-based learning.*

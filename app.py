@@ -1,17 +1,17 @@
+import logging
 import os
-import resend
 import threading
-from flask import Flask, render_template, request, jsonify
+from typing import Any
+
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, jsonify, Response
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
-from dotenv import load_dotenv
-
-# Shared extensions and models
-from extensions import db, csrf, login_manager, migrate
-from models import db, User, Prompt, Favorite, Job
+import resend
 from werkzeug.security import generate_password_hash
 
-# Blueprints
+from extensions import csrf, login_manager, migrate
+from models import db, User, Prompt, Favorite, Job
 from modules.home import home_bp
 from modules.learn import learn_bp
 from modules.prompts import prompts_bp
@@ -19,6 +19,8 @@ from modules.improve import improve_bp
 from modules.auth import auth_bp
 from modules.admin import admin_bp
 from modules.jobs import jobs_bp
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 load_dotenv(override=True)
 
@@ -54,11 +56,13 @@ login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id: str) -> User | None:
+    """Load user by ID for Flask-Login."""
     return db.session.get(User, int(user_id))
 
 @app.context_processor
-def inject_csrf_token():
+def inject_csrf_token() -> dict[str, Any]:
+    """Inject CSRF token and admin status context."""
     is_admin = (current_user.is_authenticated and getattr(current_user, "email", None) == app.config["ADMIN_EMAIL"])
     return dict(csrf_token=generate_csrf, is_admin=is_admin)
 
@@ -80,7 +84,8 @@ SEED_PROMPTS = [
     {"title": "Personal Tutor - Any Subject", "content": "You are a world-class tutor...", "category": "Education"},
 ]
 
-def seed_database():
+def seed_database() -> None:
+    """Seed the database with initial admin user and prompts."""
     if User.query.first():
         return
     seed_user = User(username="rohithbuilds", email="rohithbuildsofficial@gmail.com", password_hash=generate_password_hash("admin123"), is_verified=True)
@@ -89,7 +94,7 @@ def seed_database():
     for p in SEED_PROMPTS:
         db.session.add(Prompt(title=p["title"], content=p["content"], category=p["category"], likes=0, user_id=seed_user.id))
     db.session.commit()
-    print("[OK] Database seeded successfully.")
+    logging.info("[OK] Database seeded successfully.")
 
 # DB Setup & Seeding is now deferred to a safe startup hook so imports don't
 # attempt to connect to Neon/Postgres during module import (which can crash
@@ -97,7 +102,8 @@ def seed_database():
 # on the first incoming request; failures are handled gracefully and a
 # friendly error page is shown instead of letting the server crash.
 
-def _initialize_database():
+def _initialize_database() -> None:
+    """Initialize database tables and run lightweight migrations."""
     from sqlalchemy import inspect, text
     from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
@@ -197,9 +203,10 @@ def _initialize_database():
 
 
 @app.before_request
-def _block_if_db_unavailable():
+def _block_if_db_unavailable() -> Response | None:
+    """Block requests if the database is currently unreachable."""
     # Allow static assets, robots.txt, sitemap.xml and simple health paths to load even when DB is down
-    path = request.path or ""
+    path: str = request.path or ""
     if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico" or path == "/robots.txt" or path == "/sitemap.xml":
         return None
 
@@ -217,82 +224,110 @@ def _block_if_db_unavailable():
 
     # If initialization previously failed, show a friendly error page
     if app.config.get("DB_AVAILABLE") is False:
-        error_message = app.config.get("DB_INIT_ERROR", "Cannot connect to the database.")
+        error_message: str = app.config.get("DB_INIT_ERROR", "Cannot connect to the database.")
         try:
             return render_template("db_unavailable.html", admin_email=app.config.get("ADMIN_EMAIL"), error_message=error_message), 503
         except Exception:
             # Fallback plain-text response if template rendering itself fails
-            return f"Database unavailable: {error_message}", 503
+            return Response(f"Database unavailable: {error_message}", status=503)
+    return None
+
 
 @app.route("/blog")
-def blog_hub():
+def blog_hub() -> str:
+    """Render the blog homepage."""
     return render_template("blog/index.html")
 
+
 @app.route("/blog/how-to-learn-python-free-india")
-def how_to_learn_python_free_india():
+def how_to_learn_python_free_india() -> str:
+    """Render the Python tutorial blog post."""
     return render_template("blog/how-to-learn-python-free-india.html")
 
+
 @app.route("/blog/best-python-projects-freshers-resume-india")
-def best_python_projects_freshers_resume_india():
+def best_python_projects_freshers_resume_india() -> str:
+    """Render the resume projects blog post."""
     return render_template("blog/best-python-projects-freshers-resume-india.html")
 
+
 @app.route("/blog/how-to-get-ai-internship-india")
-def how_to_get_ai_internship_india():
+def how_to_get_ai_internship_india() -> str:
+    """Render the AI internship blog post."""
     return render_template("blog/how-to-get-ai-internship-india.html")
 
+
 @app.route("/blog/top-python-interview-questions-freshers")
-def top_python_interview_questions_freshers():
+def top_python_interview_questions_freshers() -> str:
+    """Render the interview questions blog post."""
     return render_template("blog/top-python-interview-questions-freshers.html")
 
+
 @app.route("/blog/python-roadmap-beginners-2026")
-def python_roadmap_beginners_2026():
+def python_roadmap_beginners_2026() -> str:
+    """Render the Python 2026 roadmap blog post."""
     return render_template("blog/python-roadmap-beginners-2026.html")
 
+
 @app.route("/blog/ai-engineer-roadmap-freshers")
-def ai_engineer_roadmap_freshers():
+def ai_engineer_roadmap_freshers() -> str:
+    """Render the AI engineer roadmap blog post."""
     return render_template("blog/ai-engineer-roadmap-freshers.html")
 
+
 @app.route("/blog/best-ai-projects-students")
-def best_ai_projects_students():
+def best_ai_projects_students() -> str:
+    """Render the AI projects blog post."""
     return render_template("blog/best-ai-projects-students.html")
 
+
 @app.route("/blog/backend-developer-roadmap-india")
-def backend_developer_roadmap_india():
+def backend_developer_roadmap_india() -> str:
+    """Render the backend developer roadmap blog post."""
     return render_template("blog/backend-developer-roadmap-india.html")
 
+
 @app.route("/blog/python-developer-salary-india")
-def python_developer_salary_india():
+def python_developer_salary_india() -> str:
+    """Render the Python salary blog post."""
     return render_template("blog/python-developer-salary-india.html")
 
+
 @app.route("/blog/backend-developer-salary-india")
-def backend_developer_salary_india():
+def backend_developer_salary_india() -> str:
+    """Render the backend salary blog post."""
     return render_template("blog/backend-developer-salary-india.html")
 
 
 @app.route("/health")
-def health_check():
+def health_check() -> tuple[Response, int]:
+    """Provide service health status."""
     return jsonify({"status": "ok"}), 200
 
+
 @app.route("/robots.txt")
-def robots_txt():
-    content = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
-    response = app.make_response(content)
+def robots_txt() -> Response:
+    """Render robots.txt configuration."""
+    content: str = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
+    response: Response = app.make_response(content)
     response.headers["Content-Type"] = "text/plain"
     return response
 
+
 @app.route("/sitemap.xml")
-def sitemap_xml():
+def sitemap_xml() -> Response:
+    """Generate and render sitemap.xml dynamically."""
     from datetime import datetime, timezone
     
     # Base URL of the site
-    base_url = "https://rohith-builds.onrender.com"
+    base_url: str = "https://rohith-builds.onrender.com"
     
     # We will build sitemap.xml dynamically
-    urls = []
+    urls: list[dict[str, str]] = []
     
     # 1. Static/Public Main Pages
     # format: (url_path, changefreq, priority)
-    static_pages = [
+    static_pages: list[tuple[str, str, str]] = [
         ("/", "daily", "1.0"),
         ("/learn", "weekly", "0.9"),
         ("/jobs", "daily", "0.9"),
@@ -312,7 +347,7 @@ def sitemap_xml():
         ("/blog/backend-developer-salary-india", "weekly", "0.8"),
     ]
     
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now_str: str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     for path, changefreq, priority in static_pages:
         urls.append({
@@ -375,7 +410,7 @@ def sitemap_xml():
         app.logger.error("Error generating sitemap collections: %s", e)
         
     # Build XML
-    xml_lines = [
+    xml_lines: list[str] = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     ]
@@ -388,10 +423,11 @@ def sitemap_xml():
         xml_lines.append("  </url>")
     xml_lines.append("</urlset>")
     
-    xml_content = "\n".join(xml_lines)
-    response = app.make_response(xml_content)
+    xml_content: str = "\n".join(xml_lines)
+    response: Response = app.make_response(xml_content)
     response.headers["Content-Type"] = "application/xml; charset=utf-8"
     return response
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")

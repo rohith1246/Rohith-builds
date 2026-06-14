@@ -1,20 +1,20 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
-from flask_login import login_required, current_user
+from datetime import datetime
+
+from flask import flash, jsonify, redirect, render_template, request, Response, url_for
+from flask_login import current_user, login_required
 
 from extensions import csrf
-from datetime import datetime
-from models import db, Prompt, Favorite, PromptLike,PromptCollection,PromptCollectionItem
 from forms import PromptForm
-
-from .helpers import build_prompt_feed_context
+from models import Favorite, Prompt, PromptCollection, PromptCollectionItem, PromptLike, db
 from . import prompts_bp
+from .helpers import build_prompt_feed_context
 
 
 
 @prompts_bp.route("/vault")
-def vault():
-
-    page = request.args.get("page", 1, type=int)
+def vault() -> str:
+    """Render the prompt vault page."""
+    page: int = request.args.get("page", 1, type=int)
 
     feed = build_prompt_feed_context(
         category=request.args.get("category", "").strip(),
@@ -39,18 +39,20 @@ def vault():
         **feed
     )
 
+
 @prompts_bp.route("/collections")
-def collections():
-
+def collections() -> str:
+    """Render the list of prompt collections."""
     collections = PromptCollection.query.all()
-
     return render_template(
         "collections.html",
         collections=collections
     )
-@prompts_bp.route("/collections/<slug>")
-def collection_detail(slug):
 
+
+@prompts_bp.route("/collections/<slug>")
+def collection_detail(slug: str) -> str:
+    """Render the details and prompts for a specific collection."""
     collection = PromptCollection.query.filter_by(
         slug=slug
     ).first_or_404()
@@ -71,9 +73,11 @@ def collection_detail(slug):
         prompts=prompts
     )
 
+
 @prompts_bp.route("/api/prompts")
-def api_prompts():
-    page = request.args.get("page", 1, type=int)
+def api_prompts() -> Response:
+    """Handle API request for paginated prompt results."""
+    page: int = request.args.get("page", 1, type=int)
 
     feed = build_prompt_feed_context(
         category=request.args.get("category", "").strip(),
@@ -96,10 +100,11 @@ def api_prompts():
 
 
 @prompts_bp.route("/prompt/<int:prompt_id>")
-def prompt_detail(prompt_id):
+def prompt_detail(prompt_id: int) -> str:
+    """Render details of a single prompt."""
     prompt = Prompt.query.get_or_404(prompt_id)
 
-    is_favorite = False
+    is_favorite: bool = False
 
     if current_user.is_authenticated:
         is_favorite = (
@@ -119,8 +124,8 @@ def prompt_detail(prompt_id):
 
 @prompts_bp.route("/create", methods=["GET", "POST"])
 @login_required
-def create_prompt():
-
+def create_prompt() -> Response | str:
+    """Render prompt creation page and process new prompt submission."""
     if not current_user.is_verified:
         flash(
             "Please verify your email before creating prompts.",
@@ -128,10 +133,10 @@ def create_prompt():
         )
         return redirect(url_for("auth.dashboard"))
 
-    form = PromptForm()
+    form: PromptForm = PromptForm()
 
     if form.validate_on_submit():
-        prompt = Prompt(
+        prompt: Prompt = Prompt(
             title=form.title.data,
             content=form.content.data,
             category=form.category.data,
@@ -159,9 +164,9 @@ def create_prompt():
 
 @prompts_bp.route("/edit/<int:prompt_id>", methods=["GET", "POST"])
 @login_required
-def edit_prompt(prompt_id):
-
-    prompt = Prompt.query.get_or_404(prompt_id)
+def edit_prompt(prompt_id: int) -> Response | str:
+    """Render prompt edit page and process prompt updates."""
+    prompt: Prompt = Prompt.query.get_or_404(prompt_id)
 
     if prompt.user_id != current_user.id:
         flash(
@@ -177,7 +182,7 @@ def edit_prompt(prompt_id):
         )
         return redirect(url_for("auth.dashboard"))
 
-    form = PromptForm(obj=prompt)
+    form: PromptForm = PromptForm(obj=prompt)
 
     if form.validate_on_submit():
         prompt.title = form.title.data
@@ -205,9 +210,9 @@ def edit_prompt(prompt_id):
 
 @prompts_bp.route("/delete/<int:prompt_id>", methods=["POST"])
 @login_required
-def delete_prompt(prompt_id):
-
-    prompt = Prompt.query.get_or_404(prompt_id)
+def delete_prompt(prompt_id: int) -> Response:
+    """Delete a prompt owned by the current user."""
+    prompt: Prompt = Prompt.query.get_or_404(prompt_id)
 
     if prompt.user_id != current_user.id:
         flash(
@@ -226,13 +231,13 @@ def delete_prompt(prompt_id):
 
 @prompts_bp.route("/favorites")
 @login_required
-def favorites():
-
-    fav_records = Favorite.query.filter_by(
+def favorites() -> str:
+    """Render the user's favorited prompts."""
+    fav_records: list[Favorite] = Favorite.query.filter_by(
         user_id=current_user.id
     ).all()
 
-    fav_prompts = Prompt.query.filter(
+    fav_prompts: list[Prompt] = Prompt.query.filter(
         Prompt.id.in_([f.prompt_id for f in fav_records])
     ).all()
 
@@ -245,41 +250,34 @@ def favorites():
 @prompts_bp.route("/api/like/<int:prompt_id>", methods=["POST"])
 @csrf.exempt
 @login_required
-def like_prompt(prompt_id):
-
+def like_prompt(prompt_id: int) -> Response:
+    """API endpoint to toggle liking a prompt."""
     if not current_user.is_verified:
         return jsonify({
             "error": "Please verify your email to like prompts."
         }), 403
 
-    prompt = Prompt.query.get_or_404(prompt_id)
+    prompt: Prompt = Prompt.query.get_or_404(prompt_id)
 
-    existing = PromptLike.query.filter_by(
+    existing: PromptLike | None = PromptLike.query.filter_by(
         user_id=current_user.id,
         prompt_id=prompt_id
     ).first()
 
     if existing:
-
         db.session.delete(existing)
-
         if prompt.likes > 0:
             prompt.likes -= 1
-
-        liked = False
-
+        liked: bool = False
     else:
-
         db.session.add(
             PromptLike(
                 user_id=current_user.id,
                 prompt_id=prompt_id
             )
         )
-
         prompt.likes += 1
-
-        liked = True
+        liked: bool = True
 
     db.session.commit()
 
@@ -289,14 +287,13 @@ def like_prompt(prompt_id):
         "likes": prompt.likes
     })
 
+
 @prompts_bp.route("/api/copy/<int:prompt_id>", methods=["POST"])
 @csrf.exempt
-def record_copy(prompt_id):
-
-    prompt = Prompt.query.get_or_404(prompt_id)
-
+def record_copy(prompt_id: int) -> Response:
+    """API endpoint to increment copy count of a prompt."""
+    prompt: Prompt = Prompt.query.get_or_404(prompt_id)
     prompt.copies = (prompt.copies or 0) + 1
-
     db.session.commit()
 
     return jsonify({
@@ -307,16 +304,16 @@ def record_copy(prompt_id):
 @prompts_bp.route("/api/favorite/<int:prompt_id>", methods=["POST"])
 @csrf.exempt
 @login_required
-def toggle_favorite(prompt_id):
-
+def toggle_favorite(prompt_id: int) -> Response:
+    """API endpoint to toggle favoriting a prompt."""
     if not current_user.is_verified:
         return jsonify({
             "error": "Please verify your email to save favorites."
         }), 403
 
-    prompt = Prompt.query.get_or_404(prompt_id)
+    prompt: Prompt = Prompt.query.get_or_404(prompt_id)
 
-    existing = Favorite.query.filter_by(
+    existing: Favorite | None = Favorite.query.filter_by(
         user_id=current_user.id,
         prompt_id=prompt_id
     ).first()

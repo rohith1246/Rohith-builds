@@ -1,48 +1,28 @@
-from flask import (
-    render_template,
-    redirect,
-    url_for,
-    flash,
-    request,
-    session
-)
+from datetime import date, datetime
 
-from flask_login import (
-    login_required,
-    current_user
-)
+from flask import flash, jsonify, redirect, render_template, request, Response, session, url_for
+from flask_login import current_user, login_required
+
 from extensions import csrf
-from datetime import datetime
-
-from . import learn_bp
-
-from models import (
-    db,
-    Course,
-    CourseDay,
-    CourseEnrollment,
-    LessonProgress,
-    LessonReview,
-    UserCourseProgress
-)
-
-
 from gemini_helper import rohi_chat
-from flask import jsonify    
+from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, LessonReview, UserCourseProgress
+from modules.auth.helpers import send_lesson_review_email
+from . import learn_bp    
 
 
 
 @learn_bp.route("/api/rohi-chat", methods=["POST"])
 @csrf.exempt
-def rohi_chat_api():
-    data = request.get_json() or {}
-    message = data.get("message")
-    course_slug = data.get("course_slug")
-    lesson_slug = data.get("lesson_slug")
+def rohi_chat_api() -> Response:
+    """API endpoint to chat with Rohi the AI tutor."""
+    data: dict[str, str] = request.get_json() or {}
+    message: str | None = data.get("message")
+    course_slug: str | None = data.get("course_slug")
+    lesson_slug: str | None = data.get("lesson_slug")
 
     # Guest limit
     if not current_user.is_authenticated:
-        used = session.get("rohi_guest_count", 0)
+        used: int = session.get("rohi_guest_count", 0)
         if used >= 3:
             return jsonify({
                 "limit_reached": True,
@@ -50,8 +30,7 @@ def rohi_chat_api():
             }), 403
         session["rohi_guest_count"] = used + 1
     else:
-        from datetime import date
-        today = date.today()
+        today: date = date.today()
         if current_user.rohi_last_reset_date != today:
             current_user.rohi_messages_today = 0
             current_user.rohi_last_reset_date = today
@@ -62,28 +41,28 @@ def rohi_chat_api():
             })
 
     # Retrieve history from session
-    history = session.get("rohi_history", [])
+    history: list[dict[str, str]] = session.get("rohi_history", [])
     history = history[-10:]
 
     # Context change detection
-    last_course = session.get("rohi_last_course")
-    last_lesson = session.get("rohi_last_lesson")
+    last_course: str | None = session.get("rohi_last_course")
+    last_lesson: str | None = session.get("rohi_last_lesson")
     if last_course != course_slug or last_lesson != lesson_slug:
         history = []
         session["rohi_history"] = []
         session["rohi_last_course"] = course_slug
         session["rohi_last_lesson"] = lesson_slug
 
-    lesson_context = ""
+    lesson_context: str = ""
     if course_slug and lesson_slug:
-        course = Course.query.filter_by(slug=course_slug).first()
+        course: Course | None = Course.query.filter_by(slug=course_slug).first()
         if course:
-            lesson = CourseDay.query.filter_by(course_id=course.id, slug=lesson_slug).first()
+            lesson: CourseDay | None = CourseDay.query.filter_by(course_id=course.id, slug=lesson_slug).first()
             if lesson:
                 lesson_context = f"Course: {course.title}\nLesson: {lesson.title}\nContent:\n{lesson.content}"
 
     # Call rohi_chat with history and lesson_context
-    response = rohi_chat(
+    response: str = rohi_chat(
         message=message,
         lesson_context=lesson_context,
         history=history
@@ -106,7 +85,8 @@ def rohi_chat_api():
 
 @learn_bp.route("/api/rohi-chat/clear", methods=["POST"])
 @csrf.exempt
-def clear_rohi_chat():
+def clear_rohi_chat() -> Response:
+    """API endpoint to clear Rohi conversation session history."""
     session["rohi_history"] = []
     session.pop("rohi_last_course", None)
     session.pop("rohi_last_lesson", None)
@@ -117,7 +97,8 @@ def clear_rohi_chat():
 # ==========================================
 
 @learn_bp.route("/learn")
-def learn():
+def learn() -> str:
+    """Render the learning course portal homepage."""
 
     courses = Course.query.all()
 
@@ -134,7 +115,8 @@ def learn():
 
 
 @learn_bp.route("/learn/course/<course_slug>")
-def course_page(course_slug):
+def course_page(course_slug: str) -> str:
+    """Render the page for a specific course."""
 
     course = Course.query.filter_by(
         slug=course_slug
@@ -196,7 +178,8 @@ def course_page(course_slug):
 
     
 @learn_bp.route("/learn/<course_slug>/<lesson_slug>")
-def lesson_page(course_slug, lesson_slug):
+def lesson_page(course_slug: str, lesson_slug: str) -> str:
+    """Render the page for a specific course lesson."""
 
     course = Course.query.filter_by(
         slug=course_slug
@@ -267,7 +250,8 @@ import json
 
 @learn_bp.route("/course/<int:course_id>/enroll")
 @login_required
-def enroll_course(course_id):
+def enroll_course(course_id: int) -> Response:
+    """Enroll the current user in a course."""
     course = Course.query.get(course_id)
     existing = CourseEnrollment.query.filter_by(
         user_id=current_user.id,
@@ -299,7 +283,8 @@ def enroll_course(course_id):
 # ==========================================
 @learn_bp.route("/lesson/<int:day_id>/complete")
 @login_required
-def complete_lesson(day_id):
+def complete_lesson(day_id: int) -> Response:
+    """Mark a lesson as completed by the current user and award XP."""
 
     day = CourseDay.query.get_or_404(day_id)
 
@@ -393,22 +378,22 @@ def complete_lesson(day_id):
 
 @learn_bp.route("/learn/lesson/<int:day_id>/review", methods=["POST"])
 @login_required
-def submit_review(day_id):
-    """Asynchronously submit a star rating review for a lesson."""
-    day = CourseDay.query.get_or_404(day_id)
+def submit_review(day_id: int) -> Response:
+    """Asynchronously submit a rating review for a lesson."""
+    day: CourseDay = CourseDay.query.get_or_404(day_id)
     
-    data = request.get_json() or {}
-    rating = data.get("rating")
+    data: dict[str, Any] = request.get_json() or {}
+    rating: Any = data.get("rating")
     
     if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
         return jsonify({"success": False, "message": "Invalid rating value. Must be 1 to 5."}), 400
         
-    existing = LessonReview.query.filter_by(user_id=current_user.id, course_day_id=day.id).first()
+    existing: LessonReview | None = LessonReview.query.filter_by(user_id=current_user.id, course_day_id=day.id).first()
     if existing:
         existing.rating = rating
         existing.created_at = datetime.utcnow()
     else:
-        review = LessonReview(
+        review: LessonReview = LessonReview(
             user_id=current_user.id,
             course_day_id=day.id,
             rating=rating
@@ -417,7 +402,6 @@ def submit_review(day_id):
         
     db.session.commit()
     
-    from modules.auth.helpers import send_lesson_review_email
     send_lesson_review_email(current_user, day, rating)
     
     return jsonify({"success": True, "message": "Rating saved successfully!"})

@@ -1,12 +1,16 @@
+from typing import Any
+
 from flask import url_for
 from flask_login import current_user
-from models import db, Prompt, Favorite
+
 from forms import CATEGORIES
+from models import Favorite, Prompt, db
 
-PER_PAGE = 20
+PER_PAGE: int = 20
 
 
-def build_prompt_feed_context(category="", search="", page=1):
+def build_prompt_feed_context(category: str = "", search: str = "", page: int = 1) -> dict[str, Any]:
+    """Build the dictionary context for prompt vault feed presentation."""
     query = Prompt.query
 
     # Category filter
@@ -15,7 +19,7 @@ def build_prompt_feed_context(category="", search="", page=1):
 
     # Search filter
     if search:
-        search_term = f"%{search}%"
+        search_term: str = f"%{search}%"
         query = query.filter(
             db.or_(
                 Prompt.title.ilike(search_term),
@@ -33,10 +37,10 @@ def build_prompt_feed_context(category="", search="", page=1):
         error_out=False
     )
 
-    prompts = pagination.items
+    prompts: list[Prompt] = pagination.items
 
     # User favorites
-    user_favorites = set()
+    user_favorites: set[int] = set()
 
     if current_user.is_authenticated:
         user_favorites = {
@@ -47,7 +51,7 @@ def build_prompt_feed_context(category="", search="", page=1):
         }
 
     # Preserve filters while paginating
-    query_params = {}
+    query_params: dict[str, str] = {}
 
     if category:
         query_params["category"] = category
@@ -55,7 +59,7 @@ def build_prompt_feed_context(category="", search="", page=1):
     if search:
         query_params["search"] = search
 
-    clear_search_params = {}
+    clear_search_params: dict[str, str] = {}
 
     if category:
         clear_search_params["category"] = category
