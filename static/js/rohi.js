@@ -35,6 +35,28 @@ console.log(lessonSlug);
         });
     }
 
+    // New Chat handler
+    const newChatBtn = document.getElementById("rohi-new-chat");
+    if (newChatBtn) {
+        newChatBtn.addEventListener("click", async () => {
+            console.log("Rohi New Chat Clicked");
+            const welcomeHtml = `
+                <div class="rohi-ai">
+                    Hi 👋 I'm Rohi. Ask me anything about AI, Python, or prompting.
+                </div>
+            `;
+            messages.innerHTML = welcomeHtml;
+            input.value = "";
+            try {
+                await fetch("/api/rohi-chat/clear", {
+                    method: "POST"
+                });
+            } catch (err) {
+                console.error("Error clearing conversation history:", err);
+            }
+        });
+    }
+
     // Send Message
     if (sendBtn) {
 

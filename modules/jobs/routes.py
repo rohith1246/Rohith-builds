@@ -103,7 +103,6 @@ def board():
 
 
 @jobs_bp.route("/api/jobs/<int:job_id>/click", methods=["POST"])
-@csrf.exempt
 def record_job_click(job_id):
     job = Job.query.get_or_404(job_id)
     job.clicks = (job.clicks or 0) + 1
@@ -124,4 +123,199 @@ def record_job_click(job_id):
         "clicks_count": job.clicks,
         "applied": applied
     })
+
+
+# ==========================================
+# AI Job Agent Routes
+# ==========================================
+
+import pypdf
+import os
+from werkzeug.utils import secure_filename
+from models import UserAgentConfig, AgentJobOpportunity, AgentApplicationLog
+
+@jobs_bp.route("/jobs/agent")
+@login_required
+def agent_dashboard():
+    # Clean up any non-Placement Portal opportunities and their logs immediately on dashboard load
+    try:
+        deleted_count = AgentJobOpportunity.query.filter(AgentJobOpportunity.source != "Placement Portal").delete(synchronize_session=False)
+        if deleted_count > 0:
+            db.session.commit()
+            print(f"Cleaned up {deleted_count} external jobs from agent_dashboard load.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error cleaning up old agent jobs: {e}")
+
+    # Fetch or create agent config
+    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+    if not config:
+        config = UserAgentConfig(user_id=current_user.id)
+        db.session.add(config)
+        db.session.commit()
+
+    # Get matched jobs logs (sorted by fit score and date desc, only from local Placement Portal)
+    matches = (AgentApplicationLog.query
+               .join(AgentJobOpportunity)
+               .filter(AgentApplicationLog.user_id == current_user.id)
+               .filter(AgentJobOpportunity.source == "Placement Portal")
+               .filter(AgentApplicationLog.fit_score >= 50)
+               .filter(AgentApplicationLog.status != "Skipped")
+               .order_by(AgentApplicationLog.fit_score.desc(), AgentApplicationLog.created_at.desc())
+               .all())
+
+    return render_template(
+        "jobs_agent.html",
+        config=config,
+        matches=matches
+    )
+
+
+@jobs_bp.route("/jobs/agent/config", methods=["POST"])
+@login_required
+def save_agent_config():
+    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+    if not config:
+        config = UserAgentConfig(user_id=current_user.id)
+        db.session.add(config)
+
+    config.target_roles = request.form.get("target_roles", "").strip()
+    config.target_locations = request.form.get("target_locations", "").strip()
+    config.min_salary = request.form.get("min_salary", "").strip()
+    
+    # Toggle logic (is_active can be passed as form parameter)
+    is_active = request.form.get("is_active") == "true"
+    was_active = config.is_active
+    config.is_active = is_active
+
+    # Delete all previous logs so they get re-evaluated with fresh pitches under new preferences
+    AgentApplicationLog.query.filter_by(user_id=current_user.id).delete()
+
+    db.session.commit()
+
+    # Trigger or restart the matcher async if active and resume exists
+    if config.is_active and config.resume_text:
+        from .agent_worker import run_job_agent_pipeline_async
+        run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
+
+    return jsonify({
+        "success": True,
+        "message": "Preferences saved successfully.",
+        "is_active": config.is_active
+    })
+
+
+@jobs_bp.route("/jobs/agent/resume", methods=["POST"])
+@login_required
+def upload_resume():
+    if 'resume' not in request.files:
+        return jsonify({"success": False, "message": "No file uploaded"}), 400
+        
+    file = request.files['resume']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    if not file.filename.lower().endswith('.pdf'):
+        return jsonify({"success": False, "message": "Only PDF files are supported"}), 400
+
+    try:
+        import io
+        import time as time_mod
+
+        # 1. Read bytes and parse text using pypdf
+        file_bytes = file.read()
+        if not file_bytes:
+            return jsonify({"success": False, "message": "Uploaded file is empty."}), 400
+
+        reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+        extracted_text = ""
+        for page in reader.pages:
+            extracted_text += page.extract_text() or ""
+            
+        extracted_text = extracted_text.strip()
+        if not extracted_text:
+            return jsonify({"success": False, "message": "Could not extract text from the PDF. Ensure it is not a scanned image."}), 400
+
+        # 2. Get or create agent config
+        config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+        if not config:
+            config = UserAgentConfig(user_id=current_user.id)
+            db.session.add(config)
+
+        # 3. Save PDF file locally
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'resumes')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        filename = secure_filename(f"resume_{current_user.id}_{int(time_mod.time())}.pdf")
+        file_path = os.path.join(upload_dir, filename)
+        
+        # Write bytes directly to file
+        with open(file_path, 'wb') as f:
+            f.write(file_bytes)
+
+        # Update database fields
+        config.resume_text = extracted_text
+        config.resume_filename = filename
+        
+        # Clear previous logs so they get re-evaluated against the new resume
+        AgentApplicationLog.query.filter_by(user_id=current_user.id).delete()
+        
+        db.session.commit()
+
+        # Trigger async pipeline if agent is active
+        if config.is_active:
+            from .agent_worker import run_job_agent_pipeline_async
+            run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
+
+        return jsonify({
+            "success": True,
+            "message": "Resume uploaded and parsed successfully.",
+            "filename": filename,
+            "char_count": len(extracted_text)
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error parsing PDF: {str(e)}"}), 500
+
+
+@jobs_bp.route("/jobs/agent/run", methods=["POST"])
+@login_required
+def trigger_agent_run():
+    config = UserAgentConfig.query.filter_by(user_id=current_user.id).first()
+    if not config or not config.resume_text:
+        return jsonify({"success": False, "message": "Please upload a PDF resume before running the agent."}), 400
+
+    from .agent_worker import run_job_agent_pipeline_async
+    run_job_agent_pipeline_async(current_app._get_current_object(), current_user.id)
+
+    return jsonify({
+        "success": True,
+        "message": "Job agent scanning started in background."
+    })
+
+
+@jobs_bp.route("/jobs/agent/apply/<int:log_id>", methods=["POST"])
+@login_required
+def mark_applied(log_id):
+    log = AgentApplicationLog.query.filter_by(id=log_id, user_id=current_user.id).first_or_404()
+    log.status = "Applied"
+    log.applied_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": "Application logged successfully."
+    })
+
+
+@jobs_bp.route("/jobs/agent/status", methods=["GET"])
+@login_required
+def get_agent_status():
+    from .agent_worker import AGENT_STATUSES
+    status = AGENT_STATUSES.get(current_user.id, "Idle")
+    return jsonify({
+        "success": True,
+        "status": status
+    })
+
+
 

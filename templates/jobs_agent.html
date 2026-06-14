@@ -1,0 +1,1254 @@
+{% extends "base.html" %}
+{% block title %}AI Job Agent | Rohith Builds{% endblock %}
+{% block meta_description %}Your autonomous AI Job Hunter. Upload your resume, set your preferences, and let the agent draft personalized pitches for active tech roles.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================
+       AI Job Agent Dashboard CSS (Frosted Dark Glassmorphic)
+       ========================================== */
+    .agent-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 6rem 1.5rem;
+    }
+
+    .agent-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .agent-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(251, 191, 36, 0.06);
+        color: var(--primary);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 6px 14px;
+        border-radius: 30px;
+        margin-bottom: 1rem;
+    }
+
+    .agent-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--accent);
+        margin: 0 0 0.8rem 0;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #fff 30%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .agent-subtitle {
+        color: var(--text-light);
+        font-size: 1.05rem;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Main Grid Layout */
+    .agent-grid {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Left Sidebar */
+    .agent-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .sidebar-card {
+        background: rgba(20, 24, 33, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-md);
+        padding: 2rem 1.75rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .sidebar-card:hover {
+        border-color: rgba(251, 191, 36, 0.2);
+    }
+
+    .card-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    /* Status Switcher Banner */
+    .status-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.15rem;
+        border-radius: var(--radius-sm);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .status-banner.active {
+        background: rgba(16, 185, 129, 0.04);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: var(--success);
+    }
+
+    .status-banner.inactive {
+        background: rgba(156, 163, 175, 0.03);
+        border: 1px solid rgba(156, 163, 175, 0.12);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: var(--text-light);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.4rem;
+    }
+
+    .status-banner.active .status-dot {
+        background: var(--success);
+        box-shadow: 0 0 10px var(--success);
+        animation: pulse 2.5s infinite;
+    }
+
+    .status-banner.inactive .status-dot {
+        background: var(--text-light);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.35); opacity: 0.4; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border);
+        transition: .3s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: var(--text-light);
+        transition: .3s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(22px);
+        background-color: var(--bg);
+    }
+
+    /* Drag and Drop Zone */
+    .upload-zone {
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-radius: var(--radius-sm);
+        padding: 2.2rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+        border-color: var(--primary);
+        background: rgba(251, 191, 36, 0.03);
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+    }
+
+    .upload-icon {
+        font-size: 2.2rem;
+        color: var(--text-muted);
+        margin-bottom: 0.6rem;
+        transition: transform 0.3s ease;
+    }
+
+    .upload-zone:hover .upload-icon {
+        transform: translateY(-3px);
+    }
+
+    .upload-text {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        font-weight: 500;
+        margin-bottom: 0.4rem;
+    }
+
+    .upload-hint {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+    }
+
+    .resume-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-sm);
+        padding: 0.8rem 1rem;
+        margin-top: 1rem;
+    }
+
+    .resume-icon {
+        font-size: 1.4rem;
+        color: #ef4444;
+    }
+
+    .resume-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .resume-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--accent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .resume-meta {
+        font-size: 0.7rem;
+        color: var(--text-light);
+    }
+
+    /* Actions */
+    .btn-scan {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        border: none;
+        color: var(--bg);
+        padding: 0.85rem;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);
+    }
+
+    .btn-scan:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.25);
+    }
+
+    .btn-scan:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Right Matches Column */
+    .matches-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .matches-count {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .matches-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Match Card styling */
+    .match-card {
+        background: rgba(20, 24, 33, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .match-card.applied {
+        border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .match-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .match-card-header {
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        gap: 1rem;
+    }
+
+    .match-info-main {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .company-logo-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--primary);
+        flex-shrink: 0;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .match-title-group {
+        min-width: 0;
+    }
+
+    .match-job-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 0 0 0.25rem 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .match-job-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 0.78rem;
+        color: var(--text-light);
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .match-score-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-sm);
+        text-align: center;
+        min-width: 76px;
+        flex-shrink: 0;
+    }
+
+    .match-score-badge.score-high {
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        color: var(--success);
+    }
+
+    .match-score-badge.score-mid {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+    }
+
+    .score-number {
+        font-size: 1.15rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .score-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 0.15rem;
+    }
+
+    .card-chevron {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        transition: transform 0.3s ease;
+        padding: 0.2rem;
+    }
+
+    .match-card.expanded .card-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Expandable Body */
+    .match-card-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-top: 0 solid var(--border);
+        background: rgba(10, 12, 18, 0.4);
+    }
+
+    .match-card.expanded .match-card-body {
+        max-height: 2000px;
+        border-top: 1px solid var(--border);
+    }
+
+    .body-padding {
+        padding: 1.5rem;
+    }
+
+    .match-explanation-box {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-sm);
+        padding: 1rem 1.15rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .explanation-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.05em;
+    }
+
+    .explanation-text {
+        font-size: 0.88rem;
+        color: var(--text-light);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Pitch Section */
+    .pitch-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .pitch-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pitch-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .pitch-editor {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        resize: vertical;
+        min-height: 220px;
+        transition: border-color 0.2s;
+    }
+
+    .pitch-editor:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .subject-input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-sm);
+        padding: 0.7rem 1rem;
+        color: var(--text);
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: border-color 0.2s;
+    }
+
+    .subject-input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    /* Actions Row */
+    .actions-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-apply-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-gmail {
+        background: #ea4335;
+        color: white;
+        border: none;
+    }
+
+    .btn-gmail:hover {
+        background: #d33828;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(234, 67, 53, 0.2);
+    }
+
+    .btn-mailapp {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--accent);
+        border: 1px solid var(--border);
+    }
+
+    .btn-mailapp:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--border-light);
+        transform: translateY(-1px);
+    }
+
+    .btn-view-job {
+        background: transparent;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        margin-left: auto;
+    }
+
+    .btn-view-job:hover {
+        background: rgba(251, 191, 36, 0.06);
+        transform: translateY(-1px);
+    }
+
+    .btn-mark-applied {
+        background: transparent;
+        color: var(--success);
+        border: 1px solid var(--success);
+    }
+
+    .btn-mark-applied:hover {
+        background: rgba(16, 185, 129, 0.06);
+    }
+
+    .btn-mark-applied.applied {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-color: var(--success);
+        cursor: default;
+        pointer-events: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        background: rgba(20, 24, 33, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-md);
+        padding: 4.5rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        max-width: 440px;
+        margin: 0 auto 1.5rem auto;
+        line-height: 1.5;
+    }
+
+    /* Loader */
+    .loader {
+        border: 3px solid rgba(255, 255, 255, 0.05);
+        border-top: 3px solid var(--primary);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .agent-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .agent-container {
+            padding: 1.5rem 1rem 4rem 1rem;
+        }
+        
+        .agent-header {
+            margin-bottom: 2rem;
+        }
+
+        .agent-title {
+            font-size: 2.2rem;
+        }
+
+        .agent-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .body-padding {
+            padding: 1.25rem 1rem;
+        }
+
+        .btn-view-job {
+            margin-left: 0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+            width: 100%;
+        }
+
+        .btn-apply-action {
+            width: 100%;
+        }
+    }
+
+    /* Toast styling */
+    .toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: rgba(20, 24, 33, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 4px solid var(--primary);
+        color: var(--text);
+        padding: 0.85rem 1.35rem;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-size: 0.88rem;
+        font-weight: 500;
+    }
+
+    .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .toast.success {
+        border-left-color: var(--success);
+    }
+
+    .toast.error {
+        border-left-color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agent-container">
+    <!-- Header -->
+    <div class="agent-header">
+        <span class="agent-header-badge">🤖 AI Agent Placement</span>
+        <h1 class="agent-title">Autonomous Job Agent</h1>
+        <p class="agent-subtitle">Your AI Career Scout. Upload your PDF resume, and let the agent automatically analyze active jobs in our portal, rank them by skill and title keyword overlap, and draft highly-personalized cold pitches for the best opportunities.</p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="agent-grid">
+        
+        <!-- Controls Column -->
+        <div class="agent-sidebar">
+            
+            <!-- Toggle & Resume Card -->
+            <div class="sidebar-card">
+                <h3 class="card-title"><span>📡</span> Agent Console</h3>
+                
+                <!-- Status Switcher Banner -->
+                <div class="status-banner {% if config.is_active %}active{% else %}inactive{% endif %}" id="statusBanner">
+                    <span>
+                        <span class="status-dot"></span>
+                        <span id="statusText">Agent {% if config.is_active %}Active{% else %}Paused{% endif %}</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="agentToggle" {% if config.is_active %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- PDF Resume Dropzone -->
+                <label class="form-group-label" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">Resume PDF</label>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text" id="uploadText">Click or drag & drop PDF</div>
+                    <div class="upload-hint">Max size 5MB</div>
+                </div>
+
+                <div id="resumeBadgeContainer" style="{% if not config.resume_filename %}display: none;{% endif %}">
+                    <div class="resume-badge">
+                        <span class="resume-icon">📕</span>
+                        <div class="resume-details">
+                            <div class="resume-name" id="resumeFilename">{{ config.resume_filename or 'No resume uploaded' }}</div>
+                            <div class="resume-meta">Ready for matching</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-scan" id="btnTriggerScan" onclick="triggerScan()" style="margin-top: 1.5rem; width: 100%;">
+                    <span>🔍</span> Scan & Match Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Matches Column -->
+        <div class="agent-results">
+            <!-- Real-time Status Alert Banner -->
+            <div id="agentStatusAlert" class="status-banner active" style="display: none; background: rgba(59, 130, 246, 0.04); border: 1px dashed rgba(59, 130, 246, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--info); margin-bottom: 1.5rem; border-radius: var(--radius-sm); padding: 1rem 1.25rem; text-align: left;">
+                <span style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.95rem; font-weight: 600;">
+                    <span class="loader" style="border-top-color: var(--info); border-left-color: rgba(59,130,246,0.1); border-right-color: rgba(59,130,246,0.1); border-bottom-color: rgba(59,130,246,0.1);"></span>
+                    <span><strong>Agent Activity:</strong> <span id="agentActivityText" style="font-weight: 400; color: var(--accent);">Initializing...</span></span>
+                </span>
+            </div>
+
+            <div class="matches-header">
+                <h2 class="matches-count">Matches Evaluated ({{ matches|length }})</h2>
+            </div>
+
+            {% if not matches %}
+            <div class="empty-state">
+                <div class="empty-icon">🕵️‍♂️</div>
+                <h3 class="empty-title">Scouting for Matches</h3>
+                <p class="empty-text">No matching job opportunities found yet. Upload your PDF resume and click 'Scan & Match Now' to automatically find and score relevant jobs in our database.</p>
+                <button class="btn-save" style="width: auto; display: inline-flex; margin: 0 auto;" onclick="document.getElementById('fileInput').click()">
+                    <span>📤</span> Upload Resume PDF
+                </button>
+            </div>
+            {% else %}
+            <div class="matches-list">
+                {% for match in matches %}
+                <div class="match-card {% if match.status == 'Applied' %}applied{% endif %}" id="match-card-{{ match.id }}">
+                    <!-- Card Header -->
+                    <div class="match-card-header" onclick="toggleCard({{ match.id }})">
+                        <div class="match-info-main">
+                            <div class="company-logo-placeholder">
+                                {{ match.job_opportunity.company[0] }}
+                            </div>
+                            <div class="match-title-group">
+                                <h3 class="match-job-title">{{ match.job_opportunity.title }}</h3>
+                                <div class="match-job-meta">
+                                    <span class="meta-item">🏢 {{ match.job_opportunity.company }}</span>
+                                    <span class="meta-item">📍 {{ match.job_opportunity.location }}</span>
+                                    <span class="meta-item">🌐 {{ match.job_opportunity.source }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Score circular/badge representation -->
+                        <div class="match-score-badge {% if match.fit_score >= 80 %}score-high{% else %}score-mid{% endif %}">
+                            <span class="score-number">{{ match.fit_score }}%</span>
+                            <span class="score-label">Fit Score</span>
+                        </div>
+
+                        <span class="card-chevron">▼</span>
+                    </div>
+
+                    <!-- Expandable Body -->
+                    <div class="match-card-body" id="card-body-{{ match.id }}">
+                        <div class="body-padding">
+                            <!-- Match Explanation Box -->
+                            <div class="match-explanation-box">
+                                <div class="explanation-title">Why it matches your resume</div>
+                                <p class="explanation-text">{{ match.match_explanation }}</p>
+                            </div>
+
+                            <!-- Subject Header -->
+                            <div class="pitch-section">
+                                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-light);">Email Subject Line</label>
+                                <input type="text" class="subject-input" id="subject-{{ match.id }}" value="{{ match.drafted_subject or 'Application for ' ~ match.job_opportunity.title }}">
+                            </div>
+
+                            <!-- Pitch Editor -->
+                            <div class="pitch-section">
+                                <div class="pitch-header">
+                                    <label class="pitch-title">AI Personalized Cold Pitch Email</label>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Editable - Customize before sending</span>
+                                </div>
+                                <textarea class="pitch-editor" id="body-{{ match.id }}">{{ match.drafted_body }}</textarea>
+                            </div>
+
+                            <!-- Action Buttons Row -->
+                            <div class="actions-row">
+                                <button onclick="sendGmail({{ match.id }}, '{{ match.job_opportunity.recruiter_email or '' }}')" class="btn-apply-action btn-gmail">
+                                    <span>✉️</span> Send via Gmail
+                                </button>
+                                <button onclick="sendMailApp({{ match.id }}, '{{ match.job_opportunity.recruiter_email or '' }}')" class="btn-apply-action btn-mailapp">
+                                    <span>💻</span> Open Mail App
+                                </button>
+                                
+                                <button onclick="markAsApplied({{ match.id }})" 
+                                        id="applied-btn-{{ match.id }}" 
+                                        class="btn-apply-action btn-mark-applied {% if match.status == 'Applied' %}applied{% endif %}">
+                                    {% if match.status == 'Applied' %}
+                                    <span>✓</span> Applied
+                                    {% else %}
+                                    <span>✓</span> Mark as Applied
+                                    {% endif %}
+                                </button>
+
+                                <a href="{{ match.job_opportunity.apply_url }}" target="_blank" class="btn-apply-action btn-view-job">
+                                    View Job Spec ↗
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast" id="toastBox">
+    <span id="toastIcon">💡</span>
+    <span id="toastMessage">Default toast message</span>
+</div>
+
+<!-- Frontend JavaScript logic -->
+<script>
+    // Accordion Toggler
+    function toggleCard(id) {
+        const card = document.getElementById(`match-card-${id}`);
+        const expanded = card.classList.contains('expanded');
+        
+        // Collapse all others first for clean view
+        document.querySelectorAll('.match-card').forEach(c => {
+            c.classList.remove('expanded');
+        });
+        
+        if (!expanded) {
+            card.classList.add('expanded');
+        }
+    }
+
+    // Toggle active switch handler
+    const agentToggle = document.getElementById('agentToggle');
+    const statusBanner = document.getElementById('statusBanner');
+    const statusText = document.getElementById('statusText');
+
+    agentToggle.addEventListener('change', function() {
+        const isActive = this.checked;
+        
+        // Update UI state
+        if (isActive) {
+            statusBanner.className = 'status-banner active';
+            statusText.innerText = 'Agent Active';
+        } else {
+            statusBanner.className = 'status-banner inactive';
+            statusText.innerText = 'Agent Paused';
+        }
+
+        // Call backend to update
+        const formData = new FormData();
+        formData.append('is_active', isActive ? 'true' : 'false');
+
+        fetch('/jobs/agent/config', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(isActive ? 'Agent turned ON. Scanning started.' : 'Agent turned OFF.', 'success');
+                if (isActive) {
+                    setTimeout(checkAgentStatus, 1000); // Check status after a second
+                }
+            } else {
+                showToast('Error updating status', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Network error updating status', 'error');
+        });
+    });
+
+    // PDF Resume upload processing
+    const fileInput = document.getElementById('fileInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const uploadText = document.getElementById('uploadText');
+
+    // Drag over styling
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, e => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, e => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        }, false);
+    });
+
+    uploadZone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+            fileInput.files = files;
+            handleFileUpload(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length) {
+            handleFileUpload(this.files[0]);
+        }
+    });
+
+    function handleFileUpload(file) {
+        if (!file.name.endsWith('.pdf')) {
+            showToast('Only PDF files are supported', 'error');
+            return;
+        }
+
+        uploadText.innerHTML = `<span class="loader"></span> Uploading ${file.name}...`;
+        
+        const formData = new FormData();
+        formData.append('resume', file);
+
+        fetch('/jobs/agent/resume', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            uploadText.innerText = 'Click or drag & drop PDF';
+            if (data.success) {
+                showToast('Resume uploaded and parsed successfully!', 'success');
+                // Update file badge
+                document.getElementById('resumeBadgeContainer').style.display = 'block';
+                document.getElementById('resumeFilename').innerText = data.filename;
+            } else {
+                showToast(data.message || 'Error uploading file', 'error');
+            }
+        })
+        .catch(err => {
+            uploadText.innerText = 'Click or drag & drop PDF';
+            console.error(err);
+            showToast('Network error uploading file', 'error');
+        });
+    }
+
+    // Real-time Agent Status Checker (Polling)
+    let pollInterval = null;
+    let isRunning = false;
+
+    function checkAgentStatus() {
+        fetch('/jobs/agent/status')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const status = data.status;
+                const statusAlert = document.getElementById('agentStatusAlert');
+                const activityText = document.getElementById('agentActivityText');
+                const btnScan = document.getElementById('btnTriggerScan');
+                
+                if (status && status !== 'Idle') {
+                    isRunning = true;
+                    statusAlert.style.display = 'block';
+                    activityText.innerText = status;
+                    
+                    if (btnScan) {
+                        btnScan.disabled = true;
+                        btnScan.innerHTML = '<span class="loader"></span> Scanning...';
+                    }
+                    
+                    // Start polling if not already polling
+                    if (!pollInterval) {
+                        pollInterval = setInterval(checkAgentStatus, 2000);
+                    }
+                } else {
+                    statusAlert.style.display = 'none';
+                    if (btnScan) {
+                        btnScan.disabled = false;
+                        btnScan.innerHTML = '<span>🔍</span> Scan & Match Now';
+                    }
+                    
+                    // Transition from running to completed
+                    if (isRunning) {
+                        isRunning = false;
+                        if (pollInterval) {
+                            clearInterval(pollInterval);
+                            pollInterval = null;
+                        }
+                        showToast('Agent scanning and matching completed!', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                }
+            }
+        })
+        .catch(err => console.error('Error fetching status:', err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAgentStatus();
+    });
+
+    // Manual Scan & Match run
+    function triggerScan() {
+        const btn = document.getElementById('btnTriggerScan');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<span class="loader"></span> Matching...';
+        btn.disabled = true;
+
+        fetch('/jobs/agent/run', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            if (data.success) {
+                showToast('Agent matching database jobs. Matches will load shortly.', 'success');
+                // Trigger immediate status check to activate status bar & start polling
+                setTimeout(checkAgentStatus, 500);
+            } else {
+                showToast(data.message || 'Error starting match', 'error');
+            }
+        })
+        .catch(err => {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            console.error(err);
+            showToast('Network error triggering match', 'error');
+        });
+    }
+
+    // Mark as Applied API call
+    function markAsApplied(id) {
+        const btn = document.getElementById(`applied-btn-${id}`);
+        btn.innerHTML = 'Logging...';
+
+        fetch(`/jobs/agent/apply/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.className = 'btn-apply-action btn-mark-applied applied';
+                btn.innerHTML = '<span>✓</span> Applied';
+                document.getElementById(`match-card-${id}`).classList.add('applied');
+                showToast('Application marked as sent!', 'success');
+            } else {
+                btn.innerHTML = '<span>✓</span> Mark as Applied';
+                showToast('Error marking applied', 'error');
+            }
+        })
+        .catch(err => {
+            btn.innerHTML = '<span>✓</span> Mark as Applied';
+            console.error(err);
+            showToast('Network error marking applied', 'error');
+        });
+    }
+
+    // Redirect to pre-filled Web Gmail
+    function sendGmail(id, email) {
+        const subject = document.getElementById(`subject-${id}`).value;
+        let body = document.getElementById(`body-${id}`).value;
+        
+        // Log application
+        markAsApplied(id);
+
+        // Convert raw newlines to URL-safe carriage return line feeds
+        body = body.replace(/\r?\n/g, '\r\n');
+
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(gmailUrl, '_blank');
+    }
+
+    // Redirect to pre-filled local Mail App (mailto link)
+    function sendMailApp(id, email) {
+        const subject = document.getElementById(`subject-${id}`).value;
+        let body = document.getElementById(`body-${id}`).value;
+
+        // Log application
+        markAsApplied(id);
+
+        // Convert raw newlines to URL-safe carriage return line feeds
+        body = body.replace(/\r?\n/g, '\r\n');
+
+        const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
+    }
+
+    // Toast show helper
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastBox');
+        const icon = document.getElementById('toastIcon');
+        const msg = document.getElementById('toastMessage');
+
+        toast.className = `toast show ${type}`;
+        icon.innerText = type === 'success' ? '⚡' : '⚠️';
+        msg.innerText = message;
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+</script>
+{% endblock %}

@@ -4,15 +4,137 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-api_key = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=api_key) if api_key else None
+ROHI_SYSTEM_PROMPT = """
+You are Rohi, the AI tutor for Rohith Builds.
+You are friendly, helpful, and speak like a 
+senior Indian developer mentoring a junior.
 
+ABOUT ROHITH BUILDS PLATFORM:
+- Free AI-powered learning platform for 
+  Indian developers
+- URL: rohith-builds.onrender.com
+- Built by Rohith Vuppula (@rohith_builds)
+
+WHAT THE PLATFORM HAS:
+1. COURSES:
+   - 100 Days Python to AI Master
+     (Day 1 to Day 100, structured lessons)
+   - 7-Day AI Agent Course
+     (Build real AI agent with Python + Groq)
+
+2. PROMPT VAULT:
+   - 220+ curated AI prompts for developers
+   - Categories: coding, debugging, system 
+     design, career, productivity
+   - Users can like, copy, favorite prompts
+
+3. JOBS BOARD (/jobs):
+   - 53+ curated junior developer jobs
+   - Auto-scraped from LinkedIn, Naukri, Indeed
+   - Filters: Python, Backend, AI, Frontend,
+     Fullstack, Remote/Hybrid/Onsite
+   - Updated daily
+   - Filter by graduation batch: 
+     2025, 2026, 2027, Experience
+
+4. IMPROVE PROMPT TOOL (/improve):
+   - Paste any AI prompt
+   - Get optimized version instantly
+   - Free, no signup needed
+
+5. AI JOB AGENT:
+   - Upload your resume
+   - Set target roles and salary
+   - AI matches you to jobs automatically
+   - Drafts personalized cover letters
+
+6. ROHI (YOU):
+   - AI tutor available 24/7
+   - Powered by Groq LLM
+   - Answers questions about lessons
+   - Helps with Python, AI, Backend concepts
+
+WHAT YOU CAN HELP WITH:
+- Explain any lesson concept
+- Answer Python and AI questions
+- Help debug code
+- Guide students to right course/feature
+- Explain platform features
+- Career advice for Indian developers
+- Recommend which lesson to start with
+
+PLATFORM NAVIGATION GUIDE:
+- Start learning: /learn
+- Browse jobs: /jobs  
+- Explore prompts: /vault
+- Improve a prompt: /improve
+- Your dashboard: /dashboard
+- AI Agent: /jobs/agent
+
+TEACHING STYLE:
+- Use Indian examples: Zomato, Swiggy, 
+  IRCTC, Aadhaar, cricket, IPL
+- Be conversational, not robotic
+- Encourage students when they struggle
+- Always connect concepts to real projects
+- Keep answers concise (3-5 lines max)
+  unless student asks for more detail
+
+CURRENT LESSON CONTEXT:
+{lesson_context}
+
+CONVERSATION HISTORY:
+{history}
+
+Remember: You are not just a lesson tutor.
+You are the guide for the entire 
+Rohith Builds platform and community.
+"""
+
+def call_groq_with_fallback(messages, max_tokens=300):
+    key_primary = os.getenv("GROQ_API_KEY", "").strip()
+    key_secondary = os.getenv("GROQ_API_KEY_SECONDARY", "").strip()
+
+    # Fallback chain:
+    # 1. Primary key + llama-3.3-70b-versatile
+    # 2. Primary key + llama-3.1-8b-instant
+    # 3. Secondary key + llama-3.3-70b-versatile
+    # 4. Secondary key + llama-3.1-8b-instant
+    # 5. Primary key + mixtral-8x7b-32768
+    # 6. Secondary key + mixtral-8x7b-32768
+    steps = [
+        (key_primary, "llama-3.3-70b-versatile"),
+        (key_primary, "llama-3.1-8b-instant"),
+        (key_secondary, "llama-3.3-70b-versatile"),
+        (key_secondary, "llama-3.1-8b-instant"),
+        (key_primary, "mixtral-8x7b-32768"),
+        (key_secondary, "mixtral-8x7b-32768"),
+    ]
+
+    valid_steps = [(k, m) for k, m in steps if k]
+    if not valid_steps:
+        return "Rohi is taking a short break. Please try again in a moment."
+
+    last_err = None
+    for key, model in valid_steps:
+        try:
+            client = Groq(api_key=key, timeout=5.0)
+            chat_completion = client.chat.completions.create(
+                messages=messages,
+                model=model,
+                temperature=0.7,
+                max_tokens=max_tokens
+            )
+            return chat_completion.choices[0].message.content.strip()
+        except Exception as e:
+            last_err = e
+            print(f"[Fallback] Groq model {model} failed. Trying next option. Error: {e}")
+            continue
+
+    print(f"[Fallback] All Groq models and keys failed. Last error: {last_err}")
+    return "Rohi is taking a short break. Please try again in a moment."
 
 def improve_prompt(user_prompt):
-
-    if not client:
-        return "Error: GROQ_API_KEY environment variable is not configured. Please set it in your environment or .env file."
-
     system_prompt = """
     You are an expert AI prompt optimizer.
 
@@ -23,234 +145,27 @@ def improve_prompt(user_prompt):
     Keep the intent same.
     Make it more specific and useful.
     """
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    return call_groq_with_fallback(messages, max_tokens=1000)
 
-    try:
+def rohi_chat(message, lesson_context="", history=None):
+    history_str = ""
+    if history:
+        for h in history:
+            role = "Student" if h["role"] == "user" else "Rohi"
+            history_str += f"{role}: {h['content']}\n"
 
-        chat_completion = client.chat.completions.create(
+    system_prompt = ROHI_SYSTEM_PROMPT.format(
+        lesson_context=lesson_context or "",
+        history=history_str
+    )
 
-            messages=[
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": message}
+    ]
 
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-
-            ],
-
-            model="llama-3.3-70b-versatile",
-        )
-
-        return chat_completion.choices[0].message.content
-
-    except Exception as e:
-
-        return f"Error: {str(e)}"
-
-def rohi_chat(
-    message,
-    course_name="RohithBuilds",
-    lesson_title="General Learning",
-    lesson_content=""
-):
-
-    if not client:
-        return "Rohi is currently unavailable."
-
-    system_prompt = f"""
-You are Rohi, the AI tutor for RohithBuilds.
-rohith-builds.onrender.com
-
-You know the complete Python→AI curriculum:
-
-PHASE 1 — Python + OOP (Day 1-30)
-Day 1: How Computers Think
-Day 2: Variables
-Day 3: Data Types
-Day 4: User Input
-Day 5: Conditions
-Day 6: Loops
-Day 7: Mini Project
-Day 8: Functions
-Day 9: Function Inputs & Outputs
-Day 10: Lists
-Day 11: List Operations
-Day 12: List Loops
-Day 13: Dictionaries
-Day 14: Strings
-Day 15: String Operations
-Day 16: Tuples
-Day 17: Sets
-Day 18: Nested Data Structures
-Day 19: File Handling
-Day 20: Error Handling
-Day 21: Modules & Imports
-Day 22: Python Packages & Pip
-Day 23: Virtual Environments
-Day 24: Object-Oriented Programming
-Day 25: Classes & Objects
-Day 26: Constructors
-Day 27: Inheritance
-Day 28: Encapsulation
-Day 29: Polymorphism
-Day 30: Student Management System
-
-PHASE 2 — Web & Databases (Day 31-50)
-Day 31: How the Internet Works
-Day 32: HTTP Explained
-Day 33: APIs Explained
-Day 34: JSON Data Format
-Day 35: API Requests with Python
-Day 36: Working with Public APIs
-Day 37: Authentication & API Keys
-Day 38: Backend vs Frontend
-Day 39: Databases Explained
-Day 40: SQL Basics
-Day 41: SQL Queries
-Day 42: Filtering Data
-Day 43: Sorting Data
-Day 44: SQL Joins
-Day 45: Database Design Basics
-Day 46: Python + SQLite
-Day 47: CRUD Applications
-Day 48: Data Modeling
-Day 49: Expense Tracker
-Day 50: Backend System Design
-
-PHASE 3 — Data Science (Day 51-60)
-Day 51: What is Data Science?
-Day 52: NumPy Fundamentals
-Day 53: Arrays & Vector Thinking
-Day 54: Pandas Introduction
-Day 55: Working with DataFrames
-Day 56: Data Cleaning
-Day 57: Data Visualization
-Day 58: Matplotlib Basics
-Day 59: Exploratory Data Analysis
-Day 60: Data Dashboard
-
-PHASE 4 — Machine Learning (Day 61-70)
-Day 61: What is Machine Learning?
-Day 62: Features & Labels
-Day 63: Training vs Testing Data
-Day 64: Regression Explained
-Day 65: Classification Explained
-Day 66: Scikit-Learn Basics
-Day 67: Building First ML Model
-Day 68: Model Evaluation
-Day 69: Overfitting & Underfitting
-Day 70: Prediction System
-
-PHASE 5 — Deep Learning (Day 71-80)
-Day 71: What is Deep Learning?
-Day 72: Artificial Neurons
-Day 73: Neural Networks
-Day 74: Forward Propagation
-Day 75: Activation Functions
-Day 76: Loss Functions
-Day 77: Backpropagation
-Day 78: TensorFlow & PyTorch
-Day 79: Training Neural Networks
-Day 80: Image Classifier
-
-PHASE 6 — AI & LLMs (Day 81-90)
-Day 81: What is AI?
-Day 82: Natural Language Processing
-Day 83: Embeddings Explained
-Day 84: Transformers Explained
-Day 85: Attention Mechanism
-Day 86: How ChatGPT Works
-Day 87: Prompt Engineering
-Day 88: Context Windows
-Day 89: Tokens Explained
-Day 90: AI Chatbot
-
-PHASE 7 — Advanced AI Systems (Day 91-100)
-Day 91: RAG
-Day 92: Vector Databases
-Day 93: Semantic Search
-Day 94: AI Agents Explained
-Day 95: Agent Tools & Actions
-Day 96: Multi-Agent Systems
-Day 97: AI Automation Workflows
-Day 98: Production AI Systems
-Day 99: Startup AI Architecture
-Day 100: AI Agent Platform
-
-YOUR PERSONALITY:
-→ Name: Rohi
-→ Friendly, encouraging, patient
-→ Speak like a smart older student
-   not like a corporate AI
-→ Never make beginners feel stupid
-→ Always reference specific day numbers
-→ Use real world metaphors to explain
-→ Keep answers under 150 words
-→ Always end with what to do next
-
-YOUR RULES:
-→ If student asks about a concept —
-   tell them which day covers it
-→ If student is stuck — 
-   break it into smaller steps
-→ If student wants to quit —
-   remind them what phase they're in
-   and what they'll be able to build
-→ If student asks anything off topic —
-   gently bring back to Python→AI journey
-→ Always end response with:
-   "Keep going — Day X is next 🚀"
-   (replace X with relevant day)
-
-NEVER:
-→ Give answers longer than 150 words
-→ Make student feel overwhelmed
-→ Recommend other courses or platforms
-→ Forget to mention the day number
-   relevant to their question
-
-
-Current Course:
-{course_name}
-
-Current Lesson:
-{lesson_title}
-
-Lesson Content:
-{lesson_content}
-"""
-
-    try:
-
-        chat_completion = client.chat.completions.create(
-
-            model="llama-3.3-70b-versatile",
-
-            messages=[
-
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-
-                {
-                    "role": "user",
-                    "content": message
-                }
-
-            ],
-
-            temperature=0.7,
-            max_tokens=200
-
-        )
-
-        return chat_completion.choices[0].message.content
-
-    except Exception as e:
-
-        return f"Rohi Error: {str(e)}"
+    return call_groq_with_fallback(messages, max_tokens=200)

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="csrf-token" content="{{ csrf_token() }}"/>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="{% block meta_description %}Learn AI, Prompt Engineering, Python, and Automation through practical lessons, projects, and curated prompts.{% endblock %}">
@@ -249,8 +250,9 @@ window.LESSON_SLUG = null;
 
     <div id="rohi-chat">
 
-        <div class="rohi-header">
-             Rohi AI Tutor
+        <div class="rohi-header" style="display: flex; justify-content: space-between; align-items: center;">
+             <span>Rohi AI Tutor</span>
+             <button id="rohi-new-chat" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: #fbbf24; cursor: pointer; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; font-family: 'Inter', sans-serif;">New Chat</button>
         </div>
 
         <div id="rohi-messages">

@@ -147,6 +147,24 @@ def _initialize_database():
                         conn.execute(text("ALTER TABLE jobs ADD COLUMN target_batch VARCHAR(100) DEFAULT '2025, 2026'"))
                         conn.commit()
 
+            # Create safe indexes if they don't exist
+            with db.engine.connect() as conn:
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON prompts (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_user_id ON user_likes (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_prompt_id ON user_likes (prompt_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_prompt_id ON favorites (prompt_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_days_course_id ON course_days (course_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_user_id ON course_enrollments (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_course_id ON course_enrollments (course_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_id ON lesson_progress (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_course_day_id ON lesson_progress (course_day_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_user_id ON lesson_reviews (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_course_day_id ON lesson_reviews (course_day_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_user_id ON job_applications (user_id)"))
+                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications (job_id)"))
+                conn.commit()
+
             # seed only when tables exist
             seed_database()
 

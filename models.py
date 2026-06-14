@@ -66,7 +66,8 @@ class Prompt(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     created_at = db.Column(
@@ -99,13 +100,15 @@ class PromptLike(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     prompt_id = db.Column(
         db.Integer,
         db.ForeignKey("prompts.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     created_at = db.Column(
@@ -175,8 +178,8 @@ class Favorite(db.Model):
     __tablename__ = "favorites"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    prompt_id = db.Column(db.Integer, db.ForeignKey("prompts.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    prompt_id = db.Column(db.Integer, db.ForeignKey("prompts.id"), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (db.UniqueConstraint("user_id", "prompt_id", name="unique_favorite"),)
@@ -223,7 +226,8 @@ class CourseDay(db.Model):
     course_id = db.Column(
         db.Integer,
         db.ForeignKey("courses.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     day_number = db.Column(db.Integer, nullable=False)
@@ -260,13 +264,19 @@ class UserCourseProgress(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     course_id = db.Column(
         db.Integer,
         db.ForeignKey("courses.id"),
-        nullable=False
+        nullable=False,
+        index=True
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "course_id", name="uq_user_course_progress"),
     )
 
     current_day = db.Column(db.Integer, default=1)
@@ -297,13 +307,19 @@ class CourseEnrollment(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     course_id = db.Column(
         db.Integer,
         db.ForeignKey("courses.id"),
-        nullable=False
+        nullable=False,
+        index=True
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "course_id", name="uq_course_enrollment"),
     )
 
     enrolled_at = db.Column(
@@ -330,13 +346,19 @@ class LessonProgress(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     course_day_id = db.Column(
         db.Integer,
         db.ForeignKey("course_days.id"),
-        nullable=False
+        nullable=False,
+        index=True
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "course_day_id", name="uq_lesson_progress"),
     )
 
     completed = db.Column(
@@ -367,13 +389,19 @@ class LessonReview(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     course_day_id = db.Column(
         db.Integer,
         db.ForeignKey("course_days.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
+        index=True
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "course_day_id", name="uq_lesson_review"),
     )
 
     rating = db.Column(db.Integer, nullable=False)
@@ -419,8 +447,8 @@ class JobApplication(db.Model):
     __tablename__ = "job_applications"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Unique constraint so a user can only apply once to a job
@@ -433,3 +461,56 @@ class JobApplication(db.Model):
 
     def __repr__(self):
         return f"<JobApplication User:{self.user_id} Job:{self.job_id}>"
+
+
+class UserAgentConfig(db.Model):
+    __tablename__ = "user_agent_configs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    resume_text = db.Column(db.Text, nullable=True)
+    resume_filename = db.Column(db.String(255), nullable=True)
+    target_roles = db.Column(db.String(300), nullable=True, default="Software Engineer, Backend Engineer, Frontend Engineer, Fullstack Engineer")
+    target_locations = db.Column(db.String(300), nullable=True, default="Remote, India, Bengaluru")
+    min_salary = db.Column(db.String(100), nullable=True, default="")
+    is_active = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship("User", backref=db.backref("agent_config", uselist=False, cascade="all, delete-orphan"))
+
+
+class AgentJobOpportunity(db.Model):
+    __tablename__ = "agent_job_opportunities"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), nullable=False)
+    company = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    apply_url = db.Column(db.String(500), unique=True, nullable=False)
+    recruiter_email = db.Column(db.String(120), nullable=True)
+    source = db.Column(db.String(100), nullable=True, default="Lever/Greenhouse")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AgentApplicationLog(db.Model):
+    __tablename__ = "agent_application_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    job_opportunity_id = db.Column(db.Integer, db.ForeignKey("agent_job_opportunities.id", ondelete="CASCADE"), nullable=False)
+    fit_score = db.Column(db.Integer, default=0)
+    match_explanation = db.Column(db.Text, nullable=True)
+    drafted_subject = db.Column(db.String(300), nullable=True)
+    drafted_body = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), default="Matched")
+    applied_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "job_opportunity_id", name="uq_user_job_opportunity"),
+    )
+
+    user = db.relationship("User", backref=db.backref("agent_logs", lazy="dynamic", cascade="all, delete-orphan"))
+    job_opportunity = db.relationship("AgentJobOpportunity", backref=db.backref("logs", lazy="dynamic", cascade="all, delete-orphan"))

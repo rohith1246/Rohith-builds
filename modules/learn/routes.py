@@ -34,69 +34,67 @@ from flask import jsonify
 
 @learn_bp.route("/api/rohi-chat", methods=["POST"])
 @csrf.exempt
-
 def rohi_chat_api():
-
-    data = request.get_json()
-    
-    
-
+    data = request.get_json() or {}
     message = data.get("message")
     course_slug = data.get("course_slug")
     lesson_slug = data.get("lesson_slug")
-    
-    
+
     # Guest limit
     if not current_user.is_authenticated:
-
         used = session.get("rohi_guest_count", 0)
-
         if used >= 3:
-
             return jsonify({
-            "limit_reached": True,
-            "message": "Please sign up to continue chatting with Rohi."
-        }), 403
-
+                "limit_reached": True,
+                "message": "Please sign up to continue chatting with Rohi."
+            }), 403
         session["rohi_guest_count"] = used + 1
 
-# Global Rohi mode
-    if not course_slug or not lesson_slug:
+    # Retrieve history from session
+    history = session.get("rohi_history", [])
+    history = history[-10:]
 
-        response = rohi_chat(
-            message=message,
-            course_name="RohithBuilds",
-            lesson_title="General Learning",
-            lesson_content=""
-        )
+    # Context change detection
+    last_course = session.get("rohi_last_course")
+    last_lesson = session.get("rohi_last_lesson")
+    if last_course != course_slug or last_lesson != lesson_slug:
+        history = []
+        session["rohi_history"] = []
+        session["rohi_last_course"] = course_slug
+        session["rohi_last_lesson"] = lesson_slug
 
-        return jsonify({
-        "reply": response
-        })
+    lesson_context = ""
+    if course_slug and lesson_slug:
+        course = Course.query.filter_by(slug=course_slug).first()
+        if course:
+            lesson = CourseDay.query.filter_by(course_id=course.id, slug=lesson_slug).first()
+            if lesson:
+                lesson_context = f"Course: {course.title}\nLesson: {lesson.title}\nContent:\n{lesson.content}"
 
-# Lesson mode
-    course = Course.query.filter_by(
-        slug=course_slug
-    ).first_or_404()
-
-    lesson = CourseDay.query.filter_by(
-        course_id=course.id,
-        slug=lesson_slug
-    ).first_or_404()
+    # Call rohi_chat with history and lesson_context
     response = rohi_chat(
-
         message=message,
-
-        course_name=course.title,
-
-        lesson_title=lesson.title,
-
-        lesson_content=lesson.content
+        lesson_context=lesson_context,
+        history=history
     )
+
+    # Append to sliding history and save
+    history.append({"role": "user", "content": message})
+    history.append({"role": "assistant", "content": response})
+    session["rohi_history"] = history
 
     return jsonify({
         "reply": response
     })
+
+
+@learn_bp.route("/api/rohi-chat/clear", methods=["POST"])
+@csrf.exempt
+def clear_rohi_chat():
+    session["rohi_history"] = []
+    session.pop("rohi_last_course", None)
+    session.pop("rohi_last_lesson", None)
+    return jsonify({"success": True})
 
 # ==========================================
 # LEARN HOME
