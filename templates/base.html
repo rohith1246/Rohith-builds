@@ -4,7 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="csrf-token" content="{{ csrf_token() }}"/>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#fbbf24"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="RohithBuilds"/>
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo_compressed.png') }}"/>
   <meta name="description" content="{% block meta_description %}Learn AI, Prompt Engineering, Python, and Automation through practical lessons, projects, and curated prompts.{% endblock %}">
 
   <!-- Open Graph / Facebook -->
@@ -366,5 +375,143 @@ window.LESSON_SLUG = null;
   });
 </script>
 {% block extra_js %}{% endblock %}
+
+<!-- ── PWA: Service Worker Registration ── -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then(function (reg) {
+          console.log('[SW] Registered, scope:', reg.scope);
+        })
+        .catch(function (err) {
+          console.warn('[SW] Registration failed:', err);
+        });
+    });
+  }
+</script>
+
+<!-- ── PWA: Install Banner ── -->
+<div id="pwa-install-banner" style="
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: calc(100% - 32px);
+  max-width: 420px;
+  background: linear-gradient(135deg, #13141f 0%, #1a1b2e 100%);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,191,36,0.1);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(12px);
+">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <img src="{{ url_for('static', filename='images/logo_compressed.png') }}"
+         alt="Rohith Builds"
+         style="width:48px; height:48px; border-radius:12px; object-fit:cover; flex-shrink:0;">
+    <div style="flex:1; min-width:0;">
+      <div style="font-family:'Inter',sans-serif; font-weight:700; font-size:0.9375rem; color:#f1f5f9; margin-bottom:3px;">
+        Install Rohith Builds
+      </div>
+      <div style="font-family:'Inter',sans-serif; font-size:0.8125rem; color:#64748b; line-height:1.4;">
+        Add to home screen for the full app experience
+      </div>
+    </div>
+    <button id="pwa-dismiss-btn" aria-label="Dismiss"
+      style="background:none; border:none; color:#64748b; font-size:1.25rem; cursor:pointer;
+             padding:4px; line-height:1; flex-shrink:0; transition:color 0.2s;"
+      onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#64748b'">✕</button>
+  </div>
+  <div style="display:flex; gap:10px; margin-top:16px;">
+    <button id="pwa-install-btn"
+      style="flex:1; background:#fbbf24; color:#09090f; border:none; border-radius:10px;
+             padding:11px 16px; font-family:'Inter',sans-serif; font-weight:700;
+             font-size:0.875rem; cursor:pointer; transition:background 0.2s, transform 0.15s;"
+      onmouseover="this.style.background='#f59e0b'; this.style.transform='translateY(-1px)'"
+      onmouseout="this.style.background='#fbbf24'; this.style.transform='translateY(0)'">
+      📲 Install App
+    </button>
+    <button id="pwa-later-btn"
+      style="padding:11px 16px; background:rgba(255,255,255,0.06); color:#94a3b8;
+             border:1px solid rgba(255,255,255,0.1); border-radius:10px;
+             font-family:'Inter',sans-serif; font-size:0.875rem; cursor:pointer;
+             transition:border-color 0.2s, color 0.2s;"
+      onmouseover="this.style.borderColor='rgba(251,191,36,0.4)'; this.style.color='#fbbf24'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='#94a3b8'">
+      Not now
+    </button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const DISMISS_KEY = 'pwa_banner_dismissed';
+    const banner = document.getElementById('pwa-install-banner');
+    let deferredPrompt = null;
+
+    // Don't show if previously dismissed within 7 days
+    const dismissed = localStorage.getItem(DISMISS_KEY);
+    if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Show banner with animation after 3s
+      setTimeout(function () {
+        banner.style.display = 'block';
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            banner.style.opacity = '1';
+            banner.style.transform = 'translateX(-50%) translateY(0)';
+          });
+        });
+      }, 3000);
+    });
+
+    function hideBanner() {
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(function () { banner.style.display = 'none'; }, 300);
+    }
+
+    document.getElementById('pwa-install-btn').addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function (choice) {
+        if (choice.outcome === 'accepted') {
+          console.log('[PWA] User installed the app');
+        }
+        deferredPrompt = null;
+        hideBanner();
+        localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      });
+    });
+
+    document.getElementById('pwa-dismiss-btn').addEventListener('click', function () {
+      hideBanner();
+      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+    });
+
+    document.getElementById('pwa-later-btn').addEventListener('click', function () {
+      hideBanner();
+      // Re-show after 1 day instead of 7
+      localStorage.setItem(DISMISS_KEY, (Date.now() - 6 * 24 * 60 * 60 * 1000).toString());
+    });
+
+    // Auto-hide if PWA already installed
+    window.addEventListener('appinstalled', function () {
+      hideBanner();
+      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      console.log('[PWA] App installed successfully');
+    });
+  }());
+</script>
+
 </body>
 </html>

@@ -27,10 +27,10 @@ def call_groq_with_fallback(client: Groq, messages: list[dict[str, str]]) -> Any
     """Call Groq API using a sequence of fallback models to bypass rate limits."""
     models: list[str] = [
         "llama-3.3-70b-versatile",
-        "meta-llama/llama-4-scout-17b-16e-instruct",
-        "qwen/qwen3-32b",
+        "llama3-70b-8192",
+        "llama3-8b-8192",
         "llama-3.1-8b-instant",
-        "groq/compound-mini"
+        "gemma2-9b-it",
     ]
     last_exception: Exception | None = None
     for i, model in enumerate(models):

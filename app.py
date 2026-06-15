@@ -313,6 +313,32 @@ def health_check() -> tuple[Response, int]:
     return jsonify({"status": "ok"}), 200
 
 
+@app.route("/manifest.json")
+def pwa_manifest() -> Response:
+    """Serve the PWA web app manifest from root scope."""
+    import json as _json
+    manifest_path = os.path.join(app.root_path, "static", "manifest.json")
+    with open(manifest_path) as f:
+        data = _json.load(f)
+    response = app.make_response(_json.dumps(data))
+    response.headers["Content-Type"] = "application/manifest+json"
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
+@app.route("/sw.js")
+def service_worker() -> Response:
+    """Serve the service worker from root scope (required for full-page scope)."""
+    sw_path = os.path.join(app.root_path, "static", "sw.js")
+    with open(sw_path) as f:
+        content = f.read()
+    response = app.make_response(content)
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
+
+
 @app.route("/robots.txt")
 def robots_txt() -> Response:
     """Render robots.txt configuration."""
