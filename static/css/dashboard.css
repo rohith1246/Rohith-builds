@@ -1064,3 +1064,104 @@
     grid-template-columns: 1fr;
   }
 }
+/* ==================================================
+   MOBILE OVERFLOW FIXES
+   ================================================== */
+
+/* Prevent horizontal scroll on the whole page */
+.dashboard-page {
+  overflow-x: hidden;
+}
+
+/* Leaderboard rows: fix cut-off on narrow screens */
+.leaderboard-row {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* The username+streak inner div needs min-width:0 to truncate properly */
+.leaderboard-row > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+
+/* Leaderboard XP badge — don't let it push outside */
+.leaderboard-xp {
+  flex-shrink: 0;
+  max-width: 80px;
+  text-align: right;
+}
+
+/* Side panel itself shouldn't overflow */
+.side-panel-premium {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Streak box text wrapping on very narrow screens */
+.streak-box-premium {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 400px) {
+  .streak-box-premium {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Hero banner tighter on very small screens */
+  .dash-hero-banner {
+    padding: 16px;
+  }
+
+  /* Stats numbers smaller */
+  .stat-num {
+    font-size: 1.6rem;
+  }
+}
+/* ==================================================
+   MOBILE OVERFLOW ROOT FIX
+================================================== */
+.dashboard-page {
+  padding-left: 0;
+  padding-right: 0;
+}
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .dash-main-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .dash-col-main,
+  .dash-col-side {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .dash-section-premium,
+  .side-panel-premium {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  .stat-card-premium {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}

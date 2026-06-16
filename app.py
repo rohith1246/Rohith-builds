@@ -215,7 +215,7 @@ def _block_if_db_unavailable() -> Response | None:
     """Block requests if the database is currently unreachable."""
     # Allow static assets, robots.txt, sitemap.xml and simple health paths to load even when DB is down
     path: str = request.path or ""
-    if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico" or path == "/robots.txt" or path == "/sitemap.xml":
+    if path.startswith("/static") or path.startswith("/health") or path == "/favicon.ico" or path == "/robots.txt" or path == "/sitemap.xml" or path == "/manifest.json" or path == "/sw.js":
         return None
 
     # Initialize DB on first real request (some Flask installs don't expose
