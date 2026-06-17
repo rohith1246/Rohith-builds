@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Student Dashboard | Rohith Builds{% endblock %}
-{% block meta_description %}Track your learning progress, completed lessons, and saved prompt templates.{% endblock %}
+{% block title %}Dashboard | Rohith Builds{% endblock %}
+{% block meta_description %}Track your learning progress, completed lessons, XP, and achievements.{% endblock %}
 
 {% block content %}
 <div class="container dashboard-page">
-  
+
   {% if not current_user.is_verified %}
   <div class="verification-banner">
     <div class="verification-content">
       <div class="verification-icon">📧</div>
       <div class="verification-text">
         <strong>Verify your email to unlock all features</strong>
-        <p>Create prompts, save favorites, and continue learning. Check your inbox and spam folder.</p>
+        <p>Check your inbox and spam folder.</p>
       </div>
       <form method="POST" action="{{ url_for('auth.resend_verification') }}" style="margin:0;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -21,7 +21,7 @@
   </div>
   {% endif %}
 
-  <!-- Premium Banner Header -->
+  <!-- Hero Banner -->
   <div class="dash-hero-banner">
     <div class="dash-hero-overlay"></div>
     <div class="dash-hero-content">
@@ -48,57 +48,54 @@
     </div>
   </div>
 
-  <!-- Premium Grid Layout -->
-  <div class="dash-main-grid">
-    <!-- Left Main Column (Courses, Tabs for Prompts) -->
-    <div class="dash-col-main">
-      
-      <!-- Quick Stats Card Section -->
-      <div class="dash-stats-grid">
-        <div class="stat-card-premium">
-          <div class="stat-card-bg-glow yellow"></div>
-          <div class="stat-icon-wrap">📘</div>
-          <div class="stat-card-text">
-            <span class="stat-num">{{ total_enrolled }}</span>
-            <span class="stat-label">Enrolled Courses</span>
-          </div>
-        </div>
-        
-        <div class="stat-card-premium">
-          <div class="stat-card-bg-glow green"></div>
-          <div class="stat-icon-wrap">✅</div>
-          <div class="stat-card-text">
-            <span class="stat-num">{{ completed_lessons }}</span>
-            <span class="stat-label">Completed Lessons</span>
-          </div>
-        </div>
-        
-        <div class="stat-card-premium">
-          <div class="stat-card-bg-glow purple"></div>
-          <div class="stat-icon-wrap">⚡</div>
-          <div class="stat-card-text">
-            <span class="stat-num">{{ total_xp }}</span>
-            <span class="stat-label">XP Earned</span>
-          </div>
-        </div>
-        
-        <div class="stat-card-premium">
-          <div class="stat-card-bg-glow blue"></div>
-          <div class="stat-icon-wrap">📈</div>
-          <div class="stat-card-text">
-            <span class="stat-num">{{ completion_rate }}%</span>
-            <span class="stat-label">Completion Rate</span>
-          </div>
-        </div>
+  <!-- Stats Grid -->
+  <div class="dash-stats-grid" style="margin-bottom:40px;">
+    <div class="stat-card-premium">
+      <div class="stat-card-bg-glow yellow"></div>
+      <div class="stat-icon-wrap">📘</div>
+      <div class="stat-card-text">
+        <span class="stat-num">{{ total_enrolled }}</span>
+        <span class="stat-label">Enrolled Courses</span>
       </div>
+    </div>
+    <div class="stat-card-premium">
+      <div class="stat-card-bg-glow green"></div>
+      <div class="stat-icon-wrap">✅</div>
+      <div class="stat-card-text">
+        <span class="stat-num">{{ completed_lessons }}</span>
+        <span class="stat-label">Completed Lessons</span>
+      </div>
+    </div>
+    <div class="stat-card-premium">
+      <div class="stat-card-bg-glow purple"></div>
+      <div class="stat-icon-wrap">⚡</div>
+      <div class="stat-card-text">
+        <span class="stat-num">{{ total_xp }}</span>
+        <span class="stat-label">XP Earned</span>
+      </div>
+    </div>
+    <div class="stat-card-premium">
+      <div class="stat-card-bg-glow blue"></div>
+      <div class="stat-icon-wrap">📈</div>
+      <div class="stat-card-text">
+        <span class="stat-num">{{ completion_rate }}%</span>
+        <span class="stat-label">Completion Rate</span>
+      </div>
+    </div>
+  </div>
 
-      <!-- Enrolled Courses Section -->
+  <!-- Main Grid -->
+  <div class="dash-main-grid">
+
+    <!-- Left Column -->
+    <div class="dash-col-main">
+
+      <!-- My Courses -->
       <div class="dash-section-premium">
         <div class="dash-section-header">
-          <h2>My Courses</h2>
-          <a href="{{ url_for('learn.learn') }}" class="link-glow">Manage Courses →</a>
+          <h2>📚 My Courses</h2>
+          <a href="{{ url_for('learn.learn') }}" class="link-glow">Browse All →</a>
         </div>
-
         {% if courses_info %}
           <div class="course-list-premium">
             {% for info in courses_info %}
@@ -106,18 +103,17 @@
                 <div class="course-row-thumb" style="background-image: url('{{ url_for('static', filename=info.course.thumbnail) if info.course.thumbnail else url_for('static', filename='images/lessons/default.png') }}');"></div>
                 <div class="course-row-info">
                   <h3>{{ info.course.title }}</h3>
-                  <p>{{ (info.course.short_description or info.course.description or '')[:120] }}{% if info.course.description and info.course.description|length > 120 %}...{% endif %}</p>
-                  
+                  <p>{{ (info.course.short_description or info.course.description or '')[:120] }}{% if (info.course.description or '')|length > 120 %}...{% endif %}</p>
                   <div class="course-row-progress-container">
                     <div class="progress-track-premium">
                       <div class="progress-fill-premium" style="width: {{ info.progress }}%;"></div>
                     </div>
-                    <span class="progress-pct">{{ info.progress }}% Complete</span>
+                    <span class="progress-pct">{{ info.progress }}%</span>
                   </div>
                 </div>
                 <div class="course-row-actions">
                   <a href="{{ url_for('learn.course_page', course_slug=info.course.slug) }}" class="btn-glow-resume">
-                    {% if info.progress == 100 %}Review Course{% else %}Resume Learning{% endif %}
+                    {% if info.progress == 100 %}Review{% else %}Resume{% endif %}
                   </a>
                 </div>
               </div>
@@ -127,150 +123,103 @@
           <div class="empty-state-premium">
             <div class="empty-icon-glow">📘</div>
             <h3>No enrolled courses yet</h3>
-            <p>Ready to start building? Join one of our premium programming courses today.</p>
+            <p>Start your AI learning journey today.</p>
             <a href="{{ url_for('learn.learn') }}" class="btn-primary-glow">Explore Courses</a>
           </div>
         {% endif %}
       </div>
 
-      <!-- Tabs for My Prompts / Favorites -->
+      <!-- Quick Actions -->
       <div class="dash-section-premium">
-        <div class="tabs-control-header">
-          <div class="tabs-buttons">
-            <button class="tab-trigger active" onclick="switchDashTab(event, 'tab-prompts')">My Prompts ({{ prompts|length }})</button>
-            <button class="tab-trigger" onclick="switchDashTab(event, 'tab-favorites')">Favorites ({{ fav_prompts|length }})</button>
-          </div>
-          <a id="tabs-view-all" href="{{ url_for('prompts.vault') }}" class="link-glow">View Vault →</a>
+        <div class="dash-section-header">
+          <h2>⚡ Quick Actions</h2>
         </div>
-
-        <!-- My Prompts Tab Content -->
-        <div id="tab-prompts" class="tab-panel active">
-          {% if prompts %}
-            <div class="prompt-rows-container">
-              {% for prompt in prompts %}
-                <div class="prompt-row-premium">
-                  <div class="prompt-row-meta-col">
-                    <span class="prompt-tag cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
-                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="prompt-row-title">{{ prompt.title }}</a>
-                    <span class="prompt-row-details">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes · {{ prompt.copies }} copies</span>
-                  </div>
-                  <div class="prompt-row-actions">
-                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost-glow">View</a>
-                    <a href="{{ url_for('prompts.edit_prompt', prompt_id=prompt.id) }}" class="btn-ghost-glow">Edit</a>
-                    <form method="POST" action="{{ url_for('prompts.delete_prompt', prompt_id=prompt.id) }}" style="display:inline" onsubmit="return confirm('Delete this prompt?')">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn-danger-glow">Delete</button>
-                    </form>
-                  </div>
-                </div>
-              {% endfor %}
+        <div class="dash-stats-grid">
+          <a href="{{ url_for('learn.learn') }}" class="stat-card-premium" style="text-decoration:none;flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="stat-icon-wrap">📖</div>
+            <div class="stat-card-text">
+              <span class="stat-num" style="font-size:1rem;">Continue Learning</span>
+              <span class="stat-label">Pick up where you left off</span>
             </div>
-          {% else %}
-            <div class="empty-state-premium small-padding">
-              <div class="empty-icon-glow">✍️</div>
-              <h3>No prompts created yet</h3>
-              <p>Share your prompts with our developer community.</p>
-              <a href="{{ url_for('prompts.create_prompt') }}" class="btn-primary-glow">Create Prompt</a>
+          </a>
+          <a href="{{ url_for('jobs.board') }}" class="stat-card-premium" style="text-decoration:none;flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="stat-icon-wrap">💼</div>
+            <div class="stat-card-text">
+              <span class="stat-num" style="font-size:1rem;">Job Board</span>
+              <span class="stat-label">Find AI &amp; tech roles</span>
             </div>
-          {% endif %}
-        </div>
-
-        <!-- Favorite Prompts Tab Content -->
-        <div id="tab-favorites" class="tab-panel">
-          {% if fav_prompts %}
-            <div class="prompt-rows-container">
-              {% for prompt in fav_prompts %}
-                <div class="prompt-row-premium">
-                  <div class="prompt-row-meta-col">
-                    <span class="prompt-tag cat-{{ prompt.category|lower }}">{{ prompt.category }}</span>
-                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="prompt-row-title">{{ prompt.title }}</a>
-                    <span class="prompt-row-details">{{ prompt.created_at.strftime('%b %d, %Y') }} · {{ prompt.likes }} likes</span>
-                  </div>
-                  <div class="prompt-row-actions">
-                    <a href="{{ url_for('prompts.prompt_detail', prompt_id=prompt.id) }}" class="btn-ghost-glow">View</a>
-                  </div>
-                </div>
-              {% endfor %}
+          </a>
+          <a href="{{ url_for('jobs.agent_dashboard') }}" class="stat-card-premium" style="text-decoration:none;flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="stat-icon-wrap">🤖</div>
+            <div class="stat-card-text">
+              <span class="stat-num" style="font-size:1rem;">AI Job Agent</span>
+              <span class="stat-label">Auto-match &amp; draft pitches</span>
             </div>
-          {% else %}
-            <div class="empty-state-premium small-padding">
-              <div class="empty-icon-glow">💜</div>
-              <h3>No favorites saved yet</h3>
-              <p>Favorite community prompts to keep them saved here.</p>
-              <a href="{{ url_for('prompts.vault') }}" class="btn-primary-glow">Browse Prompts</a>
+          </a>
+          <a href="{{ url_for('prompts.vault') }}" class="stat-card-premium" style="text-decoration:none;flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="stat-icon-wrap">⚡</div>
+            <div class="stat-card-text">
+              <span class="stat-num" style="font-size:1rem;">Prompt Vault</span>
+              <span class="stat-label">Browse curated prompts</span>
             </div>
-          {% endif %}
+          </a>
         </div>
       </div>
 
     </div>
 
-    <!-- Right Sidebar Column (Achievements, Suggested Courses, Activity) -->
+    <!-- Right Sidebar -->
     <div class="dash-col-side">
-      
-      <!-- Daily Streak Box -->
+
+      <!-- Daily Streak -->
       <div class="side-panel-premium">
-        <div class="side-panel-header">
-          <h2>Daily Streak</h2>
-        </div>
-        <div class="streak-box-premium" style="display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(251, 146, 60, 0.04); border: 1px solid rgba(251, 146, 60, 0.15); border-radius: 12px; margin-top: 10px;">
-          <div class="streak-fire" style="font-size: 2.8rem; margin-right: 16px; animation: pulse-fire 2s infinite alternate; line-height: 1;">🔥</div>
-          <div style="text-align: left;">
-            <div class="streak-count" style="font-size: 1.6rem; font-weight: 700; color: #fb923c; line-height: 1.2;">{{ current_user.current_streak }} Day{{ 's' if current_user.current_streak != 1 else '' }}</div>
-            <div class="streak-label" style="font-size: 0.85rem; color: #9ca3af; margin-top: 4px; line-height: 1.3;">
-              {% if current_user.current_streak > 0 %}
-                Keep it going! Complete a lesson today.
-              {% else %}
-                Start your streak! Complete a lesson today.
-              {% endif %}
+        <div class="side-panel-header"><h2>Daily Streak</h2></div>
+        <div class="streak-box-premium" style="display:flex;align-items:center;padding:16px;background:rgba(251,146,60,0.04);border:1px solid rgba(251,146,60,0.15);border-radius:12px;">
+          <div style="font-size:2.8rem;margin-right:16px;animation:pulse-fire 2s infinite alternate;line-height:1;">🔥</div>
+          <div>
+            <div style="font-size:1.6rem;font-weight:700;color:#fb923c;line-height:1.2;">{{ current_user.current_streak }} Day{{ 's' if current_user.current_streak != 1 else '' }}</div>
+            <div style="font-size:0.85rem;color:#9ca3af;margin-top:4px;">
+              {% if current_user.current_streak > 0 %}Keep it going!{% else %}Complete a lesson to start!{% endif %}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- XP Leaderboard Box -->
+      <!-- Leaderboard -->
       <div class="side-panel-premium">
-        <div class="side-panel-header">
-          <h2>Global Leaderboard</h2>
-        </div>
-        <div class="leaderboard-list" style="margin-top: 10px;">
+        <div class="side-panel-header"><h2>Global Leaderboard</h2></div>
+        <div style="margin-top:10px;">
           {% if leaderboard %}
             {% for entry in leaderboard %}
-              <div class="leaderboard-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; background: {% if entry.username == current_user.username %}rgba(250, 204, 21, 0.08){% else %}rgba(255,255,255,0.02){% endif %}; border: {% if entry.username == current_user.username %}1px solid rgba(250, 204, 21, 0.25){% else %}1px solid rgba(255,255,255,0.05){% endif %};">
-                <div style="display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  <span class="leaderboard-rank" style="font-weight: bold; font-size: 0.95rem; width: 24px; text-align: center; flex-shrink: 0; color: {% if loop.index == 1 %}#facc15{% elif loop.index == 2 %}#94a3b8{% elif loop.index == 3 %}#b45309{% else %}#9ca3af{% endif %};">
+              <div class="leaderboard-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;margin-bottom:8px;background:{% if entry.username == current_user.username %}rgba(250,204,21,0.08){% else %}rgba(255,255,255,0.02){% endif %};border:{% if entry.username == current_user.username %}1px solid rgba(250,204,21,0.25){% else %}1px solid rgba(255,255,255,0.05){% endif %};">
+                <div style="display:flex;align-items:center;overflow:hidden;min-width:0;flex:1;">
+                  <span style="font-weight:bold;font-size:0.95rem;width:24px;text-align:center;flex-shrink:0;color:{% if loop.index==1 %}#facc15{% elif loop.index==2 %}#94a3b8{% elif loop.index==3 %}#b45309{% else %}#9ca3af{% endif %};">
                     {% if loop.index == 1 %}👑{% else %}{{ loop.index }}{% endif %}
                   </span>
-                  <span class="leaderboard-username" style="font-weight: 500; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: {% if entry.username == current_user.username %}#facc15{% else %}#e5e7eb{% endif %};">
-                    {{ entry.username }}
-                  </span>
+                  <span style="font-weight:500;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:{% if entry.username == current_user.username %}#facc15{% else %}#e5e7eb{% endif %};">{{ entry.username }}</span>
                   {% if entry.streak > 0 %}
-                    <span class="leaderboard-streak" style="margin-left: 8px; font-size: 0.8rem; flex-shrink: 0;" title="{{ entry.streak }} day streak">🔥{{ entry.streak }}</span>
+                    <span style="margin-left:8px;font-size:0.8rem;flex-shrink:0;">🔥{{ entry.streak }}</span>
                   {% endif %}
                 </div>
-                <span class="leaderboard-xp" style="font-weight: 600; font-size: 0.9rem; color: #f3f4f6; flex-shrink: 0; margin-left: 10px;">
-                  {{ entry.xp }} XP
-                </span>
+                <span style="font-weight:600;font-size:0.9rem;color:#f3f4f6;flex-shrink:0;margin-left:10px;">{{ entry.xp }} XP</span>
               </div>
             {% endfor %}
           {% else %}
-            <p class="muted" style="text-align: center; padding: 10px 0;">No active rankings yet.</p>
+            <p class="muted" style="text-align:center;padding:10px 0;">No active rankings yet.</p>
           {% endif %}
         </div>
       </div>
 
       <style>
         @keyframes pulse-fire {
-          0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251, 146, 60, 0.4)); }
-          100% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.7)); }
+          0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(251,146,60,0.4)); }
+          100% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(251,146,60,0.7)); }
         }
       </style>
-      
-      <!-- Achievements Box -->
+
+      <!-- Achievements -->
       <div class="side-panel-premium">
-        <div class="side-panel-header">
-          <h2>Achievements</h2>
-        </div>
+        <div class="side-panel-header"><h2>Achievements</h2></div>
         <div class="achieve-grid-premium">
           <div class="achieve-badge {% if achievements.first_lesson %}unlocked{% else %}locked{% endif %}" title="First Lesson Completed">
             <div class="badge-icon-wrap">🎯</div>
@@ -280,30 +229,28 @@
             <div class="badge-icon-wrap">🏅</div>
             <span class="badge-label">10 Lessons</span>
           </div>
-          <div class="achieve-badge {% if achievements.first_prompt %}unlocked{% else %}locked{% endif %}" title="First Community Prompt Created">
+          <div class="achieve-badge {% if achievements.first_prompt %}unlocked{% else %}locked{% endif %}" title="First Prompt Created">
             <div class="badge-icon-wrap">✍️</div>
             <span class="badge-label">First Prompt</span>
           </div>
-          <div class="achieve-badge {% if achievements.first_course_complete %}unlocked{% else %}locked{% endif %}" title="First Full Course Finished">
+          <div class="achieve-badge {% if achievements.first_course_complete %}unlocked{% else %}locked{% endif %}" title="First Course Finished">
             <div class="badge-icon-wrap">🏁</div>
-            <span class="badge-label">Course Finished</span>
+            <span class="badge-label">Graduated</span>
           </div>
         </div>
       </div>
 
-      <!-- Suggested Courses Box -->
+      <!-- Suggested Courses -->
       {% if suggested_courses %}
       <div class="side-panel-premium">
-        <div class="side-panel-header">
-          <h2>Suggested Courses</h2>
-        </div>
+        <div class="side-panel-header"><h2>Suggested Courses</h2></div>
         <div class="suggested-list-premium">
           {% for course in suggested_courses %}
             <div class="suggest-row-card">
               <div class="suggest-row-thumb" style="background-image: url('{{ url_for('static', filename=course.thumbnail) if course.thumbnail else url_for('static', filename='images/lessons/default.png') }}');"></div>
               <div class="suggest-row-body">
                 <h4>{{ course.title }}</h4>
-                <p>{{ (course.short_description or course.description or '')[:80] }}{% if course.description and course.description|length > 80 %}...{% endif %}</p>
+                <p>{{ (course.short_description or course.description or '')[:80] }}</p>
                 <div class="suggest-row-buttons">
                   <a href="{{ url_for('learn.course_page', course_slug=course.slug) }}" class="btn-ghost-sm">View</a>
                   <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}" class="btn-primary-sm">Join</a>
@@ -315,11 +262,9 @@
       </div>
       {% endif %}
 
-      <!-- Recent Activity Box -->
+      <!-- Recent Activity -->
       <div class="side-panel-premium">
-        <div class="side-panel-header">
-          <h2>Recent Activity</h2>
-        </div>
+        <div class="side-panel-header"><h2>Recent Activity</h2></div>
         <div class="activity-timeline-premium">
           {% if recent_events %}
             {% for ev in recent_events %}
@@ -337,7 +282,7 @@
               </div>
             {% endfor %}
           {% else %}
-            <p class="muted" style="text-align:center; padding: 10px 0;">No recent activity logged.</p>
+            <p class="muted" style="text-align:center;padding:10px 0;">No recent activity logged.</p>
           {% endif %}
         </div>
       </div>
@@ -346,33 +291,4 @@
   </div>
 
 </div>
-
-<!-- Tab Switcher Script -->
-<script>
-function switchDashTab(event, tabId) {
-  // Hide all panels
-  const panels = document.querySelectorAll('.tab-panel');
-  panels.forEach(p => p.classList.remove('active'));
-
-  // Deactivate all trigger buttons
-  const triggers = document.querySelectorAll('.tab-trigger');
-  triggers.forEach(t => t.classList.remove('active'));
-
-  // Show selected panel
-  document.getElementById(tabId).classList.add('active');
-
-  // Activate clicked trigger button
-  event.currentTarget.classList.add('active');
-
-  // Update "View Vault" link behavior depending on active tab
-  const viewAllBtn = document.getElementById('tabs-view-all');
-  if (tabId === 'tab-favorites') {
-    viewAllBtn.href = "{{ url_for('prompts.favorites') }}";
-    viewAllBtn.innerText = "View Favorites →";
-  } else {
-    viewAllBtn.href = "{{ url_for('prompts.vault') }}";
-    viewAllBtn.innerText = "View Vault →";
-  }
-}
-</script>
 {% endblock %}

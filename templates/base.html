@@ -13,7 +13,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="RohithBuilds"/>
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo_compressed.png') }}"/>
+  <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='images/icon-192.png') }}"/>
+  <link rel="apple-touch-icon" sizes="512x512" href="{{ url_for('static', filename='images/icon-512.png') }}"/>
   <meta name="description" content="{% block meta_description %}Learn AI, Prompt Engineering, Python, and Automation through practical lessons, projects, and curated prompts.{% endblock %}">
 
   <!-- Open Graph / Facebook -->
@@ -454,25 +455,22 @@ window.LESSON_SLUG = null;
     const banner = document.getElementById('pwa-install-banner');
     let deferredPrompt = null;
 
-    // Don't show if previously dismissed within 7 days
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
 
-    window.addEventListener('beforeinstallprompt', function (e) {
-      e.preventDefault();
-      deferredPrompt = e;
+    // Detect iOS
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-      // Show banner with animation after 3s
-      setTimeout(function () {
-        banner.style.display = 'block';
+    function showBanner() {
+      banner.style.display = 'block';
+      requestAnimationFrame(function () {
         requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            banner.style.opacity = '1';
-            banner.style.transform = 'translateX(-50%) translateY(0)';
-          });
+          banner.style.opacity = '1';
+          banner.style.transform = 'translateX(-50%) translateY(0)';
         });
-      }, 3000);
-    });
+      });
+    }
 
     function hideBanner() {
       banner.style.opacity = '0';
@@ -480,36 +478,42 @@ window.LESSON_SLUG = null;
       setTimeout(function () { banner.style.display = 'none'; }, 300);
     }
 
+    // iOS: show manual instructions
+    if (isIOS && !isStandalone) {
+      setTimeout(function () {
+        // Change button text for iOS
+        const btn = document.getElementById('pwa-install-btn');
+        btn.textContent = '📤 How to Install';
+        btn.addEventListener('click', function () {
+          alert('Install on iPhone/iPad:\n\n1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" — done! ✅');
+        });
+        showBanner();
+      }, 3000);
+      document.getElementById('pwa-dismiss-btn').addEventListener('click', function () { hideBanner(); localStorage.setItem(DISMISS_KEY, Date.now().toString()); });
+      document.getElementById('pwa-later-btn').addEventListener('click', function () { hideBanner(); localStorage.setItem(DISMISS_KEY, (Date.now() - 6 * 24 * 60 * 60 * 1000).toString()); });
+      return;
+    }
+
+    // Android / Chrome: use beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      setTimeout(showBanner, 3000);
+    });
+
     document.getElementById('pwa-install-btn').addEventListener('click', function () {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(function (choice) {
-        if (choice.outcome === 'accepted') {
-          console.log('[PWA] User installed the app');
-        }
         deferredPrompt = null;
         hideBanner();
         localStorage.setItem(DISMISS_KEY, Date.now().toString());
       });
     });
 
-    document.getElementById('pwa-dismiss-btn').addEventListener('click', function () {
-      hideBanner();
-      localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    });
-
-    document.getElementById('pwa-later-btn').addEventListener('click', function () {
-      hideBanner();
-      // Re-show after 1 day instead of 7
-      localStorage.setItem(DISMISS_KEY, (Date.now() - 6 * 24 * 60 * 60 * 1000).toString());
-    });
-
-    // Auto-hide if PWA already installed
-    window.addEventListener('appinstalled', function () {
-      hideBanner();
-      localStorage.setItem(DISMISS_KEY, Date.now().toString());
-      console.log('[PWA] App installed successfully');
-    });
+    document.getElementById('pwa-dismiss-btn').addEventListener('click', function () { hideBanner(); localStorage.setItem(DISMISS_KEY, Date.now().toString()); });
+    document.getElementById('pwa-later-btn').addEventListener('click', function () { hideBanner(); localStorage.setItem(DISMISS_KEY, (Date.now() - 6 * 24 * 60 * 60 * 1000).toString()); });
+    window.addEventListener('appinstalled', function () { hideBanner(); localStorage.setItem(DISMISS_KEY, Date.now().toString()); });
   }());
 </script>
 
