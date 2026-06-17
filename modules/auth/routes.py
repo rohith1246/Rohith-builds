@@ -353,11 +353,7 @@ def dashboard() -> str:
         .scalar()
     ) or 0
 
-    total_xp = (
-        db.session.query(func.coalesce(func.sum(UserCourseProgress.total_xp), 0))
-        .filter(UserCourseProgress.user_id == current_user.id)
-        .scalar()
-    ) or 0
+    total_xp = current_user.xp or 0
 
     # Completion rate across enrolled courses (weighted by lessons)
     total_days_all = sum(info["total_days"] for info in courses_info)
@@ -438,18 +434,16 @@ def dashboard() -> str:
             current_user.current_streak = 0
             db.session.commit()
 
-    # Get leaderboard: sum total_xp from UserCourseProgress per user
-    leaderboard_data = (
-        db.session.query(User, func.sum(UserCourseProgress.total_xp).label("xp"))
-        .join(UserCourseProgress, UserCourseProgress.user_id == User.id)
-        .group_by(User.id)
-        .order_by(db.desc("xp"))
+    # Get leaderboard: rank by global users.xp
+    leaders = (
+        User.query
+        .order_by(User.xp.desc())
         .limit(5)
         .all()
     )
 
     leaderboard = []
-    for u, xp in leaderboard_data:
+    for u in leaders:
         # Check and compute active streak
         streak = u.current_streak
         if u.last_active_date:
@@ -458,7 +452,7 @@ def dashboard() -> str:
                 streak = 0
         leaderboard.append({
             "username": u.username,
-            "xp": xp or 0,
+            "xp": u.xp or 0,
             "streak": streak
         })
 

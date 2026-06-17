@@ -20,6 +20,7 @@ class User(UserMixin, db.Model):
     rohi_last_reset_date = db.Column(db.Date)
     current_streak = db.Column(db.Integer, default=0)
     last_active_date = db.Column(db.Date, nullable=True)
+    xp = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     prompts = db.relationship(
