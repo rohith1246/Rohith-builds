@@ -111,6 +111,11 @@
                     <div class="course-complete-badge">
                         🏆 Course Completed
                     </div>
+                    <a href="{{ url_for('learn.my_badge', course_slug=course.slug) }}"
+                       class="btn-primary enroll-btn"
+                       style="background:linear-gradient(135deg,#fbbf24,#f97316);color:#09090f;font-weight:700;display:inline-flex;align-items:center;gap:8px;">
+                        🏅 View Your Badge
+                    </a>
 
                     {% endif %}
 
@@ -170,7 +175,21 @@
 
 </div>
 
+{% if enrolled and progress_percent == 100 %}
+<div style="background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(249,115,22,0.06));border:1px solid rgba(251,191,36,0.25);border-radius:20px;padding:32px;text-align:center;margin-bottom:32px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#fbbf24,#f97316,#fbbf24);"></div>
+  <div style="font-size:2.5rem;margin-bottom:8px;">🏆</div>
+  <div style="font-size:1.3rem;font-weight:800;color:#f1f5f9;margin-bottom:4px;">Course Complete!</div>
+  <div style="font-size:0.9rem;color:#94a3b8;margin-bottom:20px;">You've finished every lesson. Claim your shareable badge.</div>
+  <a href="{{ url_for('learn.my_badge', course_slug=course.slug) }}"
+     style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#fbbf24,#f97316);color:#09090f;border-radius:12px;font-weight:700;font-size:0.95rem;box-shadow:0 8px 24px rgba(251,191,36,0.3);transition:transform 0.2s;"
+     onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+    🏅 View &amp; Share Your Badge
+  </a>
+</div>
 {% endif %}
+
+{% if enrolled %}
 
 <section class="course-grid" id="course-content">
 
@@ -248,6 +267,8 @@
     {% endfor %}
 
 </section>
+
+{% endif %}
 
 </div>
 
