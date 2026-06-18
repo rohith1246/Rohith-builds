@@ -23,4 +23,5 @@ Flask-Migrate
 gunicorn
 email-validator
 Werkzeug
-pypdf==4.2.0Pillow>=10.0.0
+pypdf==4.2.0
+Pillow>=10.0.0
