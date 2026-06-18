@@ -1,12 +1,13 @@
 from datetime import date, datetime
 
-from flask import flash, jsonify, redirect, render_template, request, Response, session, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, Response, send_file, session, url_for
 from flask_login import current_user, login_required
 
 from extensions import csrf
 from gemini_helper import rohi_chat
 from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, LessonReview, UserCourseProgress
 from modules.auth.helpers import send_lesson_review_email
+from .badge import generate_badge
 from . import learn_bp    
 
 
@@ -417,4 +418,127 @@ def submit_review(day_id: int) -> Response:
     send_lesson_review_email(current_user, day, rating)
     
     return jsonify({"success": True, "message": "Rating saved successfully!"})
-    
+
+
+# ──────────────────────────────────────────────────────────
+#  COURSE COMPLETION BADGE
+# ──────────────────────────────────────────────────────────
+
+from models import User  # noqa: E402 (local import to avoid circular)
+
+def _resolve_badge_or_404(username: str, course_slug: str):
+    """
+    Return (user, course, completed_at) for ANY user+course combination.
+    Aborts 404 if user/course not found, 403 if course not 100% complete.
+    This is called by the PUBLIC routes so anyone can view a shared badge.
+    """
+    from models import User
+    user = User.query.filter_by(username=username).first_or_404()
+    course = Course.query.filter_by(slug=course_slug, is_published=True).first_or_404()
+    total_days = CourseDay.query.filter_by(course_id=course.id, is_published=True).count()
+    if total_days == 0:
+        abort(404)
+    completed_count = (
+        LessonProgress.query
+        .join(CourseDay, LessonProgress.course_day_id == CourseDay.id)
+        .filter(
+            LessonProgress.user_id == user.id,
+            CourseDay.course_id == course.id,
+            LessonProgress.completed == True
+        ).count()
+    )
+    progress = int((completed_count / total_days) * 100)
+    if progress < 100:
+        abort(404)   # 404 not 403 — don't reveal incomplete badges exist
+    last = (
+        LessonProgress.query
+        .join(CourseDay, LessonProgress.course_day_id == CourseDay.id)
+        .filter(
+            LessonProgress.user_id == user.id,
+            CourseDay.course_id == course.id,
+            LessonProgress.completed == True
+        )
+        .order_by(LessonProgress.completed_at.desc())
+        .first()
+    )
+    completed_at = last.completed_at if last and last.completed_at else datetime.utcnow()
+    return user, course, completed_at
+
+
+# ── Public badge image — no login needed ──────────────────
+@learn_bp.route("/badge/<username>/<course_slug>/image")
+def badge_image(username: str, course_slug: str) -> Response:
+    """Public PNG badge — accessible to anyone with the link."""
+    import io
+    user, course, completed_at = _resolve_badge_or_404(username, course_slug)
+    png_bytes = generate_badge(
+        course_title=course.title,
+        username=user.username,
+        completed_date=completed_at
+    )
+    return send_file(
+        io.BytesIO(png_bytes),
+        mimetype="image/png",
+        download_name=f"rohithbuilds-badge-{course_slug}.png",
+        as_attachment=request.args.get("dl") == "1"
+    )
+
+
+# ── Public badge share page — no login needed ─────────────
+@learn_bp.route("/badge/<username>/<course_slug>")
+def badge_page(username: str, course_slug: str) -> str:
+    """
+    Publicly viewable badge page.
+    Anyone with this URL can see the badge — perfect for sharing on
+    LinkedIn, X/Twitter, WhatsApp, etc.
+    """
+    user, course, completed_at = _resolve_badge_or_404(username, course_slug)
+    badge_img_url = url_for(
+        "learn.badge_image",
+        username=username,
+        course_slug=course_slug,
+        _external=True
+    )
+    share_text = (
+        f"I just completed '{course.title}' on Rohith Builds! "
+        f"🏆 #AI #Learning #RohithBuilds"
+    )
+    return render_template(
+        "learn/badge.html",
+        badge_user=user,
+        course=course,
+        completed_at=completed_at,
+        badge_img_url=badge_img_url,
+        share_text=share_text
+    )
+
+
+# ── Private redirect — login required, goes to your public badge ─
+@learn_bp.route("/badge/<course_slug>")
+@login_required
+def my_badge(course_slug: str):
+    """
+    Logged-in user's shortcut — verifies completion then
+    redirects to their public badge URL.
+    """
+    course = Course.query.filter_by(slug=course_slug, is_published=True).first_or_404()
+    total_days = CourseDay.query.filter_by(course_id=course.id, is_published=True).count()
+    if total_days == 0:
+        abort(404)
+    completed_count = (
+        LessonProgress.query
+        .join(CourseDay, LessonProgress.course_day_id == CourseDay.id)
+        .filter(
+            LessonProgress.user_id == current_user.id,
+            CourseDay.course_id == course.id,
+            LessonProgress.completed == True
+        ).count()
+    )
+    if int((completed_count / total_days) * 100) < 100:
+        flash("Complete the course first to unlock your badge!", "error")
+        return redirect(url_for("learn.course_page", course_slug=course_slug))
+    return redirect(url_for(
+        "learn.badge_page",
+        username=current_user.username,
+        course_slug=course_slug
+    ))

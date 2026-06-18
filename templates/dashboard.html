@@ -115,6 +115,14 @@
                   <a href="{{ url_for('learn.course_page', course_slug=info.course.slug) }}" class="btn-glow-resume">
                     {% if info.progress == 100 %}Review{% else %}Resume{% endif %}
                   </a>
+                  {% if info.progress == 100 %}
+                  <a href="{{ url_for('learn.my_badge', course_slug=info.course.slug) }}"
+                     class="btn-glow-resume"
+                     style="background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.35);color:#fbbf24;margin-top:8px;"
+                     title="Download &amp; share your completion badge">
+                    🏅 Get Badge
+                  </a>
+                  {% endif %}
                 </div>
               </div>
             {% endfor %}
