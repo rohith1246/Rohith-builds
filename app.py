@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import threading
@@ -5,6 +6,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, Response
+from flask_compress import Compress
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
 import resend
@@ -49,6 +51,23 @@ csrf.init_app(app)
 db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
+
+# Compression: gzip (and Brotli if brotli package is installed)
+compress = Compress()
+app.config["COMPRESS_REGISTER"] = True          # auto-register on app
+app.config["COMPRESS_MIMETYPES"] = [
+    "text/html",
+    "text/css",
+    "application/javascript",
+    "application/json",
+    "application/manifest+json",
+    "image/svg+xml",
+    "text/plain",
+    "text/xml",
+    "application/xml",
+]
+app.config["COMPRESS_MIN_SIZE"] = 500            # only compress responses >= 500 bytes
+compress.init_app(app)
 
 # Configure Login Manager
 login_manager.login_view = "auth.login"  # Namespaced
@@ -208,6 +227,40 @@ def _initialize_database() -> None:
         app.logger.exception("Unexpected error during DB initialization: %s", e)
         app.config["DB_AVAILABLE"] = False
         app.config["DB_INIT_ERROR"] = str(e)
+
+
+@app.after_request
+def _set_static_cache_headers(response: Response) -> Response:
+    """Add Cache-Control and ETag headers to all static file responses."""
+    path: str = request.path or ""
+    if not path.startswith("/static"):
+        return response
+
+    # Determine cache duration by file extension
+    ext = os.path.splitext(path)[1].lower()
+    if ext in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico"):
+        # Images rarely change — cache for 1 year
+        max_age = 31_536_000
+    elif ext in (".css", ".js"):
+        # CSS/JS change occasionally — cache for 7 days
+        max_age = 604_800
+    elif ext in (".woff", ".woff2", ".ttf", ".eot"):
+        # Fonts are essentially immutable — cache for 1 year
+        max_age = 31_536_000
+    else:
+        # Other static assets (json, txt, etc.) — cache for 1 day
+        max_age = 86_400
+
+    response.headers["Cache-Control"] = f"public, max-age={max_age}, immutable"
+
+    # Generate a lightweight ETag from Content-Length + path if not already set
+    if "ETag" not in response.headers:
+        content_length = response.headers.get("Content-Length", "")
+        raw = f"{path}:{content_length}"
+        etag_value = hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()[:16]
+        response.headers["ETag"] = f'"{etag_value}"'
+
+    return response
 
 
 @app.before_request
