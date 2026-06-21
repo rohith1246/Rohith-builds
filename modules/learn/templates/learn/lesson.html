@@ -101,49 +101,7 @@ window.LESSON_SLUG = "{{ day.slug }}";
 
 </section>
 
-<!-- AI Prompt Optimizer Section -->
-<section class="lesson-prompt-optimizer" style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 40px;">
-    <div class="improve-card" style="border: none; padding: 0; box-shadow: none; background: transparent;">
-        <h2 class="improve-title" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; text-align: left;">
-            🪄 AI Prompt Optimizer
-        </h2>
-        <p class="improve-subtitle" style="color: var(--text-light); font-size: 0.95rem; margin-bottom: 24px; text-align: left; max-width: 100%; margin-left: 0;">
-            Write or paste a prompt for this lesson, and let AI optimize it for ChatGPT, Claude, or Llama instantly.
-        </p>
 
-        <textarea
-            id="promptInput"
-            class="improve-textarea"
-            placeholder="Enter the prompt you want to optimize for this lesson..."
-            style="min-height: 140px;"
-        ></textarea>
-
-        <button
-            type="button"
-            class="improve-btn"
-            onclick="improvePrompt(event)"
-        >
-            Optimize Prompt
-        </button>
-
-        <div id="loading" class="improve-loading" style="margin-top: 12px; font-size: 0.95rem; color: var(--text-light);"></div>
-
-        <div id="resultBox" class="result-box">
-            <div class="result-header">
-                <h3 class="result-title" style="font-size: 1.15rem; font-weight: 600; color: var(--text); margin: 0;">
-                    Optimized Prompt
-                </h3>
-                <button
-                    class="copy-btn"
-                    onclick="copyImprovedPrompt()"
-                >
-                    Copy
-                </button>
-            </div>
-            <div id="output" class="result-text"></div>
-        </div>
-    </div>
-</section>
 
 <section class="builder-challenge">
 
