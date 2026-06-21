@@ -118,6 +118,9 @@
                 <a id="twitterShareBtn" href="#" target="_blank" class="social-share-btn twitter">
                     🐦 Share on Twitter
                 </a>
+                <a id="linkedinShareBtn" href="#" target="_blank" class="social-share-btn linkedin">
+                    💼 Share on LinkedIn
+                </a>
                 <button id="resetGraderBtn" class="btn-ghost reset-btn">
                     🔄 Grade Another
                 </button>
@@ -149,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const copyShareBtn = document.getElementById("copyShareBtn");
     const twitterShareBtn = document.getElementById("twitterShareBtn");
+    const linkedinShareBtn = document.getElementById("linkedinShareBtn");
     const resetGraderBtn = document.getElementById("resetGraderBtn");
 
     let statusInterval = null;
@@ -315,6 +319,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Configure Twitter Share button
         const tweetText = `My GitHub Founder-Ready Score is ${score}%! 🚀 "${data.punchline}" Check your grade on Rohith Builds:`;
         twitterShareBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+
+        // Configure LinkedIn Share button
+        linkedinShareBtn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     }
 
     // Circular progress and counting number animation
