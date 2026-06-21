@@ -113,6 +113,11 @@ window.LESSON_SLUG = null;
         Learn
       </a>
 
+      <a href="{{ url_for('portfolio_grader.grader_page') }}"
+         class="nav-link {% if request.endpoint == 'portfolio_grader.grader_page' %}active{% endif %}">
+        AI Grader
+      </a>
+
       <a href="{{ url_for('jobs.board') }}"
          class="nav-link {% if request.blueprint == 'jobs' %}active{% endif %}">
         Jobs
@@ -240,6 +245,7 @@ window.LESSON_SLUG = null;
       <a href="{{ url_for('prompts.vault') }}">Vault</a>
       <a href="{{ url_for('prompts.collections') }}">Collections</a>
       <a href="{{ url_for('learn.learn') }}">Learn</a>
+      <a href="{{ url_for('portfolio_grader.grader_page') }}">AI Grader</a>
       <a href="{{ url_for('jobs.board') }}">Jobs</a>
 
     </div>

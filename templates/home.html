@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Free Python to AI Course for Indian Developers | Rohith Builds{% endblock %}
 {% block meta_description %}Master Python and AI agents through practical lessons, projects, and prompts designed specifically for Indian developers. Start learning for free today!{% endblock %}
 
@@ -154,26 +154,26 @@ agent.run(<span class="code-string">"Find early-career developer roles in Bangal
         
         <!-- Feature 2 -->
         <div class="feature-card-premium">
-          <div class="feature-icon-wrapper">🤖</div>
-          <h3>Rohi AI Tutor</h3>
-          <p>Get instant code reviews, prompt feedback, and debugger support from our dedicated AI assistant.</p>
-          <a href="/register" class="feature-link-premium">Chat with Rohi <span class="arrow">→</span></a>
+          <div class="feature-icon-wrapper">🏆</div>
+          <h3>AI Portfolio Grader</h3>
+          <p>Get blunt, constructive, founder-style critique and a shareable score on your GitHub profile and resume.</p>
+          <a href="/tools/portfolio-grader" class="feature-link-premium">Grade Portfolio <span class="arrow">→</span></a>
         </div>
         
         <!-- Feature 3 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">🤖💼</div>
+          <h3>AI Job Agent</h3>
+          <p>Upload your resume and let the agent match you to developer opportunities and draft customized recruiter pitches.</p>
+          <a href="/jobs/agent" class="feature-link-premium">Open Job Agent <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 4 -->
         <div class="feature-card-premium">
           <div class="feature-icon-wrapper">💼</div>
           <h3>AI & Developer Jobs</h3>
           <p>Find internships and entry-level positions filtered for Python, Backend, and AI engineering.</p>
           <a href="/jobs" class="feature-link-premium">Browse Jobs <span class="arrow">→</span></a>
-        </div>
-        
-        <!-- Feature 4 -->
-        <div class="feature-card-premium">
-          <div class="feature-icon-wrapper">⚡</div>
-          <h3>Prompt Vault</h3>
-          <p>Copy production-ready prompt templates for data extraction, code generation, and agentic workflows.</p>
-          <a href="/vault" class="feature-link-premium">Explore Vault <span class="arrow">→</span></a>
         </div>
         
         <!-- Feature 5 -->
@@ -185,6 +185,22 @@ agent.run(<span class="code-string">"Find early-career developer roles in Bangal
         </div>
         
         <!-- Feature 6 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">🤖</div>
+          <h3>Rohi AI Tutor</h3>
+          <p>Get instant code reviews, prompt feedback, and debugger support from our dedicated AI assistant.</p>
+          <a href="/register" class="feature-link-premium">Chat with Rohi <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 7 -->
+        <div class="feature-card-premium">
+          <div class="feature-icon-wrapper">⚡</div>
+          <h3>Prompt Vault</h3>
+          <p>Copy production-ready prompt templates for data extraction, code generation, and agentic workflows.</p>
+          <a href="/vault" class="feature-link-premium">Explore Vault <span class="arrow">→</span></a>
+        </div>
+        
+        <!-- Feature 8 -->
         <div class="feature-card-premium">
           <div class="feature-icon-wrapper">✨</div>
           <h3>AI Prompt Improver</h3>
@@ -275,6 +291,43 @@ agent.run(<span class="code-string">"Find early-career developer roles in Bangal
       
       <div class="text-center mt-3xl">
         <a href="/learn" class="btn-primary-hero">Start Learning Roadmap</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4.5: INTERACTIVE PORTFOLIO GRADER HERO -->
+  <section class="home-grader-section">
+    <div class="section-container">
+      <div class="home-grader-grid">
+        <div class="home-grader-mockup">
+          <div class="glass-card-mockup">
+            <div class="card-brand-mockup">Rohith Builds</div>
+            <div class="card-username-mockup">@rohithbuilds</div>
+            <div class="card-score-mockup">
+              <span class="score-value-mockup">89%</span>
+              <span class="score-label-mockup">Founder Ready</span>
+            </div>
+            <p class="card-punchline-mockup">"Solid shipping history. But your 'react-weather-app' has been abandoned since 2024. Let it rest in peace or merge a PR."</p>
+            <div class="card-footer-mockup">🏆 Branded Result Card</div>
+          </div>
+        </div>
+        <div class="home-grader-content">
+          <span class="section-badge">NEW FEATURE</span>
+          <h2 class="section-title-premium text-left">Are You Founder-Ready?</h2>
+          <p class="section-subtitle-premium text-left">
+            Founders don't hire code repositories; they hire builders who ship and write clear docs. Scan your GitHub profile now to find out if your projects show real product ownership.
+          </p>
+          <form class="home-grader-inline-form" onsubmit="event.preventDefault(); window.location.href='/tools/portfolio-grader?username=' + encodeURIComponent(document.getElementById('homeUsernameInput').value.trim());">
+            <input 
+              type="text" 
+              id="homeUsernameInput" 
+              placeholder="Enter GitHub username..." 
+              class="grader-inline-input"
+              required
+            />
+            <button type="submit" class="grader-inline-btn">Grade Now</button>
+          </form>
+        </div>
       </div>
     </div>
   </section>

@@ -1519,3 +1519,194 @@ body.home-page-theme .footer-links a:hover {
     font-size: 1.3rem;
   }
 }
+
+
+/* ==================================================
+   HOMEPAGE GRADER SECTION
+   ================================================== */
+.home-grader-section {
+  padding: 100px 0;
+  background: radial-gradient(circle at 0% 50%, rgba(251, 191, 36, 0.05) 0%, rgba(17, 24, 39, 0) 60%);
+  border-top: 1px solid #1f2937;
+  width: 100%;
+}
+
+.home-grader-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 60px;
+  align-items: center;
+  width: 100%;
+}
+
+.home-grader-mockup {
+  perspective: 1000px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.glass-card-mockup {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.9) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 25px rgba(251, 191, 36, 0.05);
+  transform: rotateY(12deg) rotateX(6deg);
+  transition: all 0.4s ease;
+}
+
+.glass-card-mockup:hover {
+  transform: rotateY(0deg) rotateX(0deg) scale(1.05);
+  border-color: #fbbf24;
+}
+
+.card-brand-mockup {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.card-username-mockup {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f9fafb;
+  margin-bottom: 12px;
+}
+
+.card-score-mockup {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 0;
+  max-width: 160px;
+  margin: 12px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-value-mockup {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+.score-label-mockup {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 1.5px;
+  margin-top: 4px;
+}
+
+.card-punchline-mockup {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  font-style: italic;
+  margin: 16px 0;
+}
+
+.card-footer-mockup {
+  font-size: 0.75rem;
+  color: #6b7280;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.home-grader-content {
+  text-align: left;
+}
+
+.home-grader-inline-form {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.grader-inline-input {
+  flex-grow: 1;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid #374151;
+  color: #f9fafb;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.grader-inline-input:focus {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+.grader-inline-btn {
+  background: #fbbf24;
+  color: #111827;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.grader-inline-btn:hover {
+  background: #fcd34d;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 992px) {
+  .home-grader-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+  
+  .home-grader-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .home-grader-inline-form {
+    justify-content: center;
+  }
+  
+  .glass-card-mockup {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .home-grader-inline-form {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  .grader-inline-input {
+    width: 100%;
+  }
+  .grader-inline-btn {
+    padding: 14px 20px;
+    width: 100%;
+    max-width: 320px;
+  }
+}

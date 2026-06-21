@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Founder-Ready Portfolio Grader — Analyze Your GitHub | Rohith Builds{% endblock %}
+{% block meta_description %}Get constructive, blunt startup-founder feedback and a shareable founder-readiness score on your GitHub profile and resume.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portfolio_grader.css') }}"/>
+{% endblock %}
+
+{% block content %}
+<div class="grader-wrapper">
+
+    <!-- Error Alert -->
+    <div id="graderError" class="grader-error-alert"></div>
+
+    <div class="grader-card">
+        
+        <!-- Form State -->
+        <div id="formState">
+            <h1 class="grader-title">
+                Founder-Ready <span>Portfolio Grader</span>
+            </h1>
+            <p class="grader-subtitle">
+                Submit your GitHub username to get blunt, constructive, founder-style critique and a shareable score.
+            </p>
+
+            <form id="graderForm" class="grader-form" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <label for="usernameInput" class="form-label">GitHub Username *</label>
+                    <input 
+                        type="text" 
+                        id="usernameInput" 
+                        name="username" 
+                        class="form-input" 
+                        placeholder="e.g., torvalds" 
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Optional Resume Upload (PDF/Text)</label>
+                    <div class="file-upload-wrapper" id="dropZone">
+                        <input 
+                            type="file" 
+                            id="resumeInput" 
+                            name="resume" 
+                            class="file-upload-input" 
+                            accept=".pdf,.txt"
+                        />
+                        <div class="file-upload-label">
+                            <span class="file-upload-icon">📤</span>
+                            <span class="file-upload-text" id="uploadFileName">Drag & drop your resume or click to browse</span>
+                            <span class="file-upload-hint">Supported formats: PDF, TXT (Max 5MB)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary large mt">
+                    ⚡ Grade My Portfolio
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loader-container">
+            <div class="spinner"></div>
+            <div class="loader-status" id="loaderStatus">Initializing analysis...</div>
+            <div class="loader-subtext">This might take up to 20 seconds. Grab a coffee.</div>
+        </div>
+
+        <!-- Result State -->
+        <div id="resultState" class="grader-result">
+            <div class="score-circle-wrapper">
+                <svg class="score-svg">
+                    <defs>
+                        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fbbf24" />
+                            <stop offset="100%" stop-color="#f59e0b" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="score-bg-circle" cx="90" cy="90" r="80"></circle>
+                    <circle class="score-progress-circle" id="progressCircle" cx="90" cy="90" r="80"></circle>
+                </svg>
+                <div class="score-text-wrapper">
+                    <div class="score-number"><span id="scoreText">0</span><span class="score-percent">%</span></div>
+                    <div class="score-label">Founder Ready</div>
+                </div>
+            </div>
+
+            <div class="punchline-box">
+                <p class="result-punchline" id="resultPunchline"></p>
+            </div>
+
+            <div class="critique-section">
+                <h3 class="critique-title">Founder's Assessment</h3>
+                <ul class="critique-list" id="critiqueList">
+                    <!-- Loaded dynamically -->
+                </ul>
+            </div>
+
+            <div class="grader-actions">
+                <button id="copyShareBtn" class="btn-primary share-btn">
+                    🔗 Copy Link to Share
+                </button>
+                <a id="twitterShareBtn" href="#" target="_blank" class="social-share-btn twitter">
+                    🐦 Share on Twitter
+                </a>
+                <button id="resetGraderBtn" class="btn-ghost reset-btn">
+                    🔄 Grade Another
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const graderForm = document.getElementById("graderForm");
+    const resumeInput = document.getElementById("resumeInput");
+    const dropZone = document.getElementById("dropZone");
+    const uploadFileName = document.getElementById("uploadFileName");
+    const graderError = document.getElementById("graderError");
+
+    const formState = document.getElementById("formState");
+    const loadingState = document.getElementById("loadingState");
+    const resultState = document.getElementById("resultState");
+    
+    const loaderStatus = document.getElementById("loaderStatus");
+    const scoreText = document.getElementById("scoreText");
+    const progressCircle = document.getElementById("progressCircle");
+    const resultPunchline = document.getElementById("resultPunchline");
+    const critiqueList = document.getElementById("critiqueList");
+    
+    const copyShareBtn = document.getElementById("copyShareBtn");
+    const twitterShareBtn = document.getElementById("twitterShareBtn");
+    const resetGraderBtn = document.getElementById("resetGraderBtn");
+
+    let statusInterval = null;
+    let shareUrl = "";
+
+    // Status message rotator
+    const statusMessages = [
+        "Connecting to GitHub API...",
+        "Fetching public repository list...",
+        "Sorting repositories by stars & pushed dates...",
+        "Inspecting top repositories for README documents...",
+        "Checking for ghost-town codebases...",
+        "Parsing resume file (scanning for buzzwords)...",
+        "Analyzing project stack diversity...",
+        "Consulting the blunt startup founder oracle...",
+        "Calculating founder-ready index...",
+        "Drafting final critique..."
+    ];
+
+    function startStatusRotation() {
+        let idx = 0;
+        loaderStatus.textContent = statusMessages[idx];
+        statusInterval = setInterval(() => {
+            idx = (idx + 1) % statusMessages.length;
+            loaderStatus.textContent = statusMessages[idx];
+        }, 2200);
+    }
+
+    function stopStatusRotation() {
+        if (statusInterval) {
+            clearInterval(statusInterval);
+            statusInterval = null;
+        }
+    }
+
+    // Drag and drop event handlers
+    resumeInput.addEventListener("change", function(e) {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            // File size validation (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File size exceeds 5MB limit.");
+                this.value = "";
+                uploadFileName.textContent = "Drag & drop your resume or click to browse";
+                return;
+            }
+            uploadFileName.textContent = file.name;
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files[0]) {
+            const file = files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'pdf' || ext === 'txt') {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File size exceeds 5MB limit.");
+                    return;
+                }
+                resumeInput.files = files;
+                uploadFileName.textContent = file.name;
+            } else {
+                alert("Only PDF and TXT files are supported.");
+            }
+        }
+    });
+
+    // Form submission
+    graderForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        
+        const username = document.getElementById("usernameInput").value.trim();
+        if (!username) {
+            showError("GitHub username is required.");
+            return;
+        }
+
+        // Switch to loading state
+        hideError();
+        formState.style.display = "none";
+        loadingState.style.display = "flex";
+        startStatusRotation();
+
+        // Build FormData
+        const formData = new FormData(graderForm);
+
+        fetch("/tools/portfolio-grader/grade", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message || "Failed to grade portfolio") });
+            }
+            return response.json();
+        })
+        .then(data => {
+            stopStatusRotation();
+            if (data.success) {
+                renderResults(data);
+            } else {
+                showError(data.message || "An unexpected error occurred.");
+                resetToForm();
+            }
+        })
+        .catch(err => {
+            stopStatusRotation();
+            showError(err.message || "Network error. Please try again.");
+            resetToForm();
+        });
+    });
+
+    // Render results view
+    function renderResults(data) {
+        loadingState.style.display = "none";
+        resultState.style.display = "flex";
+        
+        // Save share URL
+        shareUrl = data.share_url;
+
+        // Set punchline
+        resultPunchline.textContent = `"${data.punchline}"`;
+
+        // Set critique bullet points
+        critiqueList.innerHTML = "";
+        data.bullet_points.forEach(bullet => {
+            const li = document.createElement("li");
+            li.className = "critique-item";
+            
+            const emojiSpan = document.createElement("span");
+            emojiSpan.className = "critique-bullet";
+            emojiSpan.textContent = "👉";
+            
+            const textSpan = document.createElement("span");
+            textSpan.className = "critique-text";
+            // Make repository names bold dynamically
+            textSpan.innerHTML = bullet.replace(/'([^']+)'/g, "<strong>'$1'</strong>");
+            
+            li.appendChild(emojiSpan);
+            li.appendChild(textSpan);
+            critiqueList.appendChild(li);
+        });
+
+        // Set score circle and counter animation
+        const score = data.score;
+        animateScore(score);
+
+        // Configure Twitter Share button
+        const tweetText = `My GitHub Founder-Ready Score is ${score}%! 🚀 "${data.punchline}" Check your grade on Rohith Builds:`;
+        twitterShareBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+    }
+
+    // Circular progress and counting number animation
+    function animateScore(targetScore) {
+        // SVG circle path length = 502
+        const circleLength = 502;
+        const targetOffset = circleLength - (targetScore / 100 * circleLength);
+        
+        // Reset state
+        progressCircle.style.strokeDashoffset = circleLength;
+        scoreText.textContent = "0";
+
+        setTimeout(() => {
+            progressCircle.style.strokeDashoffset = targetOffset;
+            
+            // Count up text
+            let current = 0;
+            const duration = 1500; // matching CSS transition
+            const stepTime = Math.max(Math.floor(duration / targetScore), 10);
+            
+            const timer = setInterval(() => {
+                current += 1;
+                scoreText.textContent = current;
+                if (current >= targetScore) {
+                    scoreText.textContent = targetScore;
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }, 100);
+    }
+
+    // Reset Grader
+    resetGraderBtn.addEventListener("click", () => {
+        resultState.style.display = "none";
+        formState.style.display = "block";
+        graderForm.reset();
+        uploadFileName.textContent = "Drag & drop your resume or click to browse";
+    });
+
+    function resetToForm() {
+        loadingState.style.display = "none";
+        formState.style.display = "block";
+    }
+
+    // Copy to clipboard
+    copyShareBtn.addEventListener("click", () => {
+        if (!shareUrl) return;
+        
+        navigator.clipboard.writeText(shareUrl)
+        .then(() => {
+            const originalText = copyShareBtn.textContent;
+            copyShareBtn.textContent = "✅ Link Copied!";
+            copyShareBtn.style.background = "var(--success)";
+            copyShareBtn.style.color = "white";
+            
+            setTimeout(() => {
+                copyShareBtn.textContent = originalText;
+                copyShareBtn.style.background = "";
+                copyShareBtn.style.color = "";
+            }, 2500);
+        })
+        .catch(err => {
+            console.error("Could not copy share URL: ", err);
+        });
+    });
+
+    // Alert display helpers
+    function showError(msg) {
+        graderError.textContent = msg;
+        graderError.style.display = "flex";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hideError() {
+        graderError.style.display = "none";
+        graderError.textContent = "";
+    }
+
+    // Auto-trigger if username is in query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryUsername = urlParams.get('username');
+    if (queryUsername) {
+        document.getElementById("usernameInput").value = queryUsername;
+        graderForm.dispatchEvent(new Event('submit'));
+    }
+});
+</script>
+{% endblock %}

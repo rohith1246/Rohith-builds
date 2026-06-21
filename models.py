@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -541,3 +541,20 @@ class AgentApplicationLog(db.Model):
 
     user = db.relationship("User", backref=db.backref("agent_logs", lazy="dynamic", cascade="all, delete-orphan"))
     job_opportunity = db.relationship("AgentJobOpportunity", backref=db.backref("logs", lazy="dynamic", cascade="all, delete-orphan"))
+
+
+class PortfolioGrade(db.Model):
+    """Database model to cache portfolio grades and share scores."""
+    __tablename__ = "portfolio_grades"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    score = db.Column(db.Integer, nullable=False)
+    punchline = db.Column(db.String(500), nullable=False)
+    bullet_points = db.Column(db.JSON, nullable=False)  # List of strings cached as JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def is_expired(self) -> bool:
+        """Check if cached grade is older than 4 hours."""
+        from datetime import datetime, timedelta
+        return datetime.utcnow() - self.created_at > timedelta(hours=4)

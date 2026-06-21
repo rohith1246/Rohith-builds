@@ -1,4 +1,4 @@
-﻿import hashlib
+import hashlib
 import logging
 import os
 import threading
@@ -13,7 +13,7 @@ import resend
 from werkzeug.security import generate_password_hash
 
 from extensions import csrf, login_manager, migrate
-from models import db, User, Prompt, Favorite, Job
+from models import db, User, Prompt, Favorite, Job, PortfolioGrade
 from modules.home import home_bp
 from modules.learn import learn_bp
 from modules.prompts import prompts_bp
@@ -21,6 +21,7 @@ from modules.improve import improve_bp
 from modules.auth import auth_bp
 from modules.admin import admin_bp
 from modules.jobs import jobs_bp
+from modules.portfolio_grader import portfolio_grader_bp
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -93,6 +94,7 @@ app.register_blueprint(improve_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(jobs_bp)
+app.register_blueprint(portfolio_grader_bp)
 
 # Database Seeding
 SEED_PROMPTS = [
