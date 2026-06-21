@@ -1,0 +1,60 @@
+[33me933055[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Clean up old local jobs code and redirect navigation to external jobs portal
+[33m8a529ef[m added view badge
+[33m1499682[m fix requirements bug
+[33m5df5884[m added certificate generation feature
+[33mcbeeebe[m fix dashboard overlay issue
+[33m80965cf[m fix leaderboard issues
+[33m0f333ef[m add - course thumbails
+[33mf5f1a37[m fixed dashboard ui bug
+[33m92c6def[m  added pwa
+[33m4561fc0[m Daily Streaks & XP Leaderboard
+[33m19415c6[m Codebase Cleanup & bug fixes in Rohith Builds
+[33m222729d[m implement daily message limits and reset logic for Tutor Rohi
+[33m7f76240[m fix: neon fallback
+[33m0fe8a9d[m fix: groq fallback, csrf, db indexes, rohi memory, admin security
+[33mc2c3f36[m Convert admin pages styling to dark theme surfaces and badges
+[33m9534d81[m Fix user XP progress tracking and add dynamic synchronization on dashboard load
+[33me886ece[m Redesign student dashboard with premium responsive SaaS-style layout
+[33m817c720[m Implement Google OAuth login and registration feature
+[33m92af501[m Implement job application tracking and status UI for registered users
+[33mf186b64[m fix: resolve mobile layout drawer shift horizontal overflow and add backdrop on mobile jobs sidebar
+[33ma806873[m feat: implement batch 2 SEO articles, routes, sitemap integration, and hub card links
+[33mef3151f[m checkout: temporary commit for worktree checkout
+[33m82c03cd[m fix: register /health endpoint for keep-alive monitoring
+[33med30c2c[m feat: implement batch 1 SEO roadmaps, sitemap GSC bypass, and simplified mobile nav drawer
+[33m63f5398[m Add SEO meta tags, robots.txt and dynamic sitemap
+[33m41b77bd[m Align Prompts and Collections page styling with dark yellow/black theme
+[33m7de38dd[m Add SEO meta tags, robots.txt and dynamic sitemap
+[33maf73b46[m  fixed us bugs
+[33mb1aa831[m fixed ui bugs
+[33mbea6b72[m ignore and untrack local scratch and backups folders
+[33mde3837d[m added job module
+[33me511103[m added thumbnails for the lessons
+[33m50ab027[m feat: show course thumbnails in catalog and course page with mobile alignment
+[33mda844c9[m style: premium glassmorphic redesign of Rohi AI chat widget
+[33mc8cb4e9[m feat: implement floating lesson reviews, brand color upgrade, and responsive admin panel
+[33mece3296[m  added backups
+[33mdeedd66[m fix: correct author email
+[33m00652d1[m fixed bug
+[33m2c893cc[m feat: featured course section + mobile responsive homepage
+[33m1c5f5a4[m added images
+[33m2176550[m added python course images
+[33m468ca3e[m new lesson added
+[33m6f629fe[m  improved user dashboard
+[33mca86f12[m added google analytics  for statistics
+[33m6081391[m fixed bug
+[33m5163150[m added copied functionality
+[33m7b0d93a[m added ai agent course images
+[33m04a82fe[m added images
+[33m1b95700[m Create README.md
+[33me1fe47b[m Build Rohi AI tutor, guest limits, auth recovery, and route fixes
+[33mc5c3bda[m fixed bug
+[33m6d88e2c[m Add Rohi AI tutor, guest limits, forgot password flow, and UI improvements
+[33m1dffef2[m changed home ui
+[33me33722b[m added categories
+[33ma342dcd[m Fix admin panel and prompt interactions
+[33m070f8ae[m added python course
+[33mcfd748f[m Fix admin panel and prompt interactions
+[33m9626d2a[m added leanring module
+[33m6cd3ab9[m first commit
+[33m4bd7962[m added learning module

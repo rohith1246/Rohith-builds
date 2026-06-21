@@ -1,4 +1,4 @@
-## Step 1 — Create a Render Account
+﻿## Step 1 — Create a Render Account
 
 Today we'll deploy our AI Research Agent to the internet using Render.
 

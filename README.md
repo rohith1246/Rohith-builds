@@ -1,8 +1,8 @@
-# RohithBuilds — AI-Powered Learning Platform
+﻿# RohithBuilds — AI-Powered Learning Platform
 
 > Learn AI by Building Real Things. Not theory. Not fluff. Just practical skills.
 
-[![Live Demo](https://img.shields.io/badge/Live-rohith--builds.onrender.com-brightgreen)](https://rohith-builds.onrender.com)
+[![Live Demo](https://img.shields.io/badge/Live-rohith--builds.onrender.com-brightgreen)](https://rohith-builds-g79e.onrender.com)
 [![Flask](https://img.shields.io/badge/Flask-Python-blue)](https://flask.palletsprojects.com/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791)](https://www.postgresql.org/)
 [![Groq API](https://img.shields.io/badge/AI-Groq%20API-orange)](https://groq.com/)
@@ -16,7 +16,7 @@ RohithBuilds is a full-stack AI-powered learning platform built for students and
 
 Built solo. Zero funding. No team. Just execution.
 
-**Live Platform:** [rohith-builds.onrender.com](https://rohith-builds.onrender.com)
+**Live Platform:** [rohith-builds-g79e.onrender.com](https://rohith-builds-g79e.onrender.com)
 
 ---
 

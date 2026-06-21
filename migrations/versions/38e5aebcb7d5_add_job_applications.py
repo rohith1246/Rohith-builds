@@ -1,4 +1,4 @@
-"""add job_applications
+﻿"""add job_applications
 
 Revision ID: 38e5aebcb7d5
 Revises: 

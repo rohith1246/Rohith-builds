@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 import logging
 import os
 import threading
@@ -395,7 +395,7 @@ def service_worker() -> Response:
 @app.route("/robots.txt")
 def robots_txt() -> Response:
     """Render robots.txt configuration."""
-    content: str = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds.onrender.com/sitemap.xml\n"
+    content: str = "User-agent: *\nAllow: /\nSitemap: https://rohith-builds-g79e.onrender.com/sitemap.xml\n"
     response: Response = app.make_response(content)
     response.headers["Content-Type"] = "text/plain"
     return response
@@ -407,7 +407,7 @@ def sitemap_xml() -> Response:
     from datetime import datetime, timezone
     
     # Base URL of the site
-    base_url: str = "https://rohith-builds.onrender.com"
+    base_url: str = "https://rohith-builds-g79e.onrender.com"
     
     # We will build sitemap.xml dynamically
     urls: list[dict[str, str]] = []

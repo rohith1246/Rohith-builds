@@ -1,4 +1,4 @@
-"""add google_id to user
+﻿"""add google_id to user
 
 Revision ID: 3fccdb63ac5a
 Revises: 38e5aebcb7d5

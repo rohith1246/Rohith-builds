@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import os
 
 from dotenv import load_dotenv
@@ -14,7 +14,7 @@ senior Indian developer mentoring a junior.
 ABOUT ROHITH BUILDS PLATFORM:
 - Free AI-powered learning platform for 
   Indian developers
-- URL: rohith-builds.onrender.com
+- URL: rohith-builds-g79e.onrender.com
 - Built by Rohith Vuppula (@rohith_builds)
 
 WHAT THE PLATFORM HAS:

@@ -1,4 +1,4 @@
-from flask import jsonify, render_template, request, Response
+﻿from flask import jsonify, render_template, request, Response
 
 from extensions import csrf
 from gemini_helper import improve_prompt

@@ -1,4 +1,4 @@
-"""Shared Flask extensions for the Rohith Builds application."""
+﻿"""Shared Flask extensions for the Rohith Builds application."""
 
 from flask_login import LoginManager
 from flask_migrate import Migrate

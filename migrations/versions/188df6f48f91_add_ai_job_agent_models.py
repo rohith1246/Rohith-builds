@@ -1,4 +1,4 @@
-"""add AI job agent models
+﻿"""add AI job agent models
 
 Revision ID: 188df6f48f91
 Revises: 3fccdb63ac5a

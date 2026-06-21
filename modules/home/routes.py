@@ -1,4 +1,4 @@
-from flask import render_template
+﻿from flask import render_template
 
 from models import CourseDay, Job, Prompt, User
 from . import home_bp

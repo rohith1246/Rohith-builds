@@ -1,4 +1,4 @@
-# RohithBuilds: Growth & Distribution Playbook
+﻿# RohithBuilds: Growth & Distribution Playbook
 *A Strategic Blueprint to Scale from 10 to 1,000+ Active Users*
 
 ---
@@ -36,7 +36,7 @@ RohithBuilds features a background **Reddit Marketing Harvester** that polls tar
 ### The Golden Rules of Reddit Marketing
 1. **The 9:1 Rule**: Only 10% of your total Reddit activity should contain links to your project. The other 90% must be pure help, feedback, and discussion.
 2. **Never Copy-Paste AI Drafts Directly**: Moderation bots and users easily detect generic AI patterns. Treat Harvester drafts as a **60% starting block**; rewrite the rest in your own natural human voice.
-3. **Deep Link, Don't Spam the Homepage**: If a user is struggling with Python lists, link directly to `rohith-builds.onrender.com/learn/course/python-ai-course/day-8` (Lists Day) instead of the home page.
+3. **Deep Link, Don't Spam the Homepage**: If a user is struggling with Python lists, link directly to `rohith-builds-g79e.onrender.com/learn/course/python-ai-course/day-8` (Lists Day) instead of the home page.
 4. **Be Transparent (Declare Affiliation)**: Redditors hate stealth marketing but respect builders. 
    * *Bad:* "Check out this awesome site: [link]"
    * *Good:* "I actually had this exact problem when starting out, so I built a free platform to teach this visually: [link]. Let me know if it helps!"
@@ -143,7 +143,7 @@ Best part? The course is 100% free.
 Stop watching AI tutorials. Start building with AI.
 
 Join thousands of students and developers leveling up their careers today:
-👉 https://rohith-builds.onrender.com/learn
+👉 https://rohith-builds-g79e.onrender.com/learn
 
 ---
 
@@ -205,7 +205,7 @@ Want to build your first autonomous system this week?
 Take the free 7-Day AI Agent course. Interactive guidance is powered by our developer tutor, Rohi.
 
 Get started instantly:
-👉 https://rohith-builds.onrender.com/learn
+👉 https://rohith-builds-g79e.onrender.com/learn
 
 ---
 
@@ -268,7 +268,7 @@ Stuck on a Python error or an AI agent bug?
 Ask Rohi. It's built directly into every course and coding lesson on the platform.
 
 Try it out for free (no signup required for guests):
-👉 https://rohith-builds.onrender.com/learn
+👉 https://rohith-builds-g79e.onrender.com/learn
 
 ---
 
@@ -296,7 +296,7 @@ Blogging on community sites like Dev.to and Hashnode drives high-quality develop
    * Introduce RohithBuilds' *100-Day Python to AI Course*.
    * Detail how the lesson-aware tutor, Rohi, answers questions step-by-step.
 5. **Call to Action**:
-   * Direct link to: `rohith-builds.onrender.com/learn` with a friendly "Start Phase 1 Free Today" banner.
+   * Direct link to: `rohith-builds-g79e.onrender.com/learn` with a friendly "Start Phase 1 Free Today" banner.
 
 ---
 
@@ -322,7 +322,7 @@ Blogging on community sites like Dev.to and Hashnode drives high-quality develop
    * Persisting state in a DB.
 6. **Call to Action**:
    * Invite the reader to join the *7-Day AI Agent Course* on RohithBuilds to learn how to add memory, databases, and multi-agent coordination for free.
-   * Link: `rohith-builds.onrender.com/learn`
+   * Link: `rohith-builds-g79e.onrender.com/learn`
 
 ---
 

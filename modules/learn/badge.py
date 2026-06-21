@@ -1,4 +1,4 @@
-"""
+﻿"""
 Badge/Certificate generation for course completions.
 Generates a premium shareable PNG badge using Pillow.
 """

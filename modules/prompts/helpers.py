@@ -1,4 +1,4 @@
-from typing import Any
+﻿from typing import Any
 
 from flask import url_for
 from flask_login import current_user
