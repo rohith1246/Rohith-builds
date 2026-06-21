@@ -532,3 +532,45 @@
     justify-content: center;
   }
 }
+
+/* Guest Signup Banner */
+.guest-signup-banner {
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-2xl) 0;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.4s ease;
+}
+
+.signup-banner-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.signup-banner-text {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-lg);
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.signup-banner-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.signup-banner-actions a {
+  text-decoration: none;
+}
+

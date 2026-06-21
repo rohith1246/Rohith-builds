@@ -99,6 +99,18 @@
                 </ul>
             </div>
 
+            <!-- Guest Signup CTA -->
+            {% if not current_user.is_authenticated %}
+            <div class="guest-signup-banner" id="guestSignUpBanner">
+                <h3 class="signup-banner-title">🚀 Ready to Level Up Your Score?</h3>
+                <p class="signup-banner-text">Create a free account to unlock our developer job board, match with jobs using the AI Job Agent, and start learning Python & AI agents for free.</p>
+                <div class="signup-banner-actions">
+                    <a href="/register" class="btn-primary btn-sm">Create Free Account</a>
+                    <a href="/learn" class="btn-ghost btn-sm">Explore Courses</a>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="grader-actions">
                 <button id="copyShareBtn" class="btn-primary share-btn">
                     🔗 Copy Link to Share
