@@ -93,6 +93,19 @@ def fetch_github_data(username: str) -> dict:
     if not isinstance(repos, list):
         raise RuntimeError("Unexpected response format from GitHub API.")
 
+    # Fetch user details to get followers
+    user_url = f"https://api.github.com/users/{username}"
+    followers = 0
+    try:
+        user_res = requests.get(user_url, headers=headers, timeout=10)
+        if user_res.status_code == 200:
+            user_data = user_res.json()
+            followers = user_data.get("followers", 0)
+    except Exception as e:
+        logging.warning(f"[Grader] Failed to fetch user profile followers for {username}: {e}")
+
+    total_stars = sum(r.get("stargazers_count", 0) for r in repos)
+
     processed_repos = []
     for r in repos:
         processed_repos.append({
@@ -124,7 +137,9 @@ def fetch_github_data(username: str) -> dict:
     return {
         "username": username,
         "repos": processed_repos[:15],  # Send top 15 to the AI
-        "total_repos": len(repos)
+        "total_repos": len(repos),
+        "followers": followers,
+        "stars": total_stars
     }
 
 

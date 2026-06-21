@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}GitHub Growth Tracker — Analyze Your Progress | Rohith Builds{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portfolio_grader.css') }}?v=1.1"/>
+<style>
+  .tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+  
+  .tracker-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+  }
+  
+  .tracker-title span {
+    color: var(--primary);
+  }
+  
+  .tracker-subtitle {
+    color: var(--text-light);
+    margin-top: var(--spacing-xs);
+    font-size: 1rem;
+  }
+
+  .tracker-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .tracker-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+
+  .tracker-stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-card-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--spacing-xs);
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  .stat-card-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tracker-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .tracker-chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  .chart-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text);
+  }
+
+  .chart-wrapper {
+    position: relative;
+    height: 260px;
+    width: 100%;
+  }
+
+  .suggestions-box {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.8) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .suggestions-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .suggestions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .suggestion-item {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text);
+    padding-left: 28px;
+    position: relative;
+  }
+
+  .suggestion-item::before {
+    content: "👉";
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .history-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  .history-header {
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .tracker-table-wrap {
+    overflow-x: auto;
+  }
+
+  .tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .tracker-table th {
+    padding: var(--spacing-md);
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tracker-table td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .tracker-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .tracker-form {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .tracker-form-input {
+    background: rgba(17, 24, 39, 0.6);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    padding: 12px 18px;
+    font-size: 1rem;
+    min-width: 260px;
+    outline: none;
+    transition: var(--transition);
+  }
+
+  .tracker-form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+  }
+
+  @media (max-width: 600px) {
+    .tracker-charts-grid {
+      grid-template-columns: 1fr;
+    }
+    .tracker-form {
+      flex-direction: column;
+    }
+    .tracker-form-input {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grader-wrapper">
+  
+  {% if not tracked_profile %}
+    <!-- EMPTY STATE -->
+    <div class="grader-card">
+      <div class="empty-state">
+        <div class="empty-icon">📈</div>
+        <h1 class="tracker-title">GitHub <span>Growth Tracker</span></h1>
+        <p class="grader-subtitle" style="margin-top: 12px;">
+          Track your founder-ready score, total stars, and followers over time. Watch your code portfolio grow, receive daily actions, and prove you can ship real products.
+        </p>
+        
+        <form id="startTrackingForm" class="tracker-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input 
+            type="text" 
+            id="trackerUsernameInput" 
+            name="username" 
+            class="tracker-form-input" 
+            placeholder="Enter GitHub Username" 
+            required
+          />
+          <button type="submit" class="btn-primary">
+            🚀 Track My Profile
+          </button>
+        </form>
+        <div id="trackerError" class="grader-error-alert" style="margin-top: 20px; display: none;"></div>
+      </div>
+    </div>
+    
+  {% else %}
+    <!-- ACTIVE TRACKER DASHBOARD -->
+    
+    <div class="tracker-header">
+      <div>
+        <h1 class="tracker-title">GitHub Growth for <span>@{{ tracked_profile.username }}</span></h1>
+        <p class="tracker-subtitle">Created on {{ tracked_profile.created_at.strftime('%B %d, %Y') }}</p>
+      </div>
+      <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+        <a href="{{ url_for('portfolio_grader.share_page', username=tracked_profile.username) }}" target="_blank" class="btn-ghost" style="padding: 10px 16px;">
+          🔗 View Share Card
+        </a>
+        <button id="syncTrackerBtn" class="btn-primary" style="padding: 10px 16px;">
+          🔄 Sync & Re-Evaluate
+        </button>
+      </div>
+    </div>
+
+    <!-- Feedback Message Alert -->
+    <div id="syncFeedbackAlert" class="grader-error-alert" style="margin-bottom: 24px; display: none;"></div>
+
+    <!-- Stats Grid -->
+    <div class="tracker-stats-grid">
+      <div class="tracker-stat-card">
+        <div class="stat-card-value" style="color: var(--primary);" id="statScore">
+          {{ latest_grade.score if latest_grade else '--' }}%
+        </div>
+        <div class="stat-card-label">Founder Ready</div>
+      </div>
+      <div class="tracker-stat-card">
+        <div class="stat-card-value" style="color: #fbbf24;" id="statStars">
+          {{ raw_history[0].stars if raw_history else '0' }}
+        </div>
+        <div class="stat-card-label">Total Stars</div>
+      </div>
+      <div class="tracker-stat-card">
+        <div class="stat-card-value" style="color: #10b981;" id="statFollowers">
+          {{ raw_history[0].followers if raw_history else '0' }}
+        </div>
+        <div class="stat-card-label">Followers</div>
+      </div>
+      <div class="tracker-stat-card">
+        <div class="stat-card-value" style="color: #8b5cf6;" id="statRepos">
+          {{ raw_history[0].public_repos if raw_history else '0' }}
+        </div>
+        <div class="stat-card-label">Public Repos</div>
+      </div>
+    </div>
+
+    <!-- Actionable suggestions -->
+    <div class="suggestions-box">
+      <div class="suggestions-title">
+        🔥 Founder-Ready Action Items
+      </div>
+      <ul class="suggestions-list">
+        {% for suggest in suggestions %}
+          <li class="suggestion-item">{{ suggest }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Charts -->
+    <div class="tracker-charts-grid">
+      <div class="tracker-chart-container">
+        <h3 class="chart-title">📈 Founder-Ready Score Progress</h3>
+        <div class="chart-wrapper">
+          <canvas id="scoreHistoryChart"></canvas>
+        </div>
+      </div>
+      <div class="tracker-chart-container">
+        <h3 class="chart-title">⭐ GitHub Growth (Stars & Followers)</h3>
+        <div class="chart-wrapper">
+          <canvas id="starsGrowthChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs table -->
+    <div class="history-section">
+      <div class="history-header">
+        <h3 class="history-title">🕒 Grader History Logs</h3>
+      </div>
+      <div class="tracker-table-wrap">
+        <table class="tracker-table">
+          <thead>
+            <tr>
+              <th>Scan Date</th>
+              <th>Score</th>
+              <th>Total Stars</th>
+              <th>Followers</th>
+              <th>Public Repos</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            {% for log in raw_history %}
+              <tr>
+                <td>{{ log.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                <td style="font-weight: 700; color: var(--primary);">{{ log.score }}%</td>
+                <td>⭐ {{ log.stars }}</td>
+                <td>👥 {{ log.followers }}</td>
+                <td>📂 {{ log.public_repos }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if tracked_profile and history_data %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const chartData = {{ history_data | tojson }};
+      
+      // 1. Score History Chart
+      const scoreCtx = document.getElementById("scoreHistoryChart").getContext("2d");
+      new Chart(scoreCtx, {
+          type: "line",
+          data: {
+              labels: chartData.dates,
+              datasets: [{
+                  label: "Founder-Ready Score",
+                  data: chartData.scores,
+                  borderColor: "#f59e0b",
+                  backgroundColor: "rgba(245, 158, 11, 0.1)",
+                  fill: true,
+                  tension: 0.25,
+                  borderWidth: 3
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                  y: { min: 0, max: 100, ticks: { stepSize: 20 } }
+              }
+          }
+      });
+
+      // 2. Stars & Followers Chart
+      const starsCtx = document.getElementById("starsGrowthChart").getContext("2d");
+      new Chart(starsCtx, {
+          type: "line",
+          data: {
+              labels: chartData.dates,
+              datasets: [
+                  {
+                      label: "Stars",
+                      data: chartData.stars,
+                      borderColor: "#fbbf24",
+                      backgroundColor: "transparent",
+                      tension: 0.2,
+                      borderWidth: 2
+                  },
+                  {
+                      label: "Followers",
+                      data: chartData.followers,
+                      borderColor: "#10b981",
+                      backgroundColor: "transparent",
+                      tension: 0.2,
+                      borderWidth: 2
+                  }
+              ]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: "top", labels: { color: "#9ca3af" } } }
+          }
+      });
+  });
+</script>
+{% endif %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      // Handle Start Tracking profile submit
+      const startTrackingForm = document.getElementById("startTrackingForm");
+      if (startTrackingForm) {
+          startTrackingForm.addEventListener("submit", function(e) {
+              e.preventDefault();
+              const username = document.getElementById("trackerUsernameInput").value.trim();
+              const errorDiv = document.getElementById("trackerError");
+              errorDiv.style.display = "none";
+              
+              const formData = new FormData();
+              formData.append("username", username);
+              formData.append("csrf_token", "{{ csrf_token() }}");
+              
+              fetch("{{ url_for('portfolio_grader.add_tracker') }}", {
+                  method: "POST",
+                  body: formData
+              })
+              .then(res => res.json())
+              .then(data => {
+                  if (data.success) {
+                      window.location.reload();
+                  } else {
+                      errorDiv.textContent = data.message || "Could not track profile.";
+                      errorDiv.style.display = "block";
+                  }
+              })
+              .catch(err => {
+                  errorDiv.textContent = "Network error. Please try again.";
+                  errorDiv.style.display = "block";
+              });
+          });
+      }
+
+      // Handle Sync Button
+      const syncTrackerBtn = document.getElementById("syncTrackerBtn");
+      if (syncTrackerBtn) {
+          syncTrackerBtn.addEventListener("click", function() {
+              const alertDiv = document.getElementById("syncFeedbackAlert");
+              alertDiv.style.display = "none";
+              alertDiv.className = "grader-error-alert"; // reset
+              
+              syncTrackerBtn.disabled = true;
+              const originalText = syncTrackerBtn.textContent;
+              syncTrackerBtn.textContent = "⏳ Syncing...";
+              
+              const formData = new FormData();
+              formData.append("username", "{{ tracked_profile.username if tracked_profile else '' }}");
+              formData.append("csrf_token", "{{ csrf_token() }}");
+              
+              fetch("{{ url_for('portfolio_grader.sync_tracker') }}", {
+                  method: "POST",
+                  body: formData
+              })
+              .then(res => {
+                  if (res.status === 429) {
+                      return res.json().then(data => { throw new Error(data.message) });
+                  }
+                  if (!res.ok) {
+                      throw new Error("Re-evaluation failed.");
+                  }
+                  return res.json();
+              })
+              .then(data => {
+                  if (data.success) {
+                      alertDiv.textContent = "✅ " + data.message;
+                      alertDiv.className = "grader-error-alert success-toast"; // styles can be handled
+                      alertDiv.style.background = "var(--success)";
+                      alertDiv.style.color = "white";
+                      alertDiv.style.border = "none";
+                      alertDiv.style.display = "block";
+                      
+                      setTimeout(() => {
+                          window.location.reload();
+                      }, 1500);
+                  } else {
+                      throw new Error(data.message || "Failed to update profile statistics.");
+                  }
+              })
+              .catch(err => {
+                  alertDiv.textContent = err.message;
+                  alertDiv.style.display = "block";
+                  syncTrackerBtn.disabled = false;
+                  syncTrackerBtn.textContent = originalText;
+              });
+          });
+      }
+  });
+</script>
+{% endblock %}

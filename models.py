@@ -558,3 +558,33 @@ class PortfolioGrade(db.Model):
         """Check if cached grade is older than 4 hours."""
         from datetime import datetime, timedelta
         return datetime.utcnow() - self.created_at > timedelta(hours=4)
+
+
+class TrackedPortfolio(db.Model):
+    """Database model for user-tracked portfolios to enable periodic updates."""
+    __tablename__ = "tracked_portfolios"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    username = db.Column(db.String(100), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_scanned_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship("User", backref=db.backref("tracked_portfolios", lazy="dynamic", cascade="all, delete-orphan"))
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "username", name="uq_user_tracked_portfolio"),
+    )
+
+
+class PortfolioHistory(db.Model):
+    """Database model to track portfolio grade evolution over time."""
+    __tablename__ = "portfolio_histories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, index=True)
+    score = db.Column(db.Integer, nullable=False)
+    stars = db.Column(db.Integer, nullable=False, default=0)
+    followers = db.Column(db.Integer, nullable=False, default=0)
+    public_repos = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

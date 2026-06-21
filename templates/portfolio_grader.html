@@ -115,6 +115,9 @@
                 <button id="copyShareBtn" class="btn-primary share-btn">
                     🔗 Copy Link to Share
                 </button>
+                <button id="trackProgressBtn" class="btn-primary" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none;">
+                    📈 Track My Progress
+                </button>
                 <a id="twitterShareBtn" href="#" target="_blank" class="social-share-btn twitter">
                     🐦 Share on Twitter
                 </a>
@@ -151,6 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const critiqueList = document.getElementById("critiqueList");
     
     const copyShareBtn = document.getElementById("copyShareBtn");
+    const trackProgressBtn = document.getElementById("trackProgressBtn");
     const twitterShareBtn = document.getElementById("twitterShareBtn");
     const linkedinShareBtn = document.getElementById("linkedinShareBtn");
     const resetGraderBtn = document.getElementById("resetGraderBtn");
@@ -386,6 +390,44 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(err => {
             console.error("Could not copy share URL: ", err);
         });
+    });
+
+    // Track portfolio progress
+    trackProgressBtn.addEventListener("click", () => {
+        const username = document.getElementById("usernameInput").value.trim();
+        if (!username) return;
+        
+        {% if current_user.is_authenticated %}
+        const formData = new FormData();
+        formData.append("username", username);
+        formData.append("csrf_token", "{{ csrf_token() }}");
+        
+        trackProgressBtn.disabled = true;
+        trackProgressBtn.textContent = "⏳ Adding...";
+        
+        fetch("/tools/portfolio-grader/tracker/add", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "/tools/portfolio-grader/tracker";
+            } else {
+                alert(data.message || "Failed to add profile to tracker.");
+                trackProgressBtn.disabled = false;
+                trackProgressBtn.textContent = "📈 Track My Progress";
+            }
+        })
+        .catch(err => {
+            alert("Network error.");
+            trackProgressBtn.disabled = false;
+            trackProgressBtn.textContent = "📈 Track My Progress";
+        });
+        {% else %}
+        // Redirect guest to signup page with next url parameter
+        window.location.href = "/register?next=" + encodeURIComponent("/tools/portfolio-grader?username=" + username);
+        {% endif %}
     });
 
     // Alert display helpers
