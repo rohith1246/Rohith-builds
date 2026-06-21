@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Free {{ course.title }} Course | Step-by-Step Tutorial | RohithBuilds{% endblock %}
 {% block meta_description %}Enroll in our free {{ course.title }} course. Master concepts via hands-on exercises, real-world coding projects, and dedicated 24/7 AI tutor guidance.{% endblock %}
 
@@ -269,6 +269,51 @@
     {% endfor %}
 
 </section>
+
+{% else %}
+
+{# ── Non-enrolled preview: show all lessons locked with enroll CTA ── #}
+<section class="course-grid" id="course-content">
+
+    {% for day in days %}
+    <div class="course-card locked-card" style="cursor:default;opacity:0.85;">
+
+        <div class="lesson-status locked-status">
+            🔒 Enroll to Unlock
+        </div>
+
+        <div class="course-day">
+            Day {{ day.day_number }}
+        </div>
+
+        <h3>{{ day.title }}</h3>
+
+        <p>{{ day.short_description }}</p>
+
+        <div class="course-meta">
+            <span>{{ day.estimated_minutes }} mins</span>
+            <span>+{{ day.xp_reward }} XP</span>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</section>
+
+{# Sticky enroll bar for non-enrolled visitors #}
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:100;background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 -4px 24px rgba(99,102,241,0.4);">
+    <div style="color:#fff;">
+        <div style="font-weight:700;font-size:1rem;">Ready to start? It's completely free.</div>
+        <div style="font-size:0.82rem;opacity:0.85;">{{ days|length }} lessons · Learn at your own pace</div>
+    </div>
+    <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
+       style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#fff;color:#6366f1;border-radius:12px;font-weight:800;font-size:0.95rem;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:transform 0.2s;"
+       onmouseover="this.style.transform='translateY(-2px)'"
+       onmouseout="this.style.transform='translateY(0)'">
+        Enroll Free →
+    </a>
+</div>
+<div style="height:80px;"></div>{# spacer so last card isn't hidden behind sticky bar #}
 
 {% endif %}
 
