@@ -272,14 +272,19 @@
 
 {% else %}
 
-{# ── Non-enrolled preview: show all lessons locked with enroll CTA ── #}
+{# ── Non-enrolled preview: show all lessons clickable ── #}
 <section class="course-grid" id="course-content">
 
     {% for day in days %}
-    <div class="course-card locked-card" style="cursor:default;opacity:0.85;">
+    <a
+        href="{{ url_for('learn.lesson_page',
+            course_slug=course.slug,
+            lesson_slug=day.slug) }}"
+        class="course-card"
+    >
 
-        <div class="lesson-status locked-status">
-            🔒 Enroll to Unlock
+        <div class="lesson-status current-status">
+            📖 Read Lesson
         </div>
 
         <div class="course-day">
@@ -295,7 +300,7 @@
             <span>+{{ day.xp_reward }} XP</span>
         </div>
 
-    </div>
+    </a>
     {% endfor %}
 
 </section>

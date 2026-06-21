@@ -210,8 +210,14 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
     ).first()
 
     completed = False
+    is_enrolled = False
 
     if current_user.is_authenticated:
+        enrollment = CourseEnrollment.query.filter_by(
+            user_id=current_user.id,
+            course_id=course.id
+        ).first()
+        is_enrolled = enrollment is not None
 
         completed = LessonProgress.query.filter_by(
             user_id=current_user.id,
@@ -225,7 +231,8 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
         day=day,
         completed=completed,
         next_day=next_day,
-        previous_day=previous_day
+        previous_day=previous_day,
+        enrolled=is_enrolled
     )      
 # ==========================================
 # PYTHON COURSE PAGE
