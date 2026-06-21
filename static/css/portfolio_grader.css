@@ -535,8 +535,8 @@
 
 /* Guest Signup Banner */
 .guest-signup-banner {
-  background: rgba(251, 191, 36, 0.05);
-  border: 1px solid rgba(251, 191, 36, 0.2);
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.8) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
   border-radius: var(--radius-md);
   padding: var(--spacing-xl);
   margin: var(--spacing-2xl) 0;
