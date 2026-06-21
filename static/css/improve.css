@@ -9,7 +9,7 @@
 }
 
 .improve-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 48px 40px;
@@ -44,6 +44,7 @@
   padding: 20px;
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.2);
   font-size: 1.05rem;
   resize: vertical;
   margin-bottom: 20px;
@@ -70,7 +71,7 @@
   width: 100%;
   padding: 16px;
   background: var(--primary);
-  color: var(--accent);
+  color: #111827;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 1.1rem;
@@ -81,8 +82,9 @@
 }
 
 .improve-btn:hover {
-  background: var(--accent);
+  background: #111827;
   color: var(--primary);
+  border: 1px solid var(--primary);
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(17, 24, 39, 0.4);
 }
@@ -142,7 +144,7 @@
 .copy-btn {
   padding: 8px 18px;
   background: var(--primary);
-  color: var(--accent);
+  color: #111827;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -152,8 +154,9 @@
 }
 
 .copy-btn:hover {
-  background: var(--accent);
+  background: #111827;
   color: var(--primary);
+  border: 1px solid var(--primary);
   transform: translateY(-2px);
 }
 
@@ -169,8 +172,8 @@
   white-space: pre-wrap;
   line-height: 1.7;
   font-size: 1.05rem;
-  color: #334155;
-  background: white;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.25);
   padding: 20px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);

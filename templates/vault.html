@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Sleek AI Prompt Library & Templates | Rohith Builds{% endblock %}
 {% block meta_description %}Explore a curated library of production-ready AI prompt templates for coding, marketing, writing, and business.{% endblock %}
 
@@ -10,6 +10,41 @@
     <p class="page-subtitle">
       "A growing library of practical AI prompts, organized by topic."
     </p>
+
+    <!-- Quick Actions Group -->
+    <div class="vault-quick-actions" style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      
+      <!-- Card 1: AI Prompt Optimizer -->
+      <a href="{{ url_for('improve.improve_page') }}" style="text-decoration: none; display: block; height: 100%;">
+        <div style="background: linear-gradient(135deg, rgba(31, 41, 55, 0.6) 0%, rgba(17, 24, 39, 0.8) 100%); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; height: 100%;" 
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(251, 191, 36, 0.1)'; this.style.borderColor='rgba(251, 191, 36, 0.4)';" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='rgba(251, 191, 36, 0.2)';"
+             class="quick-action-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 1.8rem;">🪄</span>
+            <span style="background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">AI Optimizer</span>
+          </div>
+          <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: #f9fafb; margin-bottom: 8px;">Improve Your Prompts</h3>
+          <p style="font-size: 0.875rem; color: #9ca3af; line-height: 1.5; margin: 0;">Turn simple, weak prompts into highly optimized, structured inputs automatically using AI.</p>
+        </div>
+      </a>
+
+      <!-- Card 2: Create Custom Prompt -->
+      <a href="{{ url_for('prompts.create_prompt') }}" style="text-decoration: none; display: block; height: 100%;">
+        <div style="background: linear-gradient(135deg, rgba(31, 41, 55, 0.6) 0%, rgba(17, 24, 39, 0.8) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; height: 100%;" 
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(255, 255, 255, 0.05)'; this.style.borderColor='rgba(255, 255, 255, 0.2)';" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='rgba(255, 255, 255, 0.08)';"
+             class="quick-action-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 1.8rem;">➕</span>
+            <span style="background: rgba(255, 255, 255, 0.05); color: #e5e7eb; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Custom Builder</span>
+          </div>
+          <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: #f9fafb; margin-bottom: 8px;">Make Custom Prompts</h3>
+          <p style="font-size: 0.875rem; color: #9ca3af; line-height: 1.5; margin: 0;">Draft, categorize, and save your custom prompt engineering templates inside your personal vault.</p>
+        </div>
+      </a>
+
+    </div>
   </div>
 </section>
 
