@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Learn AI Engineering & Python Free | Interactive Courses | RohithBuilds{% endblock %}
 {% block meta_description %}Master Python, API integrations, and AI agent building. Take structured visual coding courses with real-world projects and a 24/7 interactive AI tutor.{% endblock %}
@@ -68,6 +68,11 @@
                         <span class="course-badge">
                             {{ course.total_days }} Days
                         </span>
+                        {% if course.enrollment_count and course.enrollment_count > 0 %}
+                        <span class="course-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;margin-left:6px;">
+                            👥 {{ course.enrollment_count }} enrolled
+                        </span>
+                        {% endif %}
                     </div>
 
                     <h3>

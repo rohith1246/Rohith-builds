@@ -1,4 +1,4 @@
-﻿from datetime import date, datetime
+from datetime import date, datetime
 
 from flask import abort, flash, jsonify, redirect, render_template, request, Response, send_file, session, url_for
 from flask_login import current_user, login_required
@@ -106,6 +106,10 @@ def learn() -> str:
     for course in courses:
 
         course.total_days = CourseDay.query.filter_by(
+            course_id=course.id
+        ).count()
+
+        course.enrollment_count = CourseEnrollment.query.filter_by(
             course_id=course.id
         ).count()
 
