@@ -8,8 +8,18 @@ from . import portfolio_grader_bp
 from .grader_helper import fetch_github_data, evaluate_portfolio, extract_resume_text
 
 @portfolio_grader_bp.route("/tools/portfolio-grader", methods=["GET"])
-def grader_page() -> str:
-    """Render the main Portfolio Grader form page."""
+def grader_page():
+    """Render the main Portfolio Grader form page. Auto-redirects to tracker if already tracking a profile."""
+    from flask import redirect, url_for
+    
+    # Bypass redirect if they want to scan a new username or explicitly pass one
+    bypass_redirect = request.args.get("new") == "true" or request.args.get("username") is not None
+    
+    if current_user.is_authenticated and not bypass_redirect:
+        tracked = TrackedPortfolio.query.filter_by(user_id=current_user.id).first()
+        if tracked:
+            return redirect(url_for("portfolio_grader.tracker_page"))
+            
     return render_template("portfolio_grader.html")
 
 
