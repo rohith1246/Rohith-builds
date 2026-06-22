@@ -103,7 +103,17 @@ def clear_rohi_chat() -> Response:
 def learn() -> str:
     """Render the learning course portal homepage."""
 
-    courses = Course.query.all()
+    # Query all courses and sort them so that 'how-to-install-python-in-2026' is first,
+    # followed by 'ai-agent-course', and then the rest of the courses.
+    all_courses = Course.query.all()
+    courses = sorted(
+        all_courses,
+        key=lambda c: (
+            0 if c.slug == "how-to-install-python-in-2026"
+            else (1 if c.slug == "ai-agent-course" else 2),
+            c.id
+        )
+    )
 
     for course in courses:
 

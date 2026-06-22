@@ -384,7 +384,7 @@ def pwa_manifest() -> Response:
     import json as _json
     manifest_path = os.path.join(app.root_path, "static", "manifest.json")
     try:
-        with open(manifest_path) as f:
+        with open(manifest_path, encoding="utf-8-sig") as f:
             data = _json.load(f)
     except FileNotFoundError:
         return Response('{"error": "manifest not found"}', status=404, mimetype="application/json")
@@ -399,7 +399,7 @@ def service_worker() -> Response:
     """Serve the service worker from root scope (required for full-page scope)."""
     sw_path = os.path.join(app.root_path, "static", "sw.js")
     try:
-        with open(sw_path) as f:
+        with open(sw_path, encoding="utf-8-sig") as f:
             content = f.read()
     except FileNotFoundError:
         return Response("/* service worker not found */", status=404, mimetype="application/javascript")

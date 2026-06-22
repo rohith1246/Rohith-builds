@@ -219,7 +219,7 @@
                                 <h3 class="job-card-title">{{ job.title }}</h3>
                                 {% if current_user.is_authenticated and job.id in applied_job_ids %}
                                 <span class="badge-applied-job">✓ Applied</span>
-                                {% elif job.created_at and (now - job.created_at).days < 4 %}
+                                {% elif job.is_new %}
                                 <span class="badge-new-job">✨ New</span>
                                 {% endif %}
                             </div>

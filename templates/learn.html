@@ -64,12 +64,17 @@
                 {% endif %}
 
                 <div class="course-card-body">
-                    <div class="course-card-top">
+                    <div class="course-card-top" style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
                         <span class="course-badge">
                             {{ course.total_days }} Days
                         </span>
+                        {% if course.difficulty %}
+                        <span class="course-badge" style="{% if course.difficulty in ['SETUP', 'START HERE'] %}background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);{% else %}background:rgba(255,255,255,0.06);color:#cbd5e1;{% endif %} font-weight:700;">
+                            {{ course.difficulty }}
+                        </span>
+                        {% endif %}
                         {% if course.enrollment_count and course.enrollment_count > 0 %}
-                        <span class="course-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;margin-left:6px;">
+                        <span class="course-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;">
                             👥 {{ course.enrollment_count }} enrolled
                         </span>
                         {% endif %}

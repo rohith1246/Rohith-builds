@@ -97,6 +97,16 @@ def board() -> str:
     if current_user.is_authenticated:
         applied_job_ids = {app.job_id for app in JobApplication.query.filter_by(user_id=current_user.id).all()}
 
+    # Mark job as new if created within last 4 days (handling timezone-naive and timezone-aware datetimes robustly)
+    for job in jobs:
+        if job.created_at:
+            if job.created_at.tzinfo is not None:
+                job.is_new = (datetime.now(timezone.utc) - job.created_at).days < 4
+            else:
+                job.is_new = (datetime.now(timezone.utc).replace(tzinfo=None) - job.created_at).days < 4
+        else:
+            job.is_new = False
+
     return render_template(
         "jobs.html",
         jobs=jobs,
@@ -106,7 +116,7 @@ def board() -> str:
         selected_location=location_filter,
         selected_batch=batch_filter,
         search_query=search_query,
-        now=datetime.now(timezone.utc),
+        now=datetime.now(timezone.utc).replace(tzinfo=None),
         total_jobs_count=total_jobs_count,
         filters_active=filters_active,
         applied_job_ids=applied_job_ids
