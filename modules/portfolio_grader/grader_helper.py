@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import pypdf
 from groq import Groq
 from google import genai
@@ -119,16 +120,27 @@ def fetch_github_data(username: str) -> dict:
     # Sort repos: star count descending, then last commit date descending
     processed_repos.sort(key=lambda x: (x["stars"], x["last_commit"]), reverse=True)
 
-    # Check README status for top 8 repositories to prevent rate limiting
+    # Check README status for top 8 repositories concurrently to prevent rate limiting
     top_repos = processed_repos[:8]
-    for r in top_repos:
-        repo_name = r["name"]
+
+    def check_readme(repo_entry):
+        repo_name = repo_entry["name"]
         readme_url = f"https://api.github.com/repos/{username}/{repo_name}/readme"
         try:
             readme_res = requests.head(readme_url, headers=headers, timeout=5)
-            r["has_readme"] = (readme_res.status_code == 200)
+            return repo_name, readme_res.status_code == 200
         except Exception:
-            r["has_readme"] = False
+            return repo_name, False
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(check_readme, r): r for r in top_repos}
+        readme_results = {}
+        for future in as_completed(futures):
+            name, has_readme = future.result()
+            readme_results[name] = has_readme
+
+    for r in top_repos:
+        r["has_readme"] = readme_results.get(r["name"], False)
 
     # For the remaining repos, assume has_readme is False
     for r in processed_repos[8:]:

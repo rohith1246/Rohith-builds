@@ -94,23 +94,18 @@ console.log(lessonSlug);
                 const data = await res.json();
 
                 if (data.limit_reached) {
-
-    if (data.limit_reached) {
-
-    document
-        .getElementById("rohi-limit-modal")
-        .style.display = "flex";
-
-    return;
-}
-    if (goToSignup) {
-        window.location.href = "/register";
-    } else {
-        window.location.href = "/login";
-    }
-
-    return;
-}
+                    if (data.message && data.message.includes("limit of 20 messages")) {
+                        messages.innerHTML += `
+                            <div class="rohi-ai">
+                                ${data.message}
+                            </div>
+                        `;
+                        messages.scrollTop = messages.scrollHeight;
+                        return;
+                    }
+                    document.getElementById("rohi-limit-modal").style.display = "flex";
+                    return;
+                }
                 
                 
                 messages.innerHTML += `

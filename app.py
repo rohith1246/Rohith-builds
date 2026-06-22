@@ -9,7 +9,6 @@ from flask import Flask, render_template, request, jsonify, Response
 from flask_compress import Compress
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
-import resend
 from werkzeug.security import generate_password_hash
 
 from extensions import csrf, login_manager, migrate
@@ -31,7 +30,10 @@ app = Flask(__name__)
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback-dev-key")
+_secret_key = os.environ.get("SECRET_KEY")
+if not _secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is not set! Refusing to start.")
+app.config["SECRET_KEY"] = _secret_key
 app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
 app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///prompts.db")
@@ -45,7 +47,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["ADMIN_EMAIL"] = os.environ.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
 
-resend.api_key = os.environ.get("RESEND_API_KEY")
+# Email is sent via SendGrid (see modules/auth/helpers.py)
 
 # Initialize Extensions
 csrf.init_app(app)
@@ -83,7 +85,7 @@ def load_user(user_id: str) -> User | None:
 @app.context_processor
 def inject_csrf_token() -> dict[str, Any]:
     """Inject CSRF token and admin status context."""
-    is_admin = (current_user.is_authenticated and getattr(current_user, "email", None) == app.config["ADMIN_EMAIL"])
+    is_admin = (current_user.is_authenticated and getattr(current_user, "is_admin", False))
     return dict(csrf_token=generate_csrf, is_admin=is_admin)
 
 # Register Blueprints
@@ -109,7 +111,7 @@ def seed_database() -> None:
     """Seed the database with initial admin user and prompts."""
     if User.query.first():
         return
-    seed_user = User(username="rohithbuilds", email="rohithbuildsofficial@gmail.com", password_hash=generate_password_hash("admin123"), is_verified=True)
+    seed_user = User(username="rohithbuilds", email="rohithbuildsofficial@gmail.com", password_hash=generate_password_hash("admin123"), is_verified=True, is_admin=True)
     db.session.add(seed_user)
     db.session.flush()
     for p in SEED_PROMPTS:
@@ -155,6 +157,10 @@ def _initialize_database() -> None:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
                         conn.commit()
+                if "is_admin" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE"))
+                        conn.commit()
                 if "rohi_messages_today" not in user_cols:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE users ADD COLUMN rohi_messages_today INTEGER DEFAULT 0"))
@@ -170,6 +176,10 @@ def _initialize_database() -> None:
                 if "last_active_date" not in user_cols:
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE users ADD COLUMN last_active_date DATE"))
+                        conn.commit()
+                if "last_verification_sent_at" not in user_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN last_verification_sent_at TIMESTAMP"))
                         conn.commit()
 
             # COURSE DAYS TABLE
@@ -373,8 +383,11 @@ def pwa_manifest() -> Response:
     """Serve the PWA web app manifest from root scope."""
     import json as _json
     manifest_path = os.path.join(app.root_path, "static", "manifest.json")
-    with open(manifest_path) as f:
-        data = _json.load(f)
+    try:
+        with open(manifest_path) as f:
+            data = _json.load(f)
+    except FileNotFoundError:
+        return Response('{"error": "manifest not found"}', status=404, mimetype="application/json")
     response = app.make_response(_json.dumps(data))
     response.headers["Content-Type"] = "application/manifest+json"
     response.headers["Cache-Control"] = "public, max-age=86400"
@@ -385,8 +398,11 @@ def pwa_manifest() -> Response:
 def service_worker() -> Response:
     """Serve the service worker from root scope (required for full-page scope)."""
     sw_path = os.path.join(app.root_path, "static", "sw.js")
-    with open(sw_path) as f:
-        content = f.read()
+    try:
+        with open(sw_path) as f:
+            content = f.read()
+    except FileNotFoundError:
+        return Response("/* service worker not found */", status=404, mimetype="application/javascript")
     response = app.make_response(content)
     response.headers["Content-Type"] = "application/javascript"
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"

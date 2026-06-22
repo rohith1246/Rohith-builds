@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime, timezone
 import io
 import logging
 import os
@@ -6,7 +6,7 @@ import re
 import time as time_mod
 from typing import Any
 
-from flask import current_app, jsonify, render_template, request, Response, url_for
+from flask import current_app, jsonify, render_template, request, Response, send_file, url_for
 from flask_login import current_user, login_required
 import pypdf
 from sqlalchemy import or_
@@ -106,7 +106,7 @@ def board() -> str:
         selected_location=location_filter,
         selected_batch=batch_filter,
         search_query=search_query,
-        now=datetime.utcnow(),
+        now=datetime.now(timezone.utc),
         total_jobs_count=total_jobs_count,
         filters_active=filters_active,
         applied_job_ids=applied_job_ids
@@ -114,26 +114,31 @@ def board() -> str:
 
 
 @jobs_bp.route("/api/jobs/<int:job_id>/click", methods=["POST"])
+@csrf.exempt
 def record_job_click(job_id: int) -> Response:
-    """Record click metrics and log user application interest in a job."""
+    """Record click metrics for a job."""
     job: Job = Job.query.get_or_404(job_id)
     job.clicks = (job.clicks or 0) + 1
-    
-    applied: bool = False
-    if current_user.is_authenticated:
-        existing_app: JobApplication | None = JobApplication.query.filter_by(user_id=current_user.id, job_id=job_id).first()
-        if not existing_app:
-            new_app = JobApplication(user_id=current_user.id, job_id=job_id)
-            db.session.add(new_app)
-            applied = True
-        else:
-            applied = True
-            
     db.session.commit()
     return jsonify({
         "success": True,
-        "clicks_count": job.clicks,
-        "applied": applied
+        "clicks_count": job.clicks
+    })
+
+
+@jobs_bp.route("/api/jobs/<int:job_id>/apply", methods=["POST"])
+@login_required
+def record_job_apply(job_id: int) -> Response:
+    """Log user application interest in a job."""
+    job: Job = Job.query.get_or_404(job_id)
+    existing_app: JobApplication | None = JobApplication.query.filter_by(user_id=current_user.id, job_id=job_id).first()
+    if not existing_app:
+        new_app = JobApplication(user_id=current_user.id, job_id=job_id)
+        db.session.add(new_app)
+        db.session.commit()
+    return jsonify({
+        "success": True,
+        "applied": True
     })
 
 
@@ -248,10 +253,19 @@ def upload_resume() -> Response:
             config = UserAgentConfig(user_id=current_user.id)
             db.session.add(config)
 
-        # 3. Save PDF file locally
-        upload_dir: str = os.path.join(current_app.root_path, 'static', 'uploads', 'resumes')
+        # 3. Save PDF file to private uploads folder (outside static/ so it's not publicly accessible)
+        upload_dir: str = os.path.join(current_app.root_path, 'private_uploads', 'resumes')
         os.makedirs(upload_dir, exist_ok=True)
         
+        # Clean up old resume file if exists
+        if config and config.resume_filename:
+            old_path = os.path.join(upload_dir, config.resume_filename)
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except Exception as cleanup_err:
+                    logging.error(f"Error cleaning up old resume file {old_path}: {cleanup_err}")
+
         filename: str = secure_filename(f"resume_{current_user.id}_{int(time_mod.time())}.pdf")
         file_path: str = os.path.join(upload_dir, filename)
         
@@ -305,7 +319,7 @@ def mark_applied(log_id: int) -> Response:
     """API endpoint to mark a matched job status as 'Applied'."""
     log: AgentApplicationLog = AgentApplicationLog.query.filter_by(id=log_id, user_id=current_user.id).first_or_404()
     log.status = "Applied"
-    log.applied_at = datetime.utcnow()
+    log.applied_at = datetime.now(timezone.utc)
     db.session.commit()
     return jsonify({
         "success": True,

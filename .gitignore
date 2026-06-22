@@ -35,6 +35,14 @@ instance/
 # Logs
 *.log
 
+# Scratch / junk files
+bug*.txt
+test*.txt
+*.scratch.*
+
+# Private uploads (resumes stored outside static/)
+private_uploads/
+
 # Render build/system files
 render.yaml
 

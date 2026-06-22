@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -15,13 +15,15 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
     google_id = db.Column(db.String(100), unique=True, nullable=True)
     rohi_messages_today = db.Column(db.Integer, default=0)
     rohi_last_reset_date = db.Column(db.Date)
     current_streak = db.Column(db.Integer, default=0)
     last_active_date = db.Column(db.Date, nullable=True)
-    xp = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    xp = db.Column(db.Integer, default=0, index=True)
+    last_verification_sent_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     prompts = db.relationship(
         "Prompt",
@@ -69,7 +71,7 @@ class Prompt(db.Model):
 
     copies = db.Column(db.Integer, default=0)
 
-    view_count = db.Column(db.Integer, default=0)
+    view_count = db.Column(db.Integer, default=0, index=True)
 
     user_id = db.Column(
         db.Integer,
@@ -80,7 +82,7 @@ class Prompt(db.Model):
 
     created_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
 
     favorites = db.relationship(
@@ -123,7 +125,7 @@ class PromptLike(db.Model):
 
     created_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
 
     __table_args__ = (
@@ -193,7 +195,7 @@ class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     prompt_id = db.Column(db.Integer, db.ForeignKey("prompts.id"), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (db.UniqueConstraint("user_id", "prompt_id", name="unique_favorite"),)
 
@@ -223,7 +225,7 @@ class Course(db.Model):
 
     is_published = db.Column(db.Boolean, default=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     days = db.relationship(
         "CourseDay",
@@ -238,6 +240,11 @@ class CourseDay(db.Model):
     __tablename__ = "course_days"
 
     id = db.Column(db.Integer, primary_key=True)
+
+    __table_args__ = (
+        db.UniqueConstraint("course_id", "slug", name="uq_course_day_slug"),
+        db.UniqueConstraint("course_id", "day_number", name="uq_course_day_number"),
+    )
 
     course_id = db.Column(
         db.Integer,
@@ -264,7 +271,7 @@ class CourseDay(db.Model):
 
     is_published = db.Column(db.Boolean, default=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     lesson_data = db.Column(
     db.JSON,
@@ -304,7 +311,7 @@ class UserCourseProgress(db.Model):
 
     last_completed_at = db.Column(db.DateTime, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     user = db.relationship(
         "User",
@@ -342,7 +349,7 @@ class CourseEnrollment(db.Model):
 
     enrolled_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc)
     )
 
     course = db.relationship(
@@ -425,7 +432,7 @@ class LessonReview(db.Model):
     )
 
     rating = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     course_day = db.relationship(
@@ -458,7 +465,7 @@ class Job(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     clicks = db.Column(db.Integer, default=0)
     target_batch = db.Column(db.String(100), nullable=False, default="2025, 2026")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self) -> str:
         """Return a string representation of the model."""
@@ -472,7 +479,7 @@ class JobApplication(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
-    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
+    applied_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Unique constraint so a user can only apply once to a job
     __table_args__ = (
@@ -499,8 +506,8 @@ class UserAgentConfig(db.Model):
     target_locations = db.Column(db.String(300), nullable=True, default="Remote, India, Bengaluru")
     min_salary = db.Column(db.String(100), nullable=True, default="")
     is_active = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = db.relationship("User", backref=db.backref("agent_config", uselist=False, cascade="all, delete-orphan"))
 
@@ -517,7 +524,7 @@ class AgentJobOpportunity(db.Model):
     apply_url = db.Column(db.String(500), unique=True, nullable=False)
     recruiter_email = db.Column(db.String(120), nullable=True)
     source = db.Column(db.String(100), nullable=True, default="Lever/Greenhouse")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class AgentApplicationLog(db.Model):
@@ -527,13 +534,13 @@ class AgentApplicationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     job_opportunity_id = db.Column(db.Integer, db.ForeignKey("agent_job_opportunities.id", ondelete="CASCADE"), nullable=False)
-    fit_score = db.Column(db.Integer, default=0)
+    fit_score = db.Column(db.Integer, default=0, index=True)
     match_explanation = db.Column(db.Text, nullable=True)
     drafted_subject = db.Column(db.String(300), nullable=True)
     drafted_body = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), default="Matched")
     applied_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "job_opportunity_id", name="uq_user_job_opportunity"),
@@ -552,12 +559,16 @@ class PortfolioGrade(db.Model):
     score = db.Column(db.Integer, nullable=False)
     punchline = db.Column(db.String(500), nullable=False)
     bullet_points = db.Column(db.JSON, nullable=False)  # List of strings cached as JSON
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def is_expired(self) -> bool:
         """Check if cached grade is older than 4 hours."""
-        from datetime import datetime, timedelta
-        return datetime.utcnow() - self.created_at > timedelta(hours=4)
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
+        created = self.created_at
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        return (now - created) > timedelta(hours=4)
 
 
 class TrackedPortfolio(db.Model):
@@ -567,7 +578,7 @@ class TrackedPortfolio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     username = db.Column(db.String(100), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     last_scanned_at = db.Column(db.DateTime, nullable=True)
 
     user = db.relationship("User", backref=db.backref("tracked_portfolios", lazy="dynamic", cascade="all, delete-orphan"))
@@ -583,8 +594,12 @@ class PortfolioHistory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, index=True)
+
+    __table_args__ = (
+        db.Index("ix_portfolio_history_username_created", "username", "created_at"),
+    )
     score = db.Column(db.Integer, nullable=False)
     stars = db.Column(db.Integer, nullable=False, default=0)
     followers = db.Column(db.Integer, nullable=False, default=0)
     public_repos = db.Column(db.Integer, nullable=False, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

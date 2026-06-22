@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from typing import Any
 
 from flask import abort, flash, jsonify, redirect, render_template, request, Response, send_file, session, url_for
 from flask_login import current_user, login_required
@@ -38,8 +39,9 @@ def rohi_chat_api() -> Response:
             db.session.commit()
         if current_user.rohi_messages_today >= 20:
             return jsonify({
-                "reply": "You've reached today's limit of 20 messages. Come back tomorrow! Meanwhile explore the lessons at /learn"
-            })
+                "limit_reached": True,
+                "message": "You've reached today's limit of 20 messages. Come back tomorrow! Meanwhile explore the lessons at /learn"
+            }), 429
 
     # Retrieve history from session
     history: list[dict[str, str]] = session.get("rohi_history", [])
@@ -233,38 +235,16 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
         next_day=next_day,
         previous_day=previous_day,
         enrolled=is_enrolled
-    )      
-# ==========================================
-# PYTHON COURSE PAGE
-# ==========================================
+    )  
 
-
-# ==========================================
-# AI AGENT COURSE PAGE
-# ==========================================
-
-
-# ==========================================
-# SINGLE LESSON PAGE
-# ==========================================
-
-import json
-
-
-# ==========================================
-# AI AGENT LESSON PAGE
-# ==========================================
-
-
-# ==========================================
-# ENROLL COURSE
-# ==========================================
-
-@learn_bp.route("/course/<int:course_id>/enroll")
+@learn_bp.route("/course/<int:course_id>/enroll", methods=["POST"])
 @login_required
 def enroll_course(course_id: int) -> Response:
     """Enroll the current user in a course."""
-    course = Course.query.get(course_id)
+    course = db.session.get(Course, course_id)
+    if not course or not course.is_published:
+        flash("Course not found.", "danger")
+        return redirect(url_for("learn.learn"))
     existing = CourseEnrollment.query.filter_by(
         user_id=current_user.id,
         course_id=course_id
@@ -293,14 +273,20 @@ def enroll_course(course_id: int) -> Response:
 # ==========================================
 # COMPLETE LESSON
 # ==========================================
-@learn_bp.route("/lesson/<int:day_id>/complete")
+@learn_bp.route("/lesson/<int:day_id>/complete", methods=["POST"])
 @login_required
 def complete_lesson(day_id: int) -> Response:
     """Mark a lesson as completed by the current user and award XP."""
 
     day = CourseDay.query.get_or_404(day_id)
+    if not day.is_published:
+        flash("This lesson is not available yet.", "warning")
+        return redirect(url_for("learn.learn"))
 
     course = Course.query.get_or_404(day.course_id)
+    if not course.is_published:
+        flash("This course is not available yet.", "warning")
+        return redirect(url_for("learn.learn"))
 
     enrollment = CourseEnrollment.query.filter_by(
         user_id=current_user.id,
@@ -332,7 +318,7 @@ def complete_lesson(day_id: int) -> Response:
             user_id=current_user.id,
             course_day_id=day_id,
             completed=True,
-            completed_at=datetime.utcnow()
+            completed_at=datetime.now(timezone.utc)
         )
         db.session.add(progress)
 
@@ -354,23 +340,24 @@ def complete_lesson(day_id: int) -> Response:
 
         progress_rec.completed_days += 1
         progress_rec.total_xp += (day.xp_reward or 50)
-        progress_rec.last_completed_at = datetime.utcnow()
+        progress_rec.last_completed_at = datetime.now(timezone.utc)
+
+        # Update overall user XP
+        current_user.xp = (current_user.xp or 0) + (day.xp_reward or 50)
 
         # Update current_day to next day in progress sequence
         if day.day_number >= progress_rec.current_day:
             progress_rec.current_day = day.day_number + 1
 
-        # Update user learning streak
-        today = datetime.utcnow().date()
-        if not current_user.last_active_date:
-            current_user.current_streak = 1
-        else:
-            diff = (today - current_user.last_active_date).days
-            if diff == 1:
-                current_user.current_streak += 1
-            elif diff > 1:
+        # Update user learning streak (only once per day)
+        today = datetime.now(timezone.utc).date()
+        if not current_user.last_active_date or current_user.last_active_date < today:
+            if current_user.last_active_date:
+                diff = (today - current_user.last_active_date).days
+                current_user.current_streak = current_user.current_streak + 1 if diff == 1 else 1
+            else:
                 current_user.current_streak = 1
-        current_user.last_active_date = today
+            current_user.last_active_date = today
 
         db.session.commit()
 
@@ -406,6 +393,15 @@ def submit_review(day_id: int) -> Response:
     """Asynchronously submit a rating review for a lesson."""
     day: CourseDay = CourseDay.query.get_or_404(day_id)
     
+    completed = LessonProgress.query.filter_by(
+        user_id=current_user.id,
+        course_day_id=day.id,
+        completed=True
+    ).first() is not None
+
+    if not completed:
+        return jsonify({"success": False, "message": "You must complete this lesson before submitting a review."}), 403
+    
     data: dict[str, Any] = request.get_json() or {}
     rating: Any = data.get("rating")
     
@@ -415,7 +411,7 @@ def submit_review(day_id: int) -> Response:
     existing: LessonReview | None = LessonReview.query.filter_by(user_id=current_user.id, course_day_id=day.id).first()
     if existing:
         existing.rating = rating
-        existing.created_at = datetime.utcnow()
+        existing.created_at = datetime.now(timezone.utc)
     else:
         review: LessonReview = LessonReview(
             user_id=current_user.id,
@@ -445,8 +441,8 @@ def _resolve_badge_or_404(username: str, course_slug: str):
     """
     from models import User
     user = User.query.filter_by(username=username).first_or_404()
-    course = Course.query.filter_by(slug=course_slug, is_published=True).first_or_404()
-    total_days = CourseDay.query.filter_by(course_id=course.id, is_published=True).count()
+    course = Course.query.filter_by(slug=course_slug).first_or_404()
+    total_days = CourseDay.query.filter_by(course_id=course.id).count()
     if total_days == 0:
         abort(404)
     completed_count = (
@@ -472,7 +468,7 @@ def _resolve_badge_or_404(username: str, course_slug: str):
         .order_by(LessonProgress.completed_at.desc())
         .first()
     )
-    completed_at = last.completed_at if last and last.completed_at else datetime.utcnow()
+    completed_at = last.completed_at if last and last.completed_at else datetime.now(timezone.utc)
     return user, course, completed_at
 
 

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Python & AI Jobs for Freshers in India | Rohith Builds{% endblock %}
 {% block meta_description %}Find the best entry-level Python, backend, and AI engineer jobs and internships for freshers in India, matching your skills and course tracks.{% endblock %}
 
@@ -261,7 +261,7 @@
                         </div>
                         <div class="job-card-actions-new">
                             <button class="btn-secondary-details" onclick="openJobModal({{ job.id }}, event)">Details</button>
-                            <a href="{{ job.apply_url }}" target="_blank" class="btn-primary-apply" onclick="recordJobClick({{ job.id }}, event)">Apply Now ↗</a>
+                            <a href="{{ job.apply_url }}" target="_blank" class="btn-primary-apply" onclick="recordJobApply({{ job.id }}, event)">Apply Now ↗</a>
                         </div>
                     </div>
                     
@@ -383,7 +383,7 @@
 
     <!-- Sticky Drawer Footer -->
     <div class="drawer-footer">
-        <a href="#" target="_blank" class="drawer-apply-btn" id="drawerApplyBtn" onclick="recordJobClick(activeJobId, event)">Apply on Company Website ↗</a>
+        <a href="#" target="_blank" class="drawer-apply-btn" id="drawerApplyBtn" onclick="recordJobApply(activeJobId, event)">Apply on Company Website ↗</a>
     </div>
 </div>
 
@@ -411,6 +411,27 @@ function recordJobClick(jobId, event) {
             if (countEl) {
                 countEl.innerText = `👁️ ${data.clicks_count} views`;
             }
+        }
+    })
+    .catch(err => console.error("Error recording click:", err));
+}
+
+function recordJobApply(jobId, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    if (!jobId) return;
+    
+    fetch(`/api/jobs/${jobId}/apply`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data && data.success) {
             // Add Applied badge dynamically if marked as applied
             if (data.applied) {
                 const card = document.getElementById(`job-card-${jobId}`);
@@ -430,7 +451,7 @@ function recordJobClick(jobId, event) {
             }
         }
     })
-    .catch(err => console.error("Error recording click:", err));
+    .catch(err => console.error("Error recording apply:", err));
 }
 
 function openJobModal(jobId, event) {

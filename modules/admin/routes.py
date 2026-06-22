@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from io import BytesIO
 import os
@@ -38,7 +38,14 @@ from . import admin_bp
 def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to restrict access to admin users only."""
     def decorated_function(*args: Any, **kwargs: Any) -> Any:
-        if current_user.email != current_app.config["ADMIN_EMAIL"]:
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        # Auto-promote user to is_admin if they have the admin email
+        if current_user.email == current_app.config["ADMIN_EMAIL"] and not getattr(current_user, "is_admin", False):
+            current_user.is_admin = True
+            db.session.commit()
+            
+        if not getattr(current_user, "is_admin", False):
             flash("Admin access only.", "danger")
             return redirect(url_for("auth.dashboard"))
         return f(*args, **kwargs)
@@ -198,7 +205,7 @@ def admin_dashboard() -> str:
         current_app.logger.error("Enrollment analytics error: %s", e)
         enrollment_analytics = []
 
-    lesson_reviews = LessonReview.query.order_by(LessonReview.created_at.desc()).all()
+    lesson_reviews = LessonReview.query.order_by(LessonReview.created_at.desc()).limit(50).all()
     db_type = "SQLite" if current_app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite") else "PostgreSQL"
 
     return render_template(
@@ -245,7 +252,7 @@ def api_stats() -> Response:
     from datetime import datetime, timedelta
 
     # 1. User Registrations (last 30 days)
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     users_recent = (
         db.session.query(User.created_at)
         .filter(User.created_at >= thirty_days_ago)
@@ -253,7 +260,7 @@ def api_stats() -> Response:
     )
     user_growth = {}
     for i in range(30):
-        d = (datetime.utcnow() - timedelta(days=i)).date()
+        d = (datetime.now(timezone.utc) - timedelta(days=i)).date()
         user_growth[d.isoformat()] = 0
         
     for u in users_recent:
@@ -266,10 +273,16 @@ def api_stats() -> Response:
 
     # 2. Course Enrollments
     courses = Course.query.all()
-    enrollment_data = []
-    for c in courses:
-        count = CourseEnrollment.query.filter_by(course_id=c.id).count()
-        enrollment_data.append({"course": c.title, "count": count})
+    # Single grouped query instead of N+1 per-course COUNT queries
+    enrollment_counts = dict(
+        db.session.query(CourseEnrollment.course_id, func.count(CourseEnrollment.id))
+        .group_by(CourseEnrollment.course_id)
+        .all()
+    )
+    enrollment_data = [
+        {"course": c.title, "count": enrollment_counts.get(c.id, 0)}
+        for c in courses
+    ]
 
     # 3. Prompt Categories
     categories_data = []
@@ -285,7 +298,7 @@ def api_stats() -> Response:
         categories_data = []
 
     # 4. Lesson Completions (last 15 days)
-    fifteen_days_ago = datetime.utcnow() - timedelta(days=15)
+    fifteen_days_ago = datetime.now(timezone.utc) - timedelta(days=15)
     completions_recent = (
         db.session.query(LessonProgress.completed_at)
         .filter(LessonProgress.completed == True, LessonProgress.completed_at >= fifteen_days_ago)
@@ -293,7 +306,7 @@ def api_stats() -> Response:
     )
     completions_map = {}
     for i in range(15):
-        d = (datetime.utcnow() - timedelta(days=i)).date()
+        d = (datetime.now(timezone.utc) - timedelta(days=i)).date()
         completions_map[d.isoformat()] = 0
         
     for c in completions_recent:
@@ -611,12 +624,17 @@ def delete_lesson(lesson_id: int) -> Response:
 @admin_required
 def reorder_lessons() -> Response:
     """Reorder lessons within a course."""
-    data = request.get_json()
-    course_id = data.get('course_id', type=int)
+    data = request.get_json() or {}
+    course_id = data.get('course_id')
+    if course_id is not None:
+        try:
+            course_id = int(course_id)
+        except (TypeError, ValueError):
+            course_id = None
     lesson_ids = data.get('lesson_ids', [])
     
     for idx, lesson_id in enumerate(lesson_ids, 1):
-        lesson = CourseDay.query.get(lesson_id)
+        lesson = db.session.get(CourseDay, lesson_id)
         if lesson and lesson.course_id == course_id:
             lesson.day_number = idx
     
@@ -726,7 +744,7 @@ def delete_user_admin(user_id: int) -> Response:
     """Delete a user."""
     user = User.query.get_or_404(user_id)
     
-    if user.email == current_app.config["ADMIN_EMAIL"]:
+    if getattr(user, "is_admin", False):
         flash("Cannot delete admin user.", "danger")
         return redirect(url_for("admin.users"))
     
@@ -790,10 +808,30 @@ def create_enrollment() -> Any:
 @login_required
 @admin_required
 def delete_enrollment(enrollment_id: int) -> Response:
-    """Remove a user from a course."""
+    """Remove a user from a course and clear their progress."""
     enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
+    user = enrollment.user
+    
+    # Delete lesson progress records for days belonging to this course
+    course_day_ids = db.session.query(CourseDay.id).filter_by(course_id=enrollment.course_id).subquery()
+    LessonProgress.query.filter(
+        LessonProgress.user_id == enrollment.user_id,
+        LessonProgress.course_day_id.in_(course_day_ids)
+    ).delete(synchronize_session=False)
+    
+    # Delete course progress
+    UserCourseProgress.query.filter_by(
+        user_id=enrollment.user_id,
+        course_id=enrollment.course_id
+    ).delete(synchronize_session=False)
+    
     db.session.delete(enrollment)
     db.session.commit()
+    
+    # Recalculate total user XP
+    user.xp = db.session.query(db.func.sum(UserCourseProgress.total_xp)).filter_by(user_id=user.id).scalar() or 0
+    db.session.commit()
+    
     flash("Enrollment removed.", "success")
     return redirect(request.referrer or url_for("admin.enrollments"))
 
@@ -803,11 +841,13 @@ def delete_enrollment(enrollment_id: int) -> Response:
 def reset_progress(enrollment_id: int) -> Response:
     """Reset a user's progress in a course."""
     enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
+    user = enrollment.user
     
-    # Delete lesson progress
-    LessonProgress.query.filter_by(
-        user_id=enrollment.user_id,
-        course_day_id=CourseDay.id
+    # Delete lesson progress records for days belonging to this course
+    course_day_ids = db.session.query(CourseDay.id).filter_by(course_id=enrollment.course_id).subquery()
+    LessonProgress.query.filter(
+        LessonProgress.user_id == enrollment.user_id,
+        LessonProgress.course_day_id.in_(course_day_ids)
     ).delete(synchronize_session=False)
     
     # Delete/reset course progress
@@ -817,6 +857,11 @@ def reset_progress(enrollment_id: int) -> Response:
     ).delete(synchronize_session=False)
     
     db.session.commit()
+    
+    # Recalculate total user XP
+    user.xp = db.session.query(db.func.sum(UserCourseProgress.total_xp)).filter_by(user_id=user.id).scalar() or 0
+    db.session.commit()
+    
     flash("Progress reset for this enrollment.", "success")
     return redirect(request.referrer or url_for("admin.enrollments"))
 

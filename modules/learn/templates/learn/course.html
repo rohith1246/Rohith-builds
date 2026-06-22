@@ -125,12 +125,12 @@
 
                 {% else %}
 
-                <a
-                    href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
-                    class="btn-primary enroll-btn"
-                >
-                    Enroll Course
-                </a>
+                <form action="{{ url_for('learn.enroll_course', course_id=course.id) }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-primary enroll-btn" style="border:none;cursor:pointer;">
+                        Enroll Course
+                    </button>
+                </form>
 
                 {% endif %}
             </div>
@@ -311,12 +311,15 @@
         <div style="font-weight:700;font-size:1rem;">Ready to start? It's completely free.</div>
         <div style="font-size:0.82rem;opacity:0.85;">{{ days|length }} lessons · Learn at your own pace</div>
     </div>
-    <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}"
-       style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#fff;color:#6366f1;border-radius:12px;font-weight:800;font-size:0.95rem;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:transform 0.2s;"
-       onmouseover="this.style.transform='translateY(-2px)'"
-       onmouseout="this.style.transform='translateY(0)'">
-        Enroll Free →
-    </a>
+    <form action="{{ url_for('learn.enroll_course', course_id=course.id) }}" method="POST" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit"
+           style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#fff;color:#6366f1;border-radius:12px;font-weight:800;font-size:0.95rem;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);border:none;cursor:pointer;transition:transform 0.2s;"
+           onmouseover="this.style.transform='translateY(-2px)'"
+           onmouseout="this.style.transform='translateY(0)'">
+            Enroll Free →
+        </button>
+    </form>
 </div>
 <div style="height:80px;"></div>{# spacer so last card isn't hidden behind sticky bar #}
 

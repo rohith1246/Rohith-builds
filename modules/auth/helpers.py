@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import os
 from typing import Any
 
@@ -25,17 +25,30 @@ def verify_token(token: str, expiration: int = 3600) -> str | None:
         return None
 
 
-def generate_reset_token(email: str) -> str:
+def generate_reset_token(user: User) -> str:
     """Generate a secure password reset token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-    return serializer.dumps(email, salt="password-reset-salt")
+    salt = f"password-reset-salt-{user.password_hash[-12:]}"
+    return serializer.dumps(user.email, salt=salt)
 
 
 def verify_reset_token(token: str, expiration: int = 3600) -> str | None:
     """Verify and decode the password reset token."""
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
-        return serializer.loads(token, salt="password-reset-salt", max_age=expiration)
+        from itsdangerous import base64_decode
+        import json
+        parts = token.split('.')
+        if len(parts) != 3:
+            return None
+        email = json.loads(base64_decode(parts[0]).decode('utf-8'))
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return None
+            
+        salt = f"password-reset-salt-{user.password_hash[-12:]}"
+        return serializer.loads(token, salt=salt, max_age=expiration)
     except Exception:
         return None
 
@@ -67,7 +80,7 @@ def send_verification_email(user: User) -> bool:
 
 def send_password_reset_email(user: User) -> bool:
     """Send a password reset link to the user via SendGrid."""
-    token: str = generate_reset_token(user.email)
+    token: str = generate_reset_token(user)
     reset_url: str = url_for("auth.reset_password", token=token, _external=True)
     try:
         html_content: str = render_template(

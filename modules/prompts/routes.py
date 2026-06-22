@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import flash, jsonify, redirect, render_template, request, Response, url_for
 from flask_login import current_user, login_required
@@ -103,6 +103,10 @@ def api_prompts() -> Response:
 def prompt_detail(prompt_id: int) -> str:
     """Render details of a single prompt."""
     prompt = Prompt.query.get_or_404(prompt_id)
+    
+    # Increment view count
+    prompt.view_count = (prompt.view_count or 0) + 1
+    db.session.commit()
 
     is_favorite: bool = False
 
@@ -291,10 +295,16 @@ def like_prompt(prompt_id: int) -> Response:
 @prompts_bp.route("/api/copy/<int:prompt_id>", methods=["POST"])
 @csrf.exempt
 def record_copy(prompt_id: int) -> Response:
-    """API endpoint to increment copy count of a prompt."""
+    """API endpoint to increment copy count of a prompt (session-deduped to prevent bot inflation)."""
+    from flask import session as flask_session
+    copied_key = f"copied_{prompt_id}"
     prompt: Prompt = Prompt.query.get_or_404(prompt_id)
-    prompt.copies = (prompt.copies or 0) + 1
-    db.session.commit()
+
+    # Only count once per browser session to prevent trivial count inflation
+    if not flask_session.get(copied_key):
+        prompt.copies = (prompt.copies or 0) + 1
+        db.session.commit()
+        flask_session[copied_key] = True
 
     return jsonify({
         "copies": prompt.copies
@@ -330,7 +340,7 @@ def toggle_favorite(prompt_id: int) -> Response:
         Favorite(
             user_id=current_user.id,
             prompt_id=prompt_id,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
     )
 

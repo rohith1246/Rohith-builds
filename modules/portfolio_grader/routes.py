@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from flask import jsonify, render_template, request, Response, url_for, current_app
 from flask_login import login_required, current_user
@@ -34,25 +34,27 @@ def grade_portfolio() -> Response:
     normalized_username = username.lower()
 
     # Check database cache (4-hour duration checked via .is_expired())
-    try:
-        cached = PortfolioGrade.query.filter_by(username=normalized_username).first()
-        if cached and not cached.is_expired():
-            share_url = url_for(
-                "portfolio_grader.share_page",
-                username=normalized_username,
-                _external=True
-            )
-            return jsonify({
-                "success": True,
-                "score": cached.score,
-                "punchline": cached.punchline,
-                "bullet_points": cached.bullet_points,
-                "share_url": share_url,
-                "cached": True
-            })
-    except Exception as e:
-        logging.error(f"[Grader] Error reading from cache database: {e}")
-        # Continue to fetch fresh if cache read fails for some reason
+    has_resume = "resume" in request.files and request.files["resume"].filename != ""
+    if not has_resume:
+        try:
+            cached = PortfolioGrade.query.filter_by(username=normalized_username).first()
+            if cached and not cached.is_expired():
+                share_url = url_for(
+                    "portfolio_grader.share_page",
+                    username=normalized_username,
+                    _external=True
+                )
+                return jsonify({
+                    "success": True,
+                    "score": cached.score,
+                    "punchline": cached.punchline,
+                    "bullet_points": cached.bullet_points,
+                    "share_url": share_url,
+                    "cached": True
+                })
+        except Exception as e:
+            logging.error(f"[Grader] Error reading from cache database: {e}")
+            # Continue to fetch fresh if cache read fails for some reason
 
     # Parse resume if uploaded
     resume_text = None
@@ -90,7 +92,7 @@ def grade_portfolio() -> Response:
             cached.score = grade_result["score"]
             cached.punchline = grade_result["punchline"]
             cached.bullet_points = grade_result["bullet_points"]
-            cached.created_at = datetime.utcnow()
+            cached.created_at = datetime.now(timezone.utc)
         else:
             new_grade = PortfolioGrade(
                 username=normalized_username,
@@ -105,7 +107,7 @@ def grade_portfolio() -> Response:
         is_tracked = TrackedPortfolio.query.filter_by(username=normalized_username).first() is not None
         if is_tracked:
             # Check if there is already a history record for today (UTC)
-            today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             existing_today = PortfolioHistory.query.filter(
                 PortfolioHistory.username == normalized_username,
                 PortfolioHistory.created_at >= today_start
@@ -269,7 +271,7 @@ def add_tracker() -> Response:
     new_tracked = TrackedPortfolio(
         user_id=current_user.id,
         username=username,
-        last_scanned_at=datetime.utcnow()
+        last_scanned_at=datetime.now(timezone.utc)
     )
     db.session.add(new_tracked)
     
@@ -305,14 +307,13 @@ def sync_tracker() -> Response:
         return jsonify({"success": False, "message": "You are not tracking this portfolio."}), 403
         
     # Enforce a 24-hour sync cooldown to protect AI keys, but allow admins to bypass
-    admin_email = current_app.config.get("ADMIN_EMAIL")
-    is_admin = current_user.email == admin_email
+    is_admin = getattr(current_user, "is_admin", False)
     
     if tracked.last_scanned_at and not is_admin:
         from datetime import timedelta
-        if datetime.utcnow() - tracked.last_scanned_at < timedelta(hours=24):
+        if datetime.now(timezone.utc) - tracked.last_scanned_at < timedelta(hours=24):
             # Check how much time is left
-            time_left = timedelta(hours=24) - (datetime.utcnow() - tracked.last_scanned_at)
+            time_left = timedelta(hours=24) - (datetime.now(timezone.utc) - tracked.last_scanned_at)
             hours_left = int(time_left.total_seconds() // 3600)
             mins_left = int((time_left.total_seconds() % 3600) // 60)
             return jsonify({
@@ -332,7 +333,7 @@ def sync_tracker() -> Response:
             cached.score = grade_result["score"]
             cached.punchline = grade_result["punchline"]
             cached.bullet_points = grade_result["bullet_points"]
-            cached.created_at = datetime.utcnow()
+            cached.created_at = datetime.now(timezone.utc)
         else:
             new_grade = PortfolioGrade(
                 username=username,
@@ -343,7 +344,7 @@ def sync_tracker() -> Response:
             db.session.add(new_grade)
             
         # Update tracked scanned time
-        tracked.last_scanned_at = datetime.utcnow()
+        tracked.last_scanned_at = datetime.now(timezone.utc)
         
         # Save history point
         new_history = PortfolioHistory(
@@ -354,6 +355,16 @@ def sync_tracker() -> Response:
             public_repos=github_data.get("total_repos", 0)
         )
         db.session.add(new_history)
+        
+        # Prune old history points (keep only the latest 90)
+        old_records = (PortfolioHistory.query
+                       .filter_by(username=username)
+                       .order_by(PortfolioHistory.created_at.desc())
+                       .offset(90)
+                       .all())
+        for old in old_records:
+            db.session.delete(old)
+            
         db.session.commit()
         
         return jsonify({

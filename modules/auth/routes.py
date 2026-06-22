@@ -1,6 +1,7 @@
-﻿import re
+import re
 import secrets
 import urllib.parse
+from datetime import datetime, timezone
 from typing import Any
 
 from flask import abort, current_app, flash, redirect, render_template, request, Response, session, url_for
@@ -99,7 +100,22 @@ def resend_verification() -> Response:
         flash("Your email is already verified!", "info")
         return redirect(url_for("home.home"))
 
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    if current_user.last_verification_sent_at:
+        last_sent = current_user.last_verification_sent_at
+        if last_sent.tzinfo is None:
+            last_sent = last_sent.replace(tzinfo=timezone.utc)
+        if now - last_sent < timedelta(minutes=5):
+            time_left = timedelta(minutes=5) - (now - last_sent)
+            mins_left = int(time_left.total_seconds() // 60)
+            secs_left = int(time_left.total_seconds() % 60)
+            flash(f"Please wait {mins_left}m {secs_left}s before requesting another verification email.", "warning")
+            return redirect(url_for("home.home"))
+
     if send_verification_email(current_user):
+        current_user.last_verification_sent_at = now
+        db.session.commit()
         flash(
             "Verification email sent. Please check spam/promotions folder.",
             "verification"
@@ -138,9 +154,13 @@ def login() -> Response | str:
                     "verification"
                 )
 
-            return redirect(
-                request.args.get("next") or url_for("auth.dashboard")
-            )
+            # Validate the `next` param to prevent open-redirect attacks
+            next_url = request.args.get("next")
+            if next_url:
+                parsed = urllib.parse.urlparse(next_url)
+                if parsed.netloc and parsed.netloc != urllib.parse.urlparse(request.host_url).netloc:
+                    next_url = None  # External URL — reject it
+            return redirect(next_url or url_for("auth.dashboard"))
 
         flash("Invalid email or password.", "danger")
 
@@ -238,11 +258,10 @@ def dashboard() -> str:
 
     fav_records = fav_query.limit(10).all()
 
-    fav_prompts = []
-    for f in fav_records:
-        p = Prompt.query.get(f.prompt_id)
-        if p:
-            fav_prompts.append(p)
+    # Batch-fetch favorites (avoids N+1 query)
+    fav_prompt_ids = [f.prompt_id for f in fav_records]
+    fav_prompts_map = {p.id: p for p in Prompt.query.filter(Prompt.id.in_(fav_prompt_ids)).all()}
+    fav_prompts = [fav_prompts_map[pid] for pid in fav_prompt_ids if pid in fav_prompts_map]
 
     fav_count = Favorite.query.filter_by(user_id=current_user.id).count()
 
@@ -309,30 +328,6 @@ def dashboard() -> str:
         course_days = days_by_course.get(course.id, [])
         total_days = len(course_days)
         completed_count = len(completed_by_course.get(course.id, set()))
-
-        # Sync UserCourseProgress / XP
-        progress_rec = UserCourseProgress.query.filter_by(
-            user_id=current_user.id,
-            course_id=course.id
-        ).first()
-
-        completed_day_ids = completed_by_course.get(course.id, set())
-        actual_xp = sum(d.xp_reward or 50 for d in course_days if d.id in completed_day_ids)
-
-        if not progress_rec:
-            progress_rec = UserCourseProgress(
-                user_id=current_user.id,
-                course_id=course.id,
-                current_day=1,
-                completed_days=completed_count,
-                total_xp=actual_xp
-            )
-            db.session.add(progress_rec)
-            db.session.commit()
-        elif progress_rec.completed_days != completed_count or progress_rec.total_xp != actual_xp:
-            progress_rec.completed_days = completed_count
-            progress_rec.total_xp = actual_xp
-            db.session.commit()
 
         progress_percent = int((completed_count / total_days) * 100) if total_days > 0 else 0
 
@@ -411,16 +406,17 @@ def dashboard() -> str:
     # Favorites (if created_at available use it)
     for f in fav_records:
         fav_time = getattr(f, "created_at", None)
+        p = fav_prompts_map.get(f.prompt_id)  # already fetched in batch above
+        if not p:
+            continue  # skip if prompt was deleted
         recent_events.append({
             "type": "prompt_favorited",
-            "label": f"Favorited: {Prompt.query.get(f.prompt_id).title}",
+            "label": f"Favorited: {p.title}",
             "time": fav_time,
             "meta": {"prompt_id": f.prompt_id}
         })
 
     # sort newest first (items without time are placed after timed events)
-    from datetime import datetime
-
     recent_events = sorted(
         recent_events,
         key=lambda e: e["time"] or datetime(1970, 1, 1),
@@ -429,7 +425,7 @@ def dashboard() -> str:
 
     # Check if current user's streak has expired
     if current_user.last_active_date:
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         if (today - current_user.last_active_date).days > 1:
             current_user.current_streak = 0
             db.session.commit()
@@ -447,7 +443,7 @@ def dashboard() -> str:
         # Check and compute active streak
         streak = u.current_streak
         if u.last_active_date:
-            today = datetime.utcnow().date()
+            today = datetime.now(timezone.utc).date()
             if (today - u.last_active_date).days > 1:
                 streak = 0
         leaderboard.append({
@@ -614,14 +610,25 @@ def google_callback() -> Response:
     random_pass = secrets.token_urlsafe(32)
     password_hash = generate_password_hash(random_pass)
     
-    new_user = User(
-        username=username,
-        email=email,
-        password_hash=password_hash,
-        is_verified=True,
-        google_id=google_id
-    )
-    db.session.add(new_user)
+    from sqlalchemy.exc import IntegrityError
+    while True:
+        try:
+            db.session.begin_nested()
+            new_user = User(
+                username=username,
+                email=email,
+                password_hash=password_hash,
+                is_verified=True,
+                google_id=google_id
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            break
+        except IntegrityError:
+            db.session.rollback()
+            username = f"{base_username}{suffix}"
+            suffix += 1
+            
     db.session.commit()
     
     login_user(new_user)

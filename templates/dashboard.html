@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Dashboard | Rohith Builds{% endblock %}
 {% block meta_description %}Track your learning progress, completed lessons, XP, and achievements.{% endblock %}
 
@@ -32,7 +32,7 @@
       <div class="dash-user-details">
         <div class="dash-badge-container">
           <span class="dash-badge-pill">Student Member</span>
-          {% if current_user.email == config.ADMIN_EMAIL %}
+          {% if is_admin %}
             <span class="dash-badge-pill admin-badge">🛡️ Admin</span>
           {% endif %}
         </div>
@@ -41,7 +41,7 @@
         <span class="dash-meta-joined">Learning since {{ current_user.created_at.strftime('%B %Y') }}</span>
       </div>
       <div class="dash-hero-actions">
-        {% if current_user.email == config.ADMIN_EMAIL %}
+        {% if is_admin %}
           <a href="{{ url_for('admin.admin') }}" class="btn-admin-glow">Admin Panel</a>
         {% endif %}
       </div>
@@ -261,7 +261,10 @@
                 <p>{{ (course.short_description or course.description or '')[:80] }}</p>
                 <div class="suggest-row-buttons">
                   <a href="{{ url_for('learn.course_page', course_slug=course.slug) }}" class="btn-ghost-sm">View</a>
-                  <a href="{{ url_for('learn.enroll_course', course_id=course.id) }}" class="btn-primary-sm">Join</a>
+                  <form action="{{ url_for('learn.enroll_course', course_id=course.id) }}" method="POST" style="display:inline;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn-primary-sm" style="border:none;cursor:pointer;">Join</button>
+                  </form>
                 </div>
               </div>
             </div>

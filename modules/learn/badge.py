@@ -1,11 +1,11 @@
-﻿"""
+"""
 Badge/Certificate generation for course completions.
 Generates a premium shareable PNG badge using Pillow.
 """
 
 import io
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Badge dimensions (OG image size - perfect for sharing)
@@ -43,7 +43,7 @@ def generate_badge(course_title: str, username: str, completed_date: datetime = 
     Returns raw PNG bytes.
     """
     if completed_date is None:
-        completed_date = datetime.utcnow()
+        completed_date = datetime.now(timezone.utc)
 
     # ── Base canvas ────────────────────────────────────────
     img = Image.new("RGBA", (W, H), (9, 9, 15, 255))  # #09090f
