@@ -10,6 +10,7 @@ from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, Less
 from modules.auth.helpers import send_lesson_review_email
 from .badge import generate_badge
 from modules.rate_limiter import rate_limit
+from . import learn_bp
 
 
 @learn_bp.route("/api/rohi-chat", methods=["POST"])
