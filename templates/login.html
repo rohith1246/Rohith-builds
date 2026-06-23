@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Log In | Rohith Builds{% endblock %}
 {% block meta_description %}Log in to your Rohith Builds account to access course progress and prompts.{% endblock %}
 
@@ -69,14 +69,14 @@
       <span>or</span>
     </div>
 
-    <a href="{{ url_for('auth.google_login') }}" class="btn-google">
+    <a href="{{ url_for('auth.google_login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.google_login') }}" class="btn-google">
       <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-icon">
       Continue with Google
     </a>
 
     <p class="auth-switch">
       New to RohithBuilds?
-      <a href="{{ url_for('auth.register') }}">
+      <a href="{{ url_for('auth.register', next=request.args.get('next')) if request.args.get('next') else url_for('auth.register') }}">
         Create Account →
       </a>
     </p>

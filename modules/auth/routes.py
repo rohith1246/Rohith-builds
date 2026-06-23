@@ -57,6 +57,9 @@ def register() -> Response | str:
                     "warning"
                 )
 
+            next_url = request.args.get("next")
+            if next_url:
+                return redirect(url_for("auth.login", next=next_url))
             return redirect(url_for("auth.login"))
 
         except IntegrityError:
@@ -497,6 +500,13 @@ def google_login() -> Response:
     state = secrets.token_urlsafe(32)
     session["oauth_state"] = state
     
+    # Securely capture 'next' parameter to redirect back after callback
+    next_url = request.args.get("next")
+    if next_url:
+        parsed = urllib.parse.urlparse(next_url)
+        if not parsed.netloc:  # relative URL only to prevent open redirect
+            session["oauth_next"] = next_url
+            
     redirect_uri = url_for("auth.google_callback", _external=True)
     
     params = {
@@ -515,6 +525,9 @@ def google_login() -> Response:
 @auth_bp.route("/login/google/callback")
 def google_callback() -> Response:
     """Handle Google OAuth callback and authenticate user."""
+    # Retrieve 'next' redirect if present
+    next_url = session.pop("oauth_next", None)
+    
     # Verify state
     session_state = session.pop("oauth_state", None)
     request_state = request.args.get("state")
@@ -599,7 +612,7 @@ def google_callback() -> Response:
             db.session.commit()
         login_user(user)
         flash(f"Welcome back, {user.username}!", "success")
-        return redirect(url_for("auth.dashboard"))
+        return redirect(next_url or url_for("auth.dashboard"))
         
     # Register new user
     base_username = name.lower().replace(" ", "")
@@ -639,4 +652,4 @@ def google_callback() -> Response:
     
     login_user(new_user)
     flash("Your account has been created successfully with Google!", "success")
-    return redirect(url_for("auth.dashboard"))
+    return redirect(next_url or url_for("auth.dashboard"))

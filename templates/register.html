@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Sign Up & Start Learning | Rohith Builds{% endblock %}
 {% block meta_description %}Create a free account on Rohith Builds to start learning Python and AI today.{% endblock %}
 
@@ -111,14 +111,14 @@
       <span>or</span>
     </div>
 
-    <a href="{{ url_for('auth.google_login') }}" class="btn-google">
+    <a href="{{ url_for('auth.google_login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.google_login') }}" class="btn-google">
       <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-icon">
       Continue with Google
     </a>
 
     <p class="auth-switch">
       Already have an account?
-      <a href="{{ url_for('auth.login') }}">
+      <a href="{{ url_for('auth.login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.login') }}">
         Sign In →
       </a>
     </p>
