@@ -1,4 +1,4 @@
-﻿from flask import jsonify, render_template, request, Response
+from flask import jsonify, render_template, request, Response
 
 from extensions import csrf
 from gemini_helper import improve_prompt
@@ -12,7 +12,6 @@ def improve_page() -> str:
 
 
 @improve_bp.route("/api/improve", methods=["POST"])
-@csrf.exempt
 def improve_prompt_api() -> Response:
     """Handle API request to optimize a user-provided prompt."""
     try:

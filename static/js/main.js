@@ -253,9 +253,12 @@ document.querySelectorAll(".flash").forEach(el => {
 
 /* ── Like prompt (grid) ─────────────────────────── */
 function likePrompt(id, btn) {
-
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch(`/api/like/${id}`, {
-        method: "POST"
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken
+        }
     })
     .then(r => {
 
@@ -290,9 +293,12 @@ function likePrompt(id, btn) {
 
 /* ── Like prompt (detail) ───────────────────────── */
 function likePromptDetail(id, btn) {
-
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch(`/api/like/${id}`, {
-        method: "POST"
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken
+        }
     })
     .then(r => {
 
@@ -327,7 +333,13 @@ function likePromptDetail(id, btn) {
 
 /* ── Toggle favorite (grid) ─────────────────────── */
 function toggleFavorite(id, btn) {
-  fetch(`/api/favorite/${id}`, { method: "POST" })
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  fetch(`/api/favorite/${id}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
+  })
     .then(r => {
       if (r.status === 401) { location.href="/login"; return null; }
       if (r.status === 403) {
@@ -361,7 +373,13 @@ function toggleFavorite(id, btn) {
 /* ── Toggle favorite (detail) ───────────────────── */
 /* ── Toggle favorite (detail) ───────────────────── */
 function toggleFavDetail(id, btn) {
-  fetch(`/api/favorite/${id}`, { method: "POST" })
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  fetch(`/api/favorite/${id}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
+  })
     .then(r => {
       if (r.status === 401) { location.href="/login"; return null; }
       if (r.status === 403) {
@@ -476,10 +494,12 @@ async function improvePrompt(event) {
 
     try {
 
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const response = await fetch("/api/improve", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
             },
             body: JSON.stringify({
                 prompt: prompt

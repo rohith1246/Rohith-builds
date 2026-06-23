@@ -212,8 +212,8 @@ def save_agent_config() -> Response:
     is_active: bool = request.form.get("is_active") == "true"
     config.is_active = is_active
 
-    # Delete all previous logs so they get re-evaluated with fresh pitches under new preferences
-    AgentApplicationLog.query.filter_by(user_id=current_user.id).delete()
+    # Delete previous logs (only unacted matches, retaining 'Applied' records)
+    AgentApplicationLog.query.filter(AgentApplicationLog.user_id == current_user.id, AgentApplicationLog.status != "Applied").delete(synchronize_session=False)
 
     db.session.commit()
 
@@ -287,8 +287,8 @@ def upload_resume() -> Response:
         config.resume_text = extracted_text
         config.resume_filename = filename
         
-        # Clear previous logs so they get re-evaluated against the new resume
-        AgentApplicationLog.query.filter_by(user_id=current_user.id).delete()
+        # Clear previous logs (only unacted matches, retaining 'Applied' records)
+        AgentApplicationLog.query.filter(AgentApplicationLog.user_id == current_user.id, AgentApplicationLog.status != "Applied").delete(synchronize_session=False)
         
         db.session.commit()
 

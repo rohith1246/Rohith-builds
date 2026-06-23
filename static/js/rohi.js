@@ -48,8 +48,12 @@ console.log(lessonSlug);
             messages.innerHTML = welcomeHtml;
             input.value = "";
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 await fetch("/api/rohi-chat/clear", {
-                    method: "POST"
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken
+                    }
                 });
             } catch (err) {
                 console.error("Error clearing conversation history:", err);
@@ -75,19 +79,20 @@ console.log(lessonSlug);
             input.value = "";
 
             try {
-
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 const res = await fetch(
                     "/api/rohi-chat",
                     {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
                         },
                         body: JSON.stringify({
-    message: message,
-    course_slug: courseSlug,
-    lesson_slug: lessonSlug
-})
+                            message: message,
+                            course_slug: courseSlug,
+                            lesson_slug: lessonSlug
+                        })
                     }
                 );
 

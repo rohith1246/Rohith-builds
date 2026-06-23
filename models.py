@@ -603,3 +603,24 @@ class PortfolioHistory(db.Model):
     followers = db.Column(db.Integer, nullable=False, default=0)
     public_repos = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class DailyReportLog(db.Model):
+    """Database model to log dates when daily reports were sent."""
+    __tablename__ = "daily_report_log"
+
+    report_date = db.Column(db.Date, primary_key=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class Inquiry(db.Model):
+    """Database model for Labs project contact/inquiry leads."""
+    __tablename__ = "inquiries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    company = db.Column(db.String(100), nullable=True)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default="new", nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

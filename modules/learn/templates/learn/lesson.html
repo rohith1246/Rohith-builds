@@ -224,12 +224,18 @@ window.LESSON_SLUG = "{{ day.slug }}";
 
             {% else %}
 
-            <form action="{{ url_for('learn.complete_lesson', day_id=day.id) }}" method="POST" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-primary" style="border:none;cursor:pointer;">
-                    Mark as Complete
+                {% if preceding_completed %}
+                <form action="{{ url_for('learn.complete_lesson', day_id=day.id) }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-primary" style="border:none;cursor:pointer;">
+                        Mark as Complete
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn-primary" style="border:none;cursor:not-allowed;opacity:0.6;display:inline-flex;align-items:center;gap:6px;" title="Complete Day {{ preceding_day.day_number }} first to mark this lesson as complete" disabled>
+                    🔒 Complete Day {{ preceding_day.day_number }} first
                 </button>
-            </form>
+                {% endif %}
 
             {% endif %}
 

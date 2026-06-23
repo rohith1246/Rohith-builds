@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 import os
 import re
@@ -293,14 +293,54 @@ def match_user_with_jobs(user_id: int) -> int:
         return 0
     client = Groq(api_key=api_key)
     
+    from sqlalchemy import or_
+
     # Subquery for evaluated job ids to exclude them
     evaluated_ids_subquery = db.session.query(AgentApplicationLog.job_opportunity_id).filter_by(user_id=user_id)
     
-    # Fetch all job opportunities that haven't been evaluated yet (only from Placement Portal)
-    all_opps: list[AgentJobOpportunity] = (AgentJobOpportunity.query
-                .filter(~AgentJobOpportunity.id.in_(evaluated_ids_subquery))
-                .filter(AgentJobOpportunity.source == "Placement Portal")
-                .all())
+    # Query job opportunities that haven't been evaluated yet (only from Placement Portal)
+    query = AgentJobOpportunity.query.filter(
+        ~AgentJobOpportunity.id.in_(evaluated_ids_subquery),
+        AgentJobOpportunity.source == "Placement Portal"
+    )
+
+    # Database-level filtering for roles (target_roles)
+    if config.target_roles:
+        roles = [r.strip().lower() for r in config.target_roles.split(",") if r.strip()]
+        role_filters = []
+        for role in roles:
+            role_filters.append(AgentJobOpportunity.title.ilike(f"%{role}%"))
+            # Expand synonyms
+            if "developer" in role:
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('developer', 'engineer')}%"))
+            if "engineer" in role:
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('engineer', 'developer')}%"))
+            if "fullstack" in role:
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('fullstack', 'full-stack')}%"))
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('fullstack', 'full stack')}%"))
+            if "full-stack" in role:
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('full-stack', 'fullstack')}%"))
+                role_filters.append(AgentJobOpportunity.title.ilike(f"%{role.replace('full-stack', 'full stack')}%"))
+        if role_filters:
+            query = query.filter(or_(*role_filters))
+
+    # Database-level filtering for locations (target_locations)
+    if config.target_locations:
+        locs = [l.strip().lower() for l in config.target_locations.split(",") if l.strip()]
+        loc_filters = []
+        for loc in locs:
+            loc_filters.append(AgentJobOpportunity.location.ilike(f"%{loc}%"))
+            # Expand location aliases
+            if loc in ["banglore", "bangalore", "bengaluru"]:
+                loc_filters.append(AgentJobOpportunity.location.ilike("%banglore%"))
+                loc_filters.append(AgentJobOpportunity.location.ilike("%bangalore%"))
+                loc_filters.append(AgentJobOpportunity.location.ilike("%bengaluru%"))
+            if loc == "remote":
+                loc_filters.append(AgentJobOpportunity.location.ilike("%distributed%"))
+        if loc_filters:
+            query = query.filter(or_(*loc_filters))
+
+    all_opps: list[AgentJobOpportunity] = query.all()
                 
     # Tokenize the resume text to lowercase alphanumeric words for fast lookup
     resume_words: set[str] = set(re.findall(r'[a-zA-Z0-9]+', (config.resume_text or "").lower()))

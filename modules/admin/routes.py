@@ -40,10 +40,6 @@ def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
     def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login"))
-        # Auto-promote user to is_admin if they have the admin email
-        if current_user.email == current_app.config["ADMIN_EMAIL"] and not getattr(current_user, "is_admin", False):
-            current_user.is_admin = True
-            db.session.commit()
             
         if not getattr(current_user, "is_admin", False):
             flash("Admin access only.", "danger")

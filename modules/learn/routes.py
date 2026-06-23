@@ -9,12 +9,11 @@ from gemini_helper import rohi_chat
 from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, LessonReview, UserCourseProgress
 from modules.auth.helpers import send_lesson_review_email
 from .badge import generate_badge
-from . import learn_bp    
-
+from modules.rate_limiter import rate_limit
 
 
 @learn_bp.route("/api/rohi-chat", methods=["POST"])
-@csrf.exempt
+@rate_limit(limit=20, period=3600)
 def rohi_chat_api() -> Response:
     """API endpoint to chat with Rohi the AI tutor."""
     data: dict[str, str] = request.get_json() or {}
@@ -87,7 +86,6 @@ def rohi_chat_api() -> Response:
 
 
 @learn_bp.route("/api/rohi-chat/clear", methods=["POST"])
-@csrf.exempt
 def clear_rohi_chat() -> Response:
     """API endpoint to clear Rohi conversation session history."""
     session["rohi_history"] = []
@@ -223,6 +221,8 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
 
     completed = False
     is_enrolled = False
+    preceding_completed = True
+    preceding_day = None
 
     if current_user.is_authenticated:
         enrollment = CourseEnrollment.query.filter_by(
@@ -237,6 +237,21 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
             completed=True
         ).first() is not None
 
+        preceding_day = CourseDay.query.filter(
+            CourseDay.course_id == course.id,
+            CourseDay.day_number < day.day_number
+        ).order_by(
+            CourseDay.day_number.desc()
+        ).first()
+        if preceding_day:
+            preceding_progress = LessonProgress.query.filter_by(
+                user_id=current_user.id,
+                course_day_id=preceding_day.id,
+                completed=True
+            ).first()
+            if not preceding_progress:
+                preceding_completed = False
+
     return render_template(
         "learn/lesson.html",
         course=course,
@@ -244,7 +259,9 @@ def lesson_page(course_slug: str, lesson_slug: str) -> str:
         completed=completed,
         next_day=next_day,
         previous_day=previous_day,
-        enrolled=is_enrolled
+        enrolled=is_enrolled,
+        preceding_completed=preceding_completed,
+        preceding_day=preceding_day
     )  
 
 @learn_bp.route("/course/<int:course_id>/enroll", methods=["POST"])
@@ -316,6 +333,24 @@ def complete_lesson(day_id: int) -> Response:
                 course_id=day.course_id
             )
         )
+
+    # Enforce sequential completion progression
+    preceding_day = CourseDay.query.filter(
+        CourseDay.course_id == day.course_id,
+        CourseDay.day_number < day.day_number
+    ).order_by(
+        CourseDay.day_number.desc()
+    ).first()
+    
+    if preceding_day:
+        completed_preceding = LessonProgress.query.filter_by(
+            user_id=current_user.id,
+            course_day_id=preceding_day.id,
+            completed=True
+        ).first()
+        if not completed_preceding:
+            flash(f"You cannot mark this lesson as completed until you complete Day {preceding_day.day_number}.", "warning")
+            return redirect(url_for("learn.lesson_page", course_slug=course.slug, lesson_slug=day.slug))
 
     existing = LessonProgress.query.filter_by(
         user_id=current_user.id,

@@ -47,6 +47,11 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["ADMIN_EMAIL"] = os.environ.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com")
 
+# Session Cookie Security Configuration
+app.config["SESSION_COOKIE_SECURE"] = not app.debug
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 # Email is sent via SendGrid (see modules/auth/helpers.py)
 
 # Initialize Extensions

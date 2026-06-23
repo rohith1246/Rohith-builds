@@ -18,7 +18,11 @@ from . import auth_bp
 from .helpers import send_password_reset_email, send_verification_email, verify_reset_token, verify_token
 
 
+from modules.rate_limiter import rate_limit
+
+
 @auth_bp.route("/register", methods=["GET", "POST"])
+@rate_limit(limit=5, period=60)
 def register() -> Response | str:
     """Handle new user registration."""
 
@@ -93,6 +97,7 @@ def verify_email(token: str) -> Response:
 
 @auth_bp.route("/resend-verification", methods=["POST"])
 @login_required
+@rate_limit(limit=5, period=60)
 def resend_verification() -> Response:
     """Resend email verification link to current user."""
 
@@ -127,6 +132,7 @@ def resend_verification() -> Response:
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@rate_limit(limit=5, period=60)
 def login() -> Response | str:
     """Handle user login."""
 

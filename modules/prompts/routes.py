@@ -252,7 +252,6 @@ def favorites() -> str:
 
 
 @prompts_bp.route("/api/like/<int:prompt_id>", methods=["POST"])
-@csrf.exempt
 @login_required
 def like_prompt(prompt_id: int) -> Response:
     """API endpoint to toggle liking a prompt."""
@@ -312,7 +311,6 @@ def record_copy(prompt_id: int) -> Response:
 
 
 @prompts_bp.route("/api/favorite/<int:prompt_id>", methods=["POST"])
-@csrf.exempt
 @login_required
 def toggle_favorite(prompt_id: int) -> Response:
     """API endpoint to toggle favoriting a prompt."""
