@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime, timezone
+from functools import wraps
 import json
 from io import BytesIO
 import os
@@ -37,6 +38,7 @@ from . import admin_bp
 
 def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to restrict access to admin users only."""
+    @wraps(f)
     def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login"))
@@ -45,7 +47,6 @@ def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
             flash("Admin access only.", "danger")
             return redirect(url_for("auth.dashboard"))
         return f(*args, **kwargs)
-    decorated_function.__name__ = f.__name__
     return decorated_function
 
 # ==========================================
@@ -108,7 +109,11 @@ def admin_dashboard() -> str:
     # ── Recent activity ───────────────────────────────────────────────────────
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
     recent_enrollments = (
-        CourseEnrollment.query.order_by(CourseEnrollment.enrolled_at.desc()).limit(5).all()
+        CourseEnrollment.query
+        .options(db.joinedload(CourseEnrollment.user), db.joinedload(CourseEnrollment.course))
+        .order_by(CourseEnrollment.enrolled_at.desc())
+        .limit(5)
+        .all()
     )
 
     # ── Backup Stats ──────────────────────────────────────────────────────────
@@ -149,6 +154,7 @@ def admin_dashboard() -> str:
     try:
         all_enrollments = (
             CourseEnrollment.query
+            .options(db.joinedload(CourseEnrollment.user), db.joinedload(CourseEnrollment.course))
             .order_by(CourseEnrollment.enrolled_at.desc())
             .limit(10)
             .all()
@@ -445,7 +451,7 @@ def manage_lessons() -> str:
     page = request.args.get('page', 1, type=int)
     
     courses = Course.query.all()
-    query = CourseDay.query
+    query = CourseDay.query.options(db.joinedload(CourseDay.course))
     
     if course_id:
         query = query.filter_by(course_id=course_id)
@@ -651,7 +657,10 @@ def learning_history() -> str:
     page = request.args.get('page', 1, type=int)
     
     courses = Course.query.all()
-    query = LessonProgress.query.filter_by(completed=True)
+    query = LessonProgress.query.filter_by(completed=True).options(
+        db.joinedload(LessonProgress.user),
+        db.joinedload(LessonProgress.course_day).joinedload(CourseDay.course)
+    )
     
     if course_id:
         query = query.join(CourseDay).filter(CourseDay.course_id == course_id)
@@ -764,7 +773,10 @@ def manage_enrollments() -> str:
     page = request.args.get('page', 1, type=int)
     
     courses = Course.query.all()
-    query = CourseEnrollment.query
+    query = CourseEnrollment.query.options(
+        db.joinedload(CourseEnrollment.user),
+        db.joinedload(CourseEnrollment.course)
+    )
     
     if course_id:
         query = query.filter_by(course_id=course_id)
@@ -873,7 +885,7 @@ def manage_prompts() -> str:
     search = request.args.get('search', '')
     page = request.args.get('page', 1, type=int)
     
-    query = Prompt.query
+    query = Prompt.query.options(db.joinedload(Prompt.user))
     if search:
         query = query.filter(or_(
             Prompt.title.ilike(f'%{search}%'),

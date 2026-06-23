@@ -185,6 +185,7 @@ def agent_dashboard() -> str:
                .filter(AgentJobOpportunity.source == "Placement Portal")
                .filter(AgentApplicationLog.fit_score >= 50)
                .filter(AgentApplicationLog.status != "Skipped")
+               .filter(or_(AgentApplicationLog.is_archived == False, AgentApplicationLog.is_archived == None))
                .order_by(AgentApplicationLog.fit_score.desc(), AgentApplicationLog.created_at.desc())
                .all())
 
@@ -212,8 +213,11 @@ def save_agent_config() -> Response:
     is_active: bool = request.form.get("is_active") == "true"
     config.is_active = is_active
 
-    # Delete previous logs (only unacted matches, retaining 'Applied' records)
-    AgentApplicationLog.query.filter(AgentApplicationLog.user_id == current_user.id, AgentApplicationLog.status != "Applied").delete(synchronize_session=False)
+    # Archive previous logs (only unacted matches, retaining 'Applied' records)
+    AgentApplicationLog.query.filter(
+        AgentApplicationLog.user_id == current_user.id,
+        AgentApplicationLog.status != "Applied"
+    ).update({AgentApplicationLog.is_archived: True}, synchronize_session=False)
 
     db.session.commit()
 
@@ -287,8 +291,11 @@ def upload_resume() -> Response:
         config.resume_text = extracted_text
         config.resume_filename = filename
         
-        # Clear previous logs (only unacted matches, retaining 'Applied' records)
-        AgentApplicationLog.query.filter(AgentApplicationLog.user_id == current_user.id, AgentApplicationLog.status != "Applied").delete(synchronize_session=False)
+        # Archive previous logs (only unacted matches, retaining 'Applied' records)
+        AgentApplicationLog.query.filter(
+            AgentApplicationLog.user_id == current_user.id,
+            AgentApplicationLog.status != "Applied"
+        ).update({AgentApplicationLog.is_archived: True}, synchronize_session=False)
         
         db.session.commit()
 

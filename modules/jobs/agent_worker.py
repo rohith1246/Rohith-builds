@@ -24,19 +24,37 @@ def update_status(user_id: int | None, status: str) -> None:
 
 
 def call_groq_with_fallback(client: Groq, messages: list[dict[str, str]]) -> Any:
-    """Call Groq API using a sequence of fallback models to bypass rate limits."""
-    models: list[str] = [
-        "llama-3.3-70b-versatile",
-        "llama3-70b-8192",
-        "llama3-8b-8192",
-        "llama-3.1-8b-instant",
-        "gemma2-9b-it",
+    """Call Groq API using a sequence of fallback keys and models to bypass rate limits."""
+    key_primary: str = os.getenv("GROQ_API_KEY", "").strip()
+    key_secondary: str = os.getenv("GROQ_API_KEY_SECONDARY", "").strip()
+
+    # Fallback chain:
+    # 1. Primary key + llama-3.3-70b-versatile
+    # 2. Primary key + llama-3.1-8b-instant
+    # 3. Secondary key + llama-3.3-70b-versatile
+    # 4. Secondary key + llama-3.1-8b-instant
+    # 5. Primary key + mixtral-8x7b-32768
+    # 6. Secondary key + mixtral-8x7b-32768
+    steps: list[tuple[str, str]] = [
+        (key_primary, "llama-3.3-70b-versatile"),
+        (key_primary, "llama-3.1-8b-instant"),
+        (key_secondary, "llama-3.3-70b-versatile"),
+        (key_secondary, "llama-3.1-8b-instant"),
+        (key_primary, "mixtral-8x7b-32768"),
+        (key_secondary, "mixtral-8x7b-32768"),
     ]
+
+    valid_steps = [(k, m) for k, m in steps if k]
+    if not valid_steps:
+        # Fallback to whatever client is passed if no keys are found in environment variables
+        valid_steps = [(key_primary or getattr(client, "api_key", ""), "llama-3.3-70b-versatile")]
+
     last_exception: Exception | None = None
-    for i, model in enumerate(models):
+    for key, model in valid_steps:
         try:
             logging.info(f"Attempting match evaluation using Groq model: {model}...")
-            chat_completion = client.chat.completions.create(
+            active_client = Groq(api_key=key, timeout=10.0)
+            chat_completion = active_client.chat.completions.create(
                 messages=messages,  # type: ignore
                 model=model,
                 response_format={"type": "json_object"},
@@ -46,10 +64,11 @@ def call_groq_with_fallback(client: Groq, messages: list[dict[str, str]]) -> Any
         except Exception as e:
             last_exception = e
             err_msg: str = str(e).lower()
+            logging.info(f"[Fallback] Groq model {model} failed. Error: {e}")
             if "429" in err_msg or "rate_limit" in err_msg or "limit reached" in err_msg or "overloaded" in err_msg:
-                logging.info(f"Model {model} hit rate limit or overloaded. Trying fallback model...")
+                logging.info(f"Model {model} hit rate limit or overloaded. Trying next fallback option...")
             else:
-                logging.info(f"Model {model} failed with exception: {e}. Trying fallback model...")
+                logging.info(f"Model {model} failed with exception: {e}. Trying next fallback option...")
                 
     if last_exception:
         raise last_exception
@@ -295,8 +314,11 @@ def match_user_with_jobs(user_id: int) -> int:
     
     from sqlalchemy import or_
 
-    # Subquery for evaluated job ids to exclude them
-    evaluated_ids_subquery = db.session.query(AgentApplicationLog.job_opportunity_id).filter_by(user_id=user_id)
+    # Subquery for active evaluated job ids to exclude them
+    evaluated_ids_subquery = db.session.query(AgentApplicationLog.job_opportunity_id).filter(
+        AgentApplicationLog.user_id == user_id,
+        or_(AgentApplicationLog.is_archived == False, AgentApplicationLog.is_archived == None)
+    )
     
     # Query job opportunities that haven't been evaluated yet (only from Placement Portal)
     query = AgentJobOpportunity.query.filter(
@@ -372,15 +394,32 @@ def match_user_with_jobs(user_id: int) -> int:
         update_status(user_id, "No new jobs to evaluate.")
         time.sleep(1)
         return 0
+
+    # Extract all necessary plain properties from DB models before closing the session
+    username = user.username
+    resume_text = config.resume_text
     
-    for idx, job in enumerate(opportunities):
+    job_details_list = []
+    for job in opportunities:
+        job_details_list.append({
+            "id": job.id,
+            "title": job.title,
+            "company": job.company,
+            "location": job.location,
+            "description": job.description
+        })
+
+    # Close session / release the DB connection back to pool during slow LLM + sleep operations!
+    db.session.remove()
+    
+    for idx, job_dict in enumerate(job_details_list):
         # Check for abort/restart request
         if AGENT_RESTART_REQUESTED.get(user_id):
             logging.info(f"Abort matching requested for user_id={user_id}")
             break
 
         # Update progress status
-        update_status(user_id, f"Evaluating match {idx + 1}/{total_opps} against resume: {job.title} at {job.company}...")
+        update_status(user_id, f"Evaluating match {idx + 1}/{total_opps} against resume: {job_dict['title']} at {job_dict['company']}...")
             
         # Match using Groq Llama 3
         system_prompt: str = """
@@ -409,18 +448,18 @@ Respond ONLY with the raw JSON object. Do not include markdown code block format
 
         user_prompt: str = f"""
 Candidate Resume:
-{config.resume_text}
+{resume_text}
 
 Job Posting:
-Title: {job.title}
-Company: {job.company}
-Location: {job.location}
+Title: {job_dict['title']}
+Company: {job_dict['company']}
+Location: {job_dict['location']}
 Description:
-{job.description}
+{job_dict['description']}
 """
 
         try:
-            # Groq API call with fallback sequence
+            # Groq API call with fallback sequence (does not hold DB connection)
             chat_completion = call_groq_with_fallback(
                 client,
                 messages=[
@@ -440,13 +479,13 @@ Description:
             
             fit_score: int = int(res_data.get("fit_score", 0))
             explanation: str = res_data.get("explanation", "")
-            subject: str = res_data.get("subject", f"Application for {job.title} - {user.username}")
+            subject: str = res_data.get("subject", f"Application for {job_dict['title']} - {username}")
             pitch_body: str = res_data.get("pitch_body", "")
             
-            # Save the match evaluation
+            # Save the match evaluation - acquire a DB connection briefly, commit, and release immediately
             log = AgentApplicationLog(
                 user_id=user_id,
-                job_opportunity_id=job.id,
+                job_opportunity_id=job_dict["id"],
                 fit_score=fit_score,
                 match_explanation=explanation,
                 drafted_subject=subject,
@@ -455,18 +494,19 @@ Description:
             )
             db.session.add(log)
             db.session.commit()
+            db.session.remove() # Release DB connection back to pool immediately!
             
             matches_processed += 1
             
-            # Sleep to comply with Groq free-tier rate limits
+            # Sleep to comply with Groq free-tier rate limits (does not hold DB connection)
             time.sleep(3)
             
         except Exception as e:
-            logging.error(f"Error matching job {job.id} for user {user_id}: {e}")
+            logging.error(f"Error matching job {job_dict['id']} for user {user_id}: {e}")
             db.session.rollback()
+            db.session.remove() # Release DB connection back to pool on error!
             time.sleep(5)  # Sleep longer on error/rate-limit
             
-    db.session.commit() # Save all skipped logs
     return matches_processed
 
 # Full pipeline wrapper to run in background thread
@@ -494,7 +534,10 @@ def run_job_agent_pipeline_async(app: Flask, user_id: int) -> Thread | None:
                     
                     if AGENT_RESTART_REQUESTED.get(user_id):
                         logging.info(f"Restart requested during crawling for user_id={user_id}. Restarting...")
-                        AgentApplicationLog.query.filter_by(user_id=user_id).delete()
+                        AgentApplicationLog.query.filter(
+                            AgentApplicationLog.user_id == user_id,
+                            AgentApplicationLog.status != "Applied"
+                        ).update({AgentApplicationLog.is_archived: True}, synchronize_session=False)
                         db.session.commit()
                         continue
                         
@@ -503,7 +546,10 @@ def run_job_agent_pipeline_async(app: Flask, user_id: int) -> Thread | None:
                     
                     if AGENT_RESTART_REQUESTED.get(user_id):
                         logging.info(f"Restart requested during matching for user_id={user_id}. Restarting...")
-                        AgentApplicationLog.query.filter_by(user_id=user_id).delete()
+                        AgentApplicationLog.query.filter(
+                            AgentApplicationLog.user_id == user_id,
+                            AgentApplicationLog.status != "Applied"
+                        ).update({AgentApplicationLog.is_archived: True}, synchronize_session=False)
                         db.session.commit()
                         continue
                         

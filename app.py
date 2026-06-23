@@ -135,97 +135,128 @@ def _initialize_database() -> None:
     from sqlalchemy import inspect, text
     from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
+    def _run_db_setup() -> None:
+        db.create_all()
+
+        inspector = inspect(db.engine)
+        table_names = inspector.get_table_names()
+
+        # PROMPTS TABLE
+        if "prompts" in table_names:
+            columns = [col["name"] for col in inspector.get_columns("prompts")]
+            if "copies" not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE prompts ADD COLUMN copies INTEGER DEFAULT 0"))
+                    conn.commit()
+            if "view_count" not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE prompts ADD COLUMN view_count INTEGER DEFAULT 0"))
+                    conn.commit()
+
+        # USERS TABLE
+        if "users" in table_names:
+            user_cols = [col["name"] for col in inspector.get_columns("users")]
+            if "is_verified" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
+                    conn.commit()
+            if "is_admin" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE"))
+                    conn.commit()
+            if "rohi_messages_today" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN rohi_messages_today INTEGER DEFAULT 0"))
+                    conn.commit()
+            if "rohi_last_reset_date" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN rohi_last_reset_date DATE"))
+                    conn.commit()
+            if "current_streak" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN current_streak INTEGER DEFAULT 0"))
+                    conn.commit()
+            if "last_active_date" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN last_active_date DATE"))
+                    conn.commit()
+            if "last_verification_sent_at" not in user_cols:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN last_verification_sent_at TIMESTAMP"))
+                    conn.commit()
+
+        # COURSE DAYS TABLE
+        if "course_days" in table_names:
+            if "image" not in [col["name"] for col in inspector.get_columns("course_days")]:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE course_days ADD COLUMN image VARCHAR(300)"))
+                    conn.commit()
+
+        # JOBS TABLE
+        if "jobs" in table_names:
+            columns = [col["name"] for col in inspector.get_columns("jobs")]
+            if "clicks" not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE jobs ADD COLUMN clicks INTEGER DEFAULT 0"))
+                    conn.commit()
+            if "target_batch" not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE jobs ADD COLUMN target_batch VARCHAR(100) DEFAULT '2025, 2026'"))
+                    conn.commit()
+
+        # AGENT APPLICATION LOGS TABLE
+        if "agent_application_logs" in table_names:
+            columns = [col["name"] for col in inspector.get_columns("agent_application_logs")]
+            if "is_archived" not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE agent_application_logs ADD COLUMN is_archived BOOLEAN DEFAULT FALSE"))
+                    conn.commit()
+
+        # Create safe indexes if they don't exist
+        with db.engine.connect() as conn:
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON prompts (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_user_id ON user_likes (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_prompt_id ON user_likes (prompt_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_prompt_id ON favorites (prompt_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_days_course_id ON course_days (course_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_user_id ON course_enrollments (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_course_id ON course_enrollments (course_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_id ON lesson_progress (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_course_day_id ON lesson_progress (course_day_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_user_id ON lesson_reviews (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_course_day_id ON lesson_reviews (course_day_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_user_id ON job_applications (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications (job_id)"))
+            conn.commit()
+
+        # seed only when tables exist
+        seed_database()
+
     try:
-        # create tables and apply lightweight, idempotent migration SQL
         with app.app_context():
-            db.create_all()
-
-            inspector = inspect(db.engine)
-            table_names = inspector.get_table_names()
-
-            # PROMPTS TABLE
-            if "prompts" in table_names:
-                columns = [col["name"] for col in inspector.get_columns("prompts")]
-                if "copies" not in columns:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE prompts ADD COLUMN copies INTEGER DEFAULT 0"))
-                        conn.commit()
-                if "view_count" not in columns:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE prompts ADD COLUMN view_count INTEGER DEFAULT 0"))
-                        conn.commit()
-
-            # USERS TABLE
-            if "users" in table_names:
-                user_cols = [col["name"] for col in inspector.get_columns("users")]
-                if "is_verified" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
-                        conn.commit()
-                if "is_admin" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE"))
-                        conn.commit()
-                if "rohi_messages_today" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN rohi_messages_today INTEGER DEFAULT 0"))
-                        conn.commit()
-                if "rohi_last_reset_date" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN rohi_last_reset_date DATE"))
-                        conn.commit()
-                if "current_streak" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN current_streak INTEGER DEFAULT 0"))
-                        conn.commit()
-                if "last_active_date" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN last_active_date DATE"))
-                        conn.commit()
-                if "last_verification_sent_at" not in user_cols:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE users ADD COLUMN last_verification_sent_at TIMESTAMP"))
-                        conn.commit()
-
-            # COURSE DAYS TABLE
-            if "course_days" in table_names:
-                if "image" not in [col["name"] for col in inspector.get_columns("course_days")]:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE course_days ADD COLUMN image VARCHAR(300)"))
-                        conn.commit()
-
-            # JOBS TABLE
-            if "jobs" in table_names:
-                columns = [col["name"] for col in inspector.get_columns("jobs")]
-                if "clicks" not in columns:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE jobs ADD COLUMN clicks INTEGER DEFAULT 0"))
-                        conn.commit()
-                if "target_batch" not in columns:
-                    with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE jobs ADD COLUMN target_batch VARCHAR(100) DEFAULT '2025, 2026'"))
-                        conn.commit()
-
-            # Create safe indexes if they don't exist
-            with db.engine.connect() as conn:
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON prompts (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_user_id ON user_likes (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_likes_prompt_id ON user_likes (prompt_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_favorites_prompt_id ON favorites (prompt_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_days_course_id ON course_days (course_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_user_id ON course_enrollments (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_course_id ON course_enrollments (course_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_id ON lesson_progress (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_course_day_id ON lesson_progress (course_day_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_user_id ON lesson_reviews (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_course_day_id ON lesson_reviews (course_day_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_user_id ON job_applications (user_id)"))
-                conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications (job_id)"))
-                conn.commit()
-
-            # seed only when tables exist
-            seed_database()
+            is_postgres = "postgresql" in str(db.engine.url)
+            
+            if is_postgres:
+                # Use a session-level advisory lock (arbitrary lock ID: 424242)
+                # to prevent multiple Gunicorn workers from migrating/seeding concurrently.
+                conn = db.engine.raw_connection()
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT pg_advisory_lock(424242);")
+                    cursor.fetchall()
+                    cursor.close()
+                    
+                    _run_db_setup()
+                finally:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT pg_advisory_unlock(424242);")
+                    cursor.fetchall()
+                    cursor.close()
+                    conn.close()
+            else:
+                # SQLite or other engine fallback
+                _run_db_setup()
 
             app.config["DB_AVAILABLE"] = True
             app.config.pop("DB_INIT_ERROR", None)
