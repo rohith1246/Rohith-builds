@@ -8,7 +8,6 @@ from . import portfolio_grader_bp
 from .grader_helper import fetch_github_data, evaluate_portfolio, extract_resume_text
 
 @portfolio_grader_bp.route("/tools/portfolio-grader", methods=["GET"])
-@login_required
 def grader_page():
     """Render the main Portfolio Grader form page. Auto-redirects to tracker if already tracking a profile."""
     from flask import redirect, url_for
@@ -25,7 +24,6 @@ def grader_page():
 
 
 @portfolio_grader_bp.route("/tools/portfolio-grader/grade", methods=["POST"])
-@login_required
 def grade_portfolio() -> Response:
     """Handle portfolio grading requests. Returns JSON result."""
     username = request.form.get("username", "").strip()

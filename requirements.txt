@@ -30,7 +30,7 @@ sendgrid==6.11.0
 
 # AI / LLM
 google-genai==1.16.0
-groq==0.11.0
+groq>=1.5.0
 
 # HTTP
 requests==2.32.3

@@ -265,10 +265,20 @@ document.addEventListener("DOMContentLoaded", function () {
             body: formData
         })
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.message || "Failed to grade portfolio") });
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw new Error(data.message || "Failed to grade portfolio");
+                    }
+                    return data;
+                });
+            } else {
+                if (!response.ok) {
+                    throw new Error("Server error. Please try again later.");
+                }
+                throw new Error("Invalid response from server.");
             }
-            return response.json();
         })
         .then(data => {
             stopStatusRotation();

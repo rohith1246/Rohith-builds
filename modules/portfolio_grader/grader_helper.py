@@ -224,7 +224,7 @@ def evaluate_portfolio(github_data: dict, resume_text: str | None) -> dict:
             # Using new Google GenAI SDK
             client = genai.Client(api_key=gemini_key)
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 contents=user_prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
@@ -239,10 +239,11 @@ def evaluate_portfolio(github_data: dict, resume_text: str | None) -> dict:
             raise RuntimeError(f"AI evaluation failed. (Gemini error: {e})")
 
     # Clean raw_response if it contains markdown codeblocks
+    raw_response = raw_response.strip()
     if raw_response.startswith("```"):
         raw_response = re.sub(r'^```(?:json)?\n', '', raw_response)
         raw_response = re.sub(r'\n```$', '', raw_response)
-    raw_response = raw_response.strip()
+        raw_response = raw_response.strip()
 
     # Parse and validate JSON
     try:
