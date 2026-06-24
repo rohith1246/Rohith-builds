@@ -20,7 +20,6 @@ from models import (
     Job,
     LessonProgress,
     LessonReview,
-    PortfolioGrade,
     Prompt,
     PromptCollection,
     PromptCollectionItem,
@@ -85,13 +84,7 @@ def admin_dashboard() -> str:
     except Exception:
         job_count = 0
 
-    # ── Portfolio Grader stats ───────────────────────────────────────────────
-    try:
-        portfolio_grades_count = PortfolioGrade.query.count()
-        recent_grades = PortfolioGrade.query.order_by(PortfolioGrade.created_at.desc()).limit(5).all()
-    except Exception:
-        portfolio_grades_count = 0
-        recent_grades = []
+
 
     # ── Lesson completion stats ───────────────────────────────────────────────
     total_completed_lessons = LessonProgress.query.filter_by(completed=True).count()
@@ -240,9 +233,7 @@ def admin_dashboard() -> str:
         lesson_reviews=lesson_reviews,
         # jobs stats
         job_count=job_count,
-        # portfolio grader stats
-        portfolio_grades_count=portfolio_grades_count,
-        recent_grades=recent_grades
+
     )
 
 

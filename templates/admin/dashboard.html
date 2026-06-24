@@ -67,13 +67,7 @@
           <div class="astat-label">Curated Jobs</div>
         </div>
       </div>
-      <div class="astat-card" style="border-top: 4px solid #fbbf24;">
-        <div class="astat-icon">⚡</div>
-        <div>
-          <div class="astat-num">{{ portfolio_grades_count }}</div>
-          <div class="astat-label">Portfolios Graded</div>
-        </div>
-      </div>
+
     </div>
 
     <!-- Main Dashboard Two-Column Layout -->
@@ -175,27 +169,7 @@
           {% endfor %}
         </div>
 
-        <!-- Recent graded portfolios list -->
-        <div class="admin-section-header" style="margin-bottom:14px;">
-          <h2>⚡ Recent Graded Portfolios</h2>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          {% for pg in recent_grades %}
-            <div class="timeline-card">
-              <div style="font-weight:700; color:var(--text); font-size:0.95rem;">
-                <a href="{{ url_for('portfolio_grader.share_page', username=pg.username) }}" target="_blank" style="color:inherit; text-decoration:none; display: flex; align-items: center; gap: 4px;">
-                  👾 @{{ pg.username }} <span style="font-size: 0.8rem; color: var(--primary);">↗</span>
-                </a>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.85rem; color:var(--text-light);">
-                <span>Score: <strong>{{ pg.score }}%</strong></span>
-                <span>{{ pg.created_at.strftime('%b %d, %H:%M') }}</span>
-              </div>
-            </div>
-          {% else %}
-            <div class="td-empty">No graded portfolios yet.</div>
-          {% endfor %}
-        </div>
+
       </div>
     </div>
   </div>

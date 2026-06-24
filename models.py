@@ -551,60 +551,6 @@ class AgentApplicationLog(db.Model):
     job_opportunity = db.relationship("AgentJobOpportunity", backref=db.backref("logs", lazy="dynamic", cascade="all, delete-orphan"))
 
 
-class PortfolioGrade(db.Model):
-    """Database model to cache portfolio grades and share scores."""
-    __tablename__ = "portfolio_grades"
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    score = db.Column(db.Integer, nullable=False)
-    punchline = db.Column(db.String(500), nullable=False)
-    bullet_points = db.Column(db.JSON, nullable=False)  # List of strings cached as JSON
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-
-    def is_expired(self) -> bool:
-        """Check if cached grade is older than 4 hours."""
-        from datetime import timedelta
-        now = datetime.now(timezone.utc)
-        created = self.created_at
-        if created.tzinfo is None:
-            created = created.replace(tzinfo=timezone.utc)
-        return (now - created) > timedelta(hours=4)
-
-
-class TrackedPortfolio(db.Model):
-    """Database model for user-tracked portfolios to enable periodic updates."""
-    __tablename__ = "tracked_portfolios"
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    username = db.Column(db.String(100), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    last_scanned_at = db.Column(db.DateTime, nullable=True)
-
-    user = db.relationship("User", backref=db.backref("tracked_portfolios", lazy="dynamic", cascade="all, delete-orphan"))
-
-    __table_args__ = (
-        db.UniqueConstraint("user_id", "username", name="uq_user_tracked_portfolio"),
-    )
-
-
-class PortfolioHistory(db.Model):
-    """Database model to track portfolio grade evolution over time."""
-    __tablename__ = "portfolio_histories"
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, index=True)
-
-    __table_args__ = (
-        db.Index("ix_portfolio_history_username_created", "username", "created_at"),
-    )
-    score = db.Column(db.Integer, nullable=False)
-    stars = db.Column(db.Integer, nullable=False, default=0)
-    followers = db.Column(db.Integer, nullable=False, default=0)
-    public_repos = db.Column(db.Integer, nullable=False, default=0)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-
 
 class DailyReportLog(db.Model):
     """Database model to log dates when daily reports were sent."""
