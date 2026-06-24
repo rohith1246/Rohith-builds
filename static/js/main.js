@@ -506,7 +506,14 @@ async function improvePrompt(event) {
             })
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        let data = null;
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const errorText = await response.text();
+            throw new Error(`Server returned non-JSON response (status ${response.status}): ${errorText.substring(0, 200)}`);
+        }
 
         console.log(data);
 
