@@ -205,13 +205,21 @@ def save_agent_config() -> Response:
         config = UserAgentConfig(user_id=current_user.id)
         db.session.add(config)
 
-    config.target_roles = request.form.get("target_roles", "").strip()
-    config.target_locations = request.form.get("target_locations", "").strip()
-    config.min_salary = request.form.get("min_salary", "").strip()
+    if "target_roles" in request.form:
+        roles_input = request.form.get("target_roles", "").strip()
+        config.target_roles = ",".join(r.strip().strip("'\"") for r in roles_input.split(",") if r.strip())
+        
+    if "target_locations" in request.form:
+        locs_input = request.form.get("target_locations", "").strip()
+        config.target_locations = ",".join(l.strip().strip("'\"") for l in locs_input.split(",") if l.strip())
+        
+    if "min_salary" in request.form:
+        config.min_salary = request.form.get("min_salary", "").strip().strip("'\"")
     
     # Toggle logic (is_active can be passed as form parameter)
-    is_active: bool = request.form.get("is_active") == "true"
-    config.is_active = is_active
+    if "is_active" in request.form:
+        is_active: bool = request.form.get("is_active") == "true"
+        config.is_active = is_active
 
     # Archive previous logs (only unacted matches, retaining 'Applied' records)
     AgentApplicationLog.query.filter(

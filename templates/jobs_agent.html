@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}AI Job Agent | Rohith Builds{% endblock %}
 {% block meta_description %}Your autonomous AI Job Hunter. Upload your resume, set your preferences, and let the agent draft personalized pitches for active tech roles.{% endblock %}
 
@@ -718,6 +718,18 @@
             font-size: 0.95rem;
         }
 
+        .sidebar-card {
+            padding: 1.25rem 1rem;
+        }
+
+        .upload-zone {
+            padding: 1.5rem 1rem;
+        }
+
+        .empty-state {
+            padding: 2.5rem 1.25rem;
+        }
+
         .body-padding {
             padding: 1.25rem 1rem;
         }
@@ -737,6 +749,49 @@
 
         .btn-apply-action {
             width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .match-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1.25rem 1rem;
+            position: relative;
+        }
+
+        .match-info-main {
+            width: 100%;
+        }
+
+        .match-job-title {
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .match-score-badge {
+            margin-left: 55px; /* align with start of title */
+            flex-direction: row;
+            gap: 0.4rem;
+            min-width: auto;
+            padding: 0.3rem 0.65rem;
+            align-items: center;
+        }
+
+        .score-number {
+            font-size: 1rem;
+        }
+
+        .score-label {
+            margin-top: 0;
+            font-size: 0.55rem;
+        }
+
+        .card-chevron {
+            position: absolute;
+            top: 1.5rem;
+            right: 1rem;
         }
     }
 
@@ -833,6 +888,26 @@
                 <button class="btn-scan" id="btnTriggerScan" onclick="triggerScan()" style="margin-top: 1.5rem; width: 100%;">
                     <span>🔍</span> Scan & Match Now
                 </button>
+            </div>
+
+            <!-- Preferences Card -->
+            <div class="sidebar-card" style="margin-top: 1.5rem;">
+                <h3 class="card-title"><span>⚙️</span> Preferences</h3>
+                <form id="preferencesForm">
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-group-label" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">Target Roles</label>
+                        <input type="text" id="targetRolesInput" class="subject-input" placeholder="e.g. Software Engineer, Backend Developer" value="{{ config.target_roles or '' }}" style="background: rgba(0, 0, 0, 0.2); width: 100%;">
+                        <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Comma-separated list of roles</small>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-group-label" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-light);">Target Locations</label>
+                        <input type="text" id="targetLocationsInput" class="subject-input" placeholder="e.g. Remote, Bengaluru" value="{{ config.target_locations or '' }}" style="background: rgba(0, 0, 0, 0.2); width: 100%;">
+                        <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Comma-separated locations</small>
+                    </div>
+                    <button type="submit" class="btn-scan" id="btnSavePreferences" style="margin-top: 0.5rem; width: 100%;">
+                        <span>💾</span> Save Preferences
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -954,6 +1029,21 @@
 
 <!-- Frontend JavaScript logic -->
 <script>
+    // Safe fetch helper that validates JSON content-type
+    function safeFetchJson(url, options = {}) {
+        return fetch(url, options)
+            .then(res => {
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return res.json();
+                } else {
+                    return res.text().then(text => {
+                        throw new Error(`Server returned non-JSON response (status ${res.status}): ${text.substring(0, 200)}`);
+                    });
+                }
+            });
+    }
+
     // Accordion Toggler
     function toggleCard(id) {
         const card = document.getElementById(`match-card-${id}`);
@@ -990,14 +1080,13 @@
         const formData = new FormData();
         formData.append('is_active', isActive ? 'true' : 'false');
 
-        fetch('/jobs/agent/config', {
+        safeFetchJson('/jobs/agent/config', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: formData
         })
-        .then(res => res.json())
         .then(data => {
             if (data.success) {
                 showToast(isActive ? 'Agent turned ON. Scanning started.' : 'Agent turned OFF.', 'success');
@@ -1013,6 +1102,50 @@
             showToast('Network error updating status', 'error');
         });
     });
+
+    // Preferences Form submission handler
+    const preferencesForm = document.getElementById('preferencesForm');
+    if (preferencesForm) {
+        preferencesForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const roles = document.getElementById('targetRolesInput').value.trim();
+            const locations = document.getElementById('targetLocationsInput').value.trim();
+            
+            const formData = new FormData();
+            formData.append('target_roles', roles);
+            formData.append('target_locations', locations);
+            
+            const btn = document.getElementById('btnSavePreferences');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Saving...';
+            
+            safeFetchJson('/jobs/agent/config', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+                if (data.success) {
+                    showToast('Preferences saved successfully!', 'success');
+                    // Reload after short delay to show updated values and matches
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    showToast(data.message || 'Error saving preferences', 'error');
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+                console.error(err);
+                showToast('Network error saving preferences', 'error');
+            });
+        });
+    }
 
     // PDF Resume upload processing
     const fileInput = document.getElementById('fileInput');
@@ -1060,14 +1193,13 @@
         const formData = new FormData();
         formData.append('resume', file);
 
-        fetch('/jobs/agent/resume', {
+        safeFetchJson('/jobs/agent/resume', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: formData
         })
-        .then(res => res.json())
         .then(data => {
             uploadText.innerText = 'Click or drag & drop PDF';
             if (data.success) {
@@ -1091,8 +1223,7 @@
     let isRunning = false;
 
     function checkAgentStatus() {
-        fetch('/jobs/agent/status')
-        .then(res => res.json())
+        safeFetchJson('/jobs/agent/status')
         .then(data => {
             if (data.success) {
                 const status = data.status;
@@ -1150,13 +1281,12 @@
         btn.innerHTML = '<span class="loader"></span> Matching...';
         btn.disabled = true;
 
-        fetch('/jobs/agent/run', {
+        safeFetchJson('/jobs/agent/run', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(res => res.json())
         .then(data => {
             btn.innerHTML = originalContent;
             btn.disabled = false;
@@ -1181,13 +1311,12 @@
         const btn = document.getElementById(`applied-btn-${id}`);
         btn.innerHTML = 'Logging...';
 
-        fetch(`/jobs/agent/apply/${id}`, {
+        safeFetchJson(`/jobs/agent/apply/${id}`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(res => res.json())
         .then(data => {
             if (data.success) {
                 btn.className = 'btn-apply-action btn-mark-applied applied';

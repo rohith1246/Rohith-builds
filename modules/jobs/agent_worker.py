@@ -248,7 +248,7 @@ def pre_filter_job(title: str, location: str, config: UserAgentConfig) -> bool:
     if not config.target_roles:
         roles_match: bool = True
     else:
-        roles: list[str] = [r.strip().lower() for r in config.target_roles.split(",") if r.strip()]
+        roles: list[str] = [r.strip().strip("'\"").lower() for r in config.target_roles.split(",") if r.strip()]
         # Expand role synonyms
         roles_expanded: list[str] = []
         for role in roles:
@@ -272,7 +272,7 @@ def pre_filter_job(title: str, location: str, config: UserAgentConfig) -> bool:
     if not config.target_locations:
         locations_match: bool = True
     else:
-        locs: list[str] = [l.strip().lower() for l in config.target_locations.split(",") if l.strip()]
+        locs: list[str] = [l.strip().strip("'\"").lower() for l in config.target_locations.split(",") if l.strip()]
         # Expand location aliases
         locs_expanded: list[str] = []
         for loc in locs:
@@ -328,7 +328,7 @@ def match_user_with_jobs(user_id: int) -> int:
 
     # Database-level filtering for roles (target_roles)
     if config.target_roles:
-        roles = [r.strip().lower() for r in config.target_roles.split(",") if r.strip()]
+        roles = [r.strip().strip("'\"").lower() for r in config.target_roles.split(",") if r.strip()]
         role_filters = []
         for role in roles:
             role_filters.append(AgentJobOpportunity.title.ilike(f"%{role}%"))
@@ -348,7 +348,7 @@ def match_user_with_jobs(user_id: int) -> int:
 
     # Database-level filtering for locations (target_locations)
     if config.target_locations:
-        locs = [l.strip().lower() for l in config.target_locations.split(",") if l.strip()]
+        locs = [l.strip().strip("'\"").lower() for l in config.target_locations.split(",") if l.strip()]
         loc_filters = []
         for loc in locs:
             loc_filters.append(AgentJobOpportunity.location.ilike(f"%{loc}%"))
