@@ -16,15 +16,19 @@ const PRECACHE_ASSETS = [
 
 // Pages that should ALWAYS be fresh (network-first)
 const NETWORK_FIRST_PATTERNS = [
-  /\/learn/,
-  /\/jobs/,
-  /\/prompts/,
-  /\/dashboard/,
-  /\/ai-tutor/,
-  /\/api\//,
-  /\/login/,
-  /\/logout/,
-  /\/register/,
+  /^\/$/,                  // Homepage
+  /^\/learn/,              // Learning portal
+  /^\/jobs/,               // Jobs board
+  /^\/prompts/,            // Prompts lists
+  /^\/prompt\//,           // Prompt detail pages
+  /^\/collections/,        // Prompt collections
+  /^\/improve/,            // Prompt helper tool
+  /^\/dashboard/,          // User dashboard
+  /^\/admin/,              // Admin panel
+  /^\/login/,              // Auth page
+  /^\/logout/,             // Auth page
+  /^\/register/,           // Auth page
+  /^\/api\//,              // All API endpoints
 ];
 
 // ── Install: pre-cache critical assets ──────────────────────────

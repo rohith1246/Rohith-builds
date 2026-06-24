@@ -96,7 +96,14 @@ console.log(lessonSlug);
                     }
                 );
 
-                const data = await res.json();
+                const contentType = res.headers.get("content-type");
+                let data = null;
+                if (contentType && contentType.includes("application/json")) {
+                    data = await res.json();
+                } else {
+                    const errorText = await res.text();
+                    throw new Error(`Server returned non-JSON response (status ${res.status}): ${errorText.substring(0, 200)}`);
+                }
 
                 if (data.limit_reached) {
                     if (data.message && data.message.includes("limit of 20 messages")) {
