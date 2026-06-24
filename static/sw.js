@@ -9,7 +9,7 @@ const PRECACHE_ASSETS = [
   '/',
   '/learn',
   '/jobs',
-  '/prompts',
+  '/vault',
   '/static/images/logo_compressed.png',
   '/static/images/logo.webp',
 ];
@@ -19,7 +19,7 @@ const NETWORK_FIRST_PATTERNS = [
   /^\/$/,                  // Homepage
   /^\/learn/,              // Learning portal
   /^\/jobs/,               // Jobs board
-  /^\/prompts/,            // Prompts lists
+  /^\/vault/,              // Prompts lists
   /^\/prompt\//,           // Prompt detail pages
   /^\/collections/,        // Prompt collections
   /^\/improve/,            // Prompt helper tool
@@ -85,7 +85,14 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.match(request).then((cached) => {
+          if (cached) return cached;
+          return new Response("Connection lost. Please check your internet connection.", {
+            status: 503,
+            statusText: "Service Unavailable",
+            headers: new Headers({ "Content-Type": "text/plain" })
+          });
+        }))
     );
   } else {
     // Cache-first: serve from cache, update in background
