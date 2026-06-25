@@ -120,11 +120,31 @@ def seed_database() -> None:
     """Seed the database with initial admin user and prompts."""
     if User.query.first():
         return
-    seed_user = User(username="rohithbuilds", email="rohithbuildsofficial@gmail.com", password_hash=generate_password_hash("admin123"), is_verified=True, is_admin=True)
+
+    import secrets
+    admin_password = os.environ.get("ADMIN_SEED_PASSWORD")
+    if not admin_password:
+        admin_password = secrets.token_urlsafe(24)
+        logging.warning(
+            "⚠️  ADMIN_SEED_PASSWORD not set. Generated random admin password: %s "
+            "— Save this immediately, it will not be shown again.",
+            admin_password
+        )
+
+    seed_user = User(
+        username="rohithbuilds",
+        email=os.environ.get("ADMIN_EMAIL", "rohithbuildsofficial@gmail.com"),
+        password_hash=generate_password_hash(admin_password),
+        is_verified=True,
+        is_admin=True
+    )
     db.session.add(seed_user)
     db.session.flush()
     for p in SEED_PROMPTS:
-        db.session.add(Prompt(title=p["title"], content=p["content"], category=p["category"], likes=0, user_id=seed_user.id))
+        db.session.add(Prompt(
+            title=p["title"], content=p["content"],
+            category=p["category"], likes=0, user_id=seed_user.id
+        ))
     db.session.commit()
     logging.info("[OK] Database seeded successfully.")
 
