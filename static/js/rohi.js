@@ -1,24 +1,22 @@
 console.log("Rohi JS Loaded");
 
-console.log("Course:", window.COURSE_SLUG);
-console.log("Lesson:", window.LESSON_SLUG);
 document.addEventListener("DOMContentLoaded", () => {
+    const courseSlug = window.COURSE_SLUG;
+    const lessonSlug = window.LESSON_SLUG;
 
-const courseSlug = window.COURSE_SLUG;
-const lessonSlug = window.LESSON_SLUG;
-
-console.log(courseSlug);
-console.log(lessonSlug);
+    console.log("Rohi initialized with courseSlug:", courseSlug, "lessonSlug:", lessonSlug);
 
     const sendBtn = document.getElementById("rohi-send");
     const input = document.getElementById("rohi-input");
     const messages = document.getElementById("rohi-messages");
-
     const toggle = document.getElementById("rohi-toggle");
     const chat = document.getElementById("rohi-chat");
 
-    console.log("toggle:", toggle);
-    console.log("chat:", chat);
+    const scrollToBottom = () => {
+        if (messages) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+    };
 
     // Toggle Chat
     if (toggle && chat) {
@@ -28,6 +26,8 @@ console.log(lessonSlug);
             if (chat.classList.contains("show")) {
                 toggle.innerHTML = "✕";
                 toggle.classList.add("active");
+                scrollToBottom();
+                if (input) input.focus();
             } else {
                 toggle.innerHTML = "🤖";
                 toggle.classList.remove("active");
@@ -45,10 +45,14 @@ console.log(lessonSlug);
                     Hi 👋 I'm Rohi. Ask me anything about AI, Python, or prompting.
                 </div>
             `;
-            messages.innerHTML = welcomeHtml;
-            input.value = "";
+            if (messages) messages.innerHTML = welcomeHtml;
+            if (input) {
+                input.value = "";
+                input.focus();
+            }
             try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
                 await fetch("/api/rohi-chat/clear", {
                     method: "POST",
                     headers: {
@@ -61,40 +65,62 @@ console.log(lessonSlug);
         });
     }
 
+    // Enter Key Send Handler
+    if (input && sendBtn) {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+    }
+
     // Send Message
-    if (sendBtn) {
-
+    if (sendBtn && input && messages) {
         sendBtn.addEventListener("click", async () => {
-
             const message = input.value.trim();
-
             if (!message) return;
 
+            // Render User Message
             messages.innerHTML += `
                 <div class="rohi-user">
-                    ${message}
+                    ${escapeHtml(message)}
                 </div>
             `;
-
             input.value = "";
+            scrollToBottom();
+
+            // Render Typing Indicator
+            const typingHtml = `
+                <div class="rohi-ai typing-indicator" id="rohi-typing">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            messages.innerHTML += typingHtml;
+            scrollToBottom();
 
             try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                const res = await fetch(
-                    "/api/rohi-chat",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": csrfToken
-                        },
-                        body: JSON.stringify({
-                            message: message,
-                            course_slug: courseSlug,
-                            lesson_slug: lessonSlug
-                        })
-                    }
-                );
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                
+                const res = await fetch("/api/rohi-chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        course_slug: courseSlug,
+                        lesson_slug: lessonSlug
+                    })
+                });
+
+                // Remove Typing Indicator
+                const typingIndicator = document.getElementById("rohi-typing");
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
 
                 const contentType = res.headers.get("content-type");
                 let data = null;
@@ -105,44 +131,76 @@ console.log(lessonSlug);
                     throw new Error(`Server returned non-JSON response (status ${res.status}): ${errorText.substring(0, 200)}`);
                 }
 
+                // Handle Rate Limits / Guest Limits
                 if (data.limit_reached) {
                     if (data.message && data.message.includes("limit of 20 messages")) {
                         messages.innerHTML += `
-                            <div class="rohi-ai">
+                            <div class="rohi-ai error-msg">
                                 ${data.message}
                             </div>
                         `;
-                        messages.scrollTop = messages.scrollHeight;
+                        scrollToBottom();
                         return;
                     }
-                    document.getElementById("rohi-limit-modal").style.display = "flex";
+                    const limitModal = document.getElementById("rohi-limit-modal");
+                    if (limitModal) {
+                        limitModal.style.display = "flex";
+                    }
                     return;
                 }
-                
-                
+
+                // Handle Custom Rate Limiter Errors (429)
+                if (data.success === false && data.message) {
+                    messages.innerHTML += `
+                        <div class="rohi-ai error-msg">
+                            ${data.message}
+                        </div>
+                    `;
+                    scrollToBottom();
+                    return;
+                }
+
+                // Render AI Reply (Parsed with Marked if available)
+                let parsedReply = "";
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    parsedReply = window.marked.parse(data.reply);
+                } else {
+                    parsedReply = escapeHtml(data.reply).replace(/\n/g, '<br>');
+                }
+
                 messages.innerHTML += `
                     <div class="rohi-ai">
-                        ${data.reply}
+                        ${parsedReply}
                     </div>
                 `;
-
-
-                messages.scrollTop =
-                    messages.scrollHeight;
+                scrollToBottom();
 
             } catch (err) {
-
                 console.error("Rohi Error:", err);
-
+                const typingIndicator = document.getElementById("rohi-typing");
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
                 messages.innerHTML += `
-                    <div class="rohi-ai">
-                        Sorry, I encountered an error.
+                    <div class="rohi-ai error-msg">
+                        Sorry, I encountered an error. Please try again.
                     </div>
                 `;
+                scrollToBottom();
             }
-
         });
-
     }
 
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return "";
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
 });
