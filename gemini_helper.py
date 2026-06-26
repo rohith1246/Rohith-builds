@@ -240,10 +240,10 @@ def rohi_chat(message: str, lesson_context: str = "", history: list[dict[str, st
     ]
 
     # Try Gemini first
-    res = call_gemini(messages, max_tokens=200)
+    res = call_gemini(messages, max_tokens=600)
     if res:
         return res
 
     # Fallback to Groq
     logging.info("[Fallback] Gemini failed. Falling back to Groq.")
-    return call_groq_with_fallback(messages, max_tokens=200)
+    return call_groq_with_fallback(messages, max_tokens=600)
