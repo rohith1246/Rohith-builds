@@ -2,6 +2,7 @@ import hashlib
 import logging
 import os
 import threading
+import time
 from typing import Any
 
 from dotenv import load_dotenv
@@ -27,6 +28,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 load_dotenv(override=True)
 
 app = Flask(__name__)
+app.config["ASSET_VERSION"] = os.environ.get("RENDER_GIT_COMMIT", str(int(time.time())))[:10]
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
@@ -93,9 +95,9 @@ def load_user(user_id: str) -> User | None:
 
 @app.context_processor
 def inject_csrf_token() -> dict[str, Any]:
-    """Inject CSRF token and admin status context."""
+    """Inject CSRF token, admin status, and asset version contexts."""
     is_admin = (current_user.is_authenticated and getattr(current_user, "is_admin", False))
-    return dict(csrf_token=generate_csrf, is_admin=is_admin)
+    return dict(csrf_token=generate_csrf, is_admin=is_admin, asset_version=app.config.get("ASSET_VERSION", "1.0"))
 
 # Register Blueprints
 app.register_blueprint(home_bp)
@@ -456,13 +458,17 @@ def pwa_manifest() -> Response:
 
 @app.route("/sw.js")
 def service_worker() -> Response:
-    """Serve the service worker from root scope (required for full-page scope)."""
+    """Serve the service worker from root scope with dynamic version injection."""
     sw_path = os.path.join(app.root_path, "static", "sw.js")
     try:
         with open(sw_path, encoding="utf-8-sig") as f:
             content = f.read()
     except FileNotFoundError:
         return Response("/* service worker not found */", status=404, mimetype="application/javascript")
+    
+    # Inject dynamic asset version into service worker cache names
+    content = content.replace("{{ VERSION }}", app.config.get("ASSET_VERSION", "1.0"))
+    
     response = app.make_response(content)
     response.headers["Content-Type"] = "application/javascript"
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"

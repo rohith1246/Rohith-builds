@@ -1,8 +1,8 @@
-// Rohith Builds — Service Worker v1.0
+// Rohith Builds — Service Worker v1.2
 // Strategy: Cache-first for static assets, Network-first for pages
 
-const CACHE_NAME = 'rohithbuilds-v2';
-const STATIC_CACHE = 'rohithbuilds-static-v2';
+const CACHE_NAME = 'rohithbuilds-v{{ VERSION }}';
+const STATIC_CACHE = 'rohithbuilds-static-v{{ VERSION }}';
 
 // Assets to pre-cache on install
 const PRECACHE_ASSETS = [
