@@ -1,4 +1,4 @@
-﻿# 🤖 Day 5 — Build the Research Agent
+# 🤖 Day 5 — Build the Research Agent
 ### AI Agent Course — RohithBuilds
 
 Today you put everything together.  
@@ -144,7 +144,7 @@ Be clear, detailed, and beginner friendly.
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[
             {"role": "user", "content": prompt}
         ]

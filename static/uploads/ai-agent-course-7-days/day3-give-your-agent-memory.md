@@ -1,4 +1,4 @@
-﻿# 🤖 Day 3 — Give Your Agent Memory
+# 🤖 Day 3 — Give Your Agent Memory
 
 ### AI Agent Course — RohithBuilds
 
@@ -143,7 +143,7 @@ def chat(user_input):
 
     # Send full memory to Groq every time
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": system_prompt},
             *memory
