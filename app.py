@@ -247,11 +247,11 @@ def _initialize_database() -> None:
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_user_id ON course_enrollments (user_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_course_enrollments_course_id ON course_enrollments (course_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_id ON lesson_progress (user_id)"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_progress_course_day_id ON lesson_progress (course_day_id)"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_user_id ON lesson_reviews (user_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_lesson_reviews_course_day_id ON lesson_reviews (course_day_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_user_id ON job_applications (user_id)"))
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications (job_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_chat_messages_user_id ON chat_messages (user_id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_user_memories_user_id ON user_memories (user_id)"))
             conn.commit()
 
         # seed only when tables exist

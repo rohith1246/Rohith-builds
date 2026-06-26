@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 
 from extensions import csrf
 from gemini_helper import rohi_chat
-from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, LessonReview, UserCourseProgress
+from models import Course, CourseDay, CourseEnrollment, db, LessonProgress, LessonReview, UserCourseProgress, ChatMessage, UserMemory
 from modules.auth.helpers import send_lesson_review_email
 from .badge import generate_badge
 from modules.rate_limiter import rate_limit
@@ -17,10 +17,18 @@ from . import learn_bp
 @rate_limit(limit=20, period=3600)
 def rohi_chat_api() -> Response:
     """API endpoint to chat with Rohi the AI tutor."""
+    import logging
+    import re
+    from threading import Thread
+    from flask import current_app
+
     data: dict[str, str] = request.get_json() or {}
     message: str | None = data.get("message")
     course_slug: str | None = data.get("course_slug")
     lesson_slug: str | None = data.get("lesson_slug")
+
+    if not message or not message.strip():
+        return jsonify({"success": False, "message": "Message content cannot be empty."}), 400
 
     # Guest limit
     if not current_user.is_authenticated:
@@ -43,52 +51,172 @@ def rohi_chat_api() -> Response:
                 "message": "You've reached today's limit of 20 messages. Come back tomorrow! Meanwhile explore the lessons at /learn"
             }), 429
 
-    # Retrieve history from session
-    history: list[dict[str, str]] = session.get("rohi_history", [])
-    history = history[-10:]
+    # Retrieve history (persistent DB for logged in, session for guests)
+    history: list[dict[str, str]] = []
+    if current_user.is_authenticated:
+        msgs = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.created_at.desc()).limit(10).all()
+        for msg in reversed(msgs):
+            history.append({"role": "user" if msg.role == "user" else "assistant", "content": msg.content})
+    else:
+        history = session.get("rohi_history", [])
+        history = history[-10:]
 
     # Context change detection
     last_course: str | None = session.get("rohi_last_course")
     last_lesson: str | None = session.get("rohi_last_lesson")
     if last_course != course_slug or last_lesson != lesson_slug:
         history = []
+        if current_user.is_authenticated:
+            # We don't wipe the DB history, but we reset sliding context history
+            # (or we can delete old context-dependent messages to keep sliding focus clear)
+            pass
         session["rohi_history"] = []
         session["rohi_last_course"] = course_slug
         session["rohi_last_lesson"] = lesson_slug
 
     lesson_context: str = ""
+    # 1. Lesson-specific context
     if course_slug and lesson_slug:
         course: Course | None = Course.query.filter_by(slug=course_slug).first()
         if course:
             lesson: CourseDay | None = CourseDay.query.filter_by(course_id=course.id, slug=lesson_slug).first()
             if lesson:
                 lesson_context = f"Course: {course.title}\nLesson: {lesson.title}\nContent:\n{lesson.content}"
+    
+    # 2. General context using keyword RAG search
+    else:
+        # Search CourseDay content for keywords in the message
+        words = re.findall(r'\w+', (message or "").lower())
+        stopwords = {"what", "is", "how", "to", "the", "a", "an", "of", "and", "in", "on", "for", "with", "python", "ai", "rohi"}
+        keywords = [w for w in words if len(w) > 2 and w not in stopwords]
+        if keywords:
+            from sqlalchemy import or_
+            conditions = []
+            for kw in keywords[:5]:
+                conditions.append(CourseDay.content.ilike(f"%{kw}%"))
+                conditions.append(CourseDay.title.ilike(f"%{kw}%"))
+            if conditions:
+                matched_lesson = CourseDay.query.filter(or_(*conditions)).first()
+                if matched_lesson:
+                    course = Course.query.get(matched_lesson.course_id)
+                    course_title = course.title if course else "Unknown Course"
+                    lesson_context = f"RAG RETRIEVED LESSON CONTEXT (Matches search keywords: {', '.join(keywords[:3])}):\nCourse: {course_title}\nLesson: {matched_lesson.title}\nContent:\n{matched_lesson.content}"
 
-    # Call rohi_chat with history and lesson_context
+    # 3. User memories / behavior profile
+    memories_str: str = ""
+    if current_user.is_authenticated:
+        user_mems = UserMemory.query.filter_by(user_id=current_user.id).all()
+        if user_mems:
+            memories_str = "\nSTUDENT PROFILE (What you know about this student from prior chat history):\n"
+            for mem in user_mems:
+                memories_str += f"- {mem.memory_key.replace('_', ' ').capitalize()}: {mem.memory_value}\n"
+
+    # Combine context
+    combined_context: str = (lesson_context or "") + (memories_str or "")
+
+    # Call rohi_chat
     response: str = rohi_chat(
         message=message,
-        lesson_context=lesson_context,
+        lesson_context=combined_context,
         history=history
     )
 
-    # Increment counter for authenticated users
+    # Save to ChatMessage persistent history and update today's count
     if current_user.is_authenticated:
         current_user.rohi_messages_today += 1
+        
+        user_msg = ChatMessage(user_id=current_user.id, role="user", content=message)
+        ai_msg = ChatMessage(user_id=current_user.id, role="assistant", content=response)
+        db.session.add(user_msg)
+        db.session.add(ai_msg)
         db.session.commit()
 
-    # Append to sliding history and save
-    history.append({"role": "user", "content": message})
-    history.append({"role": "assistant", "content": response})
-    session["rohi_history"] = history
+        # Asynchronously extract new memories from user message in background thread
+        app = current_app._get_current_object()
+        def extract_memory_thread():
+            with app.app_context():
+                try:
+                    extract_and_save_user_memory(current_user.id, message)
+                except Exception as e:
+                    logging.error(f"[Memory Extraction] Thread execution failed. Error: {e}")
+        Thread(target=extract_memory_thread).start()
+    else:
+        # Append to guest session history
+        history.append({"role": "user", "content": message})
+        history.append({"role": "assistant", "content": response})
+        session["rohi_history"] = history
 
     return jsonify({
         "reply": response
     })
 
 
+def extract_and_save_user_memory(user_id: int, user_message: str):
+    """Analyze student message to extract personal profile details or learning preferences."""
+    import logging
+    system_prompt = """
+    You are a student profile extractor. Analyze the student's message and extract any personal profile details or learning preferences.
+    Keys to look for:
+    - graduation_year (e.g. 2025, 2026, 2027)
+    - career_interest (e.g. Python, AI, Backend, Frontend)
+    - experience_level (e.g. beginner, student, intermediate)
+    - struggling_with (e.g. loops, recursion, decorators, databases)
+    - name (if they explicitly state their name)
+    
+    Output format MUST be strictly:
+    key=value
+    
+    Example:
+    graduation_year=2026
+    struggling_with=recursion
+    
+    Only output keys if they are clearly and explicitly mentioned in the message. Do not make assumptions. If nothing is found, output nothing. Do not explain your output.
+    """
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message}
+    ]
+    
+    from gemini_helper import call_gemini, call_groq_with_fallback
+    extracted = call_gemini(messages, max_tokens=100)
+    if not extracted:
+        extracted = call_groq_with_fallback(messages, max_tokens=100)
+        
+    if extracted:
+        lines = extracted.strip().split("\n")
+        db_updated = False
+        for line in lines:
+            if "=" in line:
+                parts = line.split("=", 1)
+                key = parts[0].strip().lower()
+                val = parts[1].strip()
+                if key in ["graduation_year", "career_interest", "experience_level", "struggling_with", "name"] and val:
+                    # Save/update memory in DB
+                    mem = UserMemory.query.filter_by(user_id=user_id, memory_key=key).first()
+                    if mem:
+                        if key == "struggling_with" and mem.memory_value != val:
+                            if val not in mem.memory_value:
+                                mem.memory_value = f"{mem.memory_value}, {val}"
+                                db_updated = True
+                        elif mem.memory_value != val:
+                            mem.memory_value = val
+                            db_updated = True
+                    else:
+                        mem = UserMemory(user_id=user_id, memory_key=key, memory_value=val)
+                        db.session.add(mem)
+                        db_updated = True
+        if db_updated:
+            db.session.commit()
+            logging.info(f"[Memory Extraction] Extracted and saved memories for user_id {user_id}")
+
+
 @learn_bp.route("/api/rohi-chat/clear", methods=["POST"])
 def clear_rohi_chat() -> Response:
-    """API endpoint to clear Rohi conversation session history."""
+    """API endpoint to clear Rohi conversation session history and DB history."""
+    if current_user.is_authenticated:
+        # Delete ChatMessage history for the user
+        ChatMessage.query.filter_by(user_id=current_user.id).delete()
+        db.session.commit()
     session["rohi_history"] = []
     session.pop("rohi_last_course", None)
     session.pop("rohi_last_lesson", None)

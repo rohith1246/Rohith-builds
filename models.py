@@ -571,3 +571,39 @@ class Inquiry(db.Model):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default="new", nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ChatMessage(db.Model):
+    """Database model for storing Rohi AI tutor chat messages persistently."""
+    __tablename__ = "chat_messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
+    role = db.Column(db.String(20), nullable=False)  # 'user' or 'assistant'
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    user = db.relationship("User", backref=db.backref("chat_messages", lazy="dynamic", cascade="all, delete-orphan"))
+
+    def __repr__(self) -> str:
+        return f"<ChatMessage {self.role} {self.id}>"
+
+
+class UserMemory(db.Model):
+    """Database model for storing extracted user facts and learning behaviors."""
+    __tablename__ = "user_memories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    memory_key = db.Column(db.String(100), nullable=False)  # e.g., 'batch', 'experience_level', 'struggling_topics'
+    memory_value = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), index=True)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "memory_key", name="uq_user_memory_key"),
+    )
+
+    user = db.relationship("User", backref=db.backref("memories", lazy="dynamic", cascade="all, delete-orphan"))
+
+    def __repr__(self) -> str:
+        return f"<UserMemory {self.user_id} {self.memory_key}>"

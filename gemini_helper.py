@@ -4,6 +4,13 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
+
 load_dotenv(override=True)
 
 ROHI_SYSTEM_PROMPT: str = """
@@ -136,8 +143,62 @@ def call_groq_with_fallback(messages: list[dict[str, str]], max_tokens: int = 30
     return "Rohi is taking a short break. Please try again in a moment."
 
 
+def call_gemini(messages: list[dict[str, str]], max_tokens: int = 300) -> str | None:
+    """Call Gemini API using the new google-genai library with fallbacks."""
+    if genai is None or types is None:
+        logging.warning("[Gemini] google-genai library is not installed or failed to import.")
+        return None
+
+    key: str = os.getenv("GEMINI_API_KEY", "").strip()
+    if not key:
+        logging.warning("[Gemini] GEMINI_API_KEY is not set.")
+        return None
+
+    try:
+        client = genai.Client(api_key=key)
+
+        # Map messages for Gemini client
+        contents = []
+        for msg in messages:
+            role = 'user' if msg['role'] == 'user' else 'model'
+            if msg['role'] == 'system':
+                continue
+            contents.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=msg['content'])]
+                )
+            )
+
+        system_instruction = next((msg['content'] for msg in messages if msg['role'] == 'system'), None)
+
+        config = types.GenerateContentConfig(
+            temperature=0.7,
+            max_output_tokens=max_tokens,
+            system_instruction=system_instruction
+        )
+
+        for model in ["gemini-2.5-flash", "gemini-2.0-flash-lite"]:
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=config
+                )
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as e:
+                logging.warning(f"[Gemini] Model {model} failed. Trying next model. Error: {e}")
+                continue
+
+    except Exception as e:
+        logging.error(f"[Gemini] API execution failed. Error: {e}")
+
+    return None
+
+
 def improve_prompt(user_prompt: str) -> str:
-    """Optimize a user-provided prompt using LLM fallback chain."""
+    """Optimize a user-provided prompt using LLM fallback chain (Gemini -> Groq)."""
     system_prompt: str = """
     You are an expert AI prompt optimizer.
 
@@ -152,11 +213,16 @@ def improve_prompt(user_prompt: str) -> str:
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
     ]
+    # Try Gemini first
+    res = call_gemini(messages, max_tokens=1000)
+    if res:
+        return res
+    # Fallback to Groq
     return call_groq_with_fallback(messages, max_tokens=1000)
 
 
 def rohi_chat(message: str, lesson_context: str = "", history: list[dict[str, str]] | None = None) -> str:
-    """Generate a response from Rohi the AI tutor for a student message."""
+    """Generate a response from Rohi the AI tutor for a student message (Gemini -> Groq)."""
     history_str: str = ""
     if history:
         for h in history:
@@ -173,4 +239,11 @@ def rohi_chat(message: str, lesson_context: str = "", history: list[dict[str, st
         {"role": "user", "content": message}
     ]
 
+    # Try Gemini first
+    res = call_gemini(messages, max_tokens=200)
+    if res:
+        return res
+
+    # Fallback to Groq
+    logging.info("[Fallback] Gemini failed. Falling back to Groq.")
     return call_groq_with_fallback(messages, max_tokens=200)
