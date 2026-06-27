@@ -137,6 +137,70 @@
         <!-- Main Content Area -->
         <main class="jobs-main-content">
             
+            <!-- Unified Top Search & Filter Bar (Highly Accessible on Mobile) -->
+            <div class="jobs-search-filter-bar">
+                <form action="{{ url_for('jobs.board') }}" method="GET" class="main-search-form">
+                    <input type="hidden" name="batch" value="{{ selected_batch }}">
+                    <input type="hidden" name="type" value="{{ selected_type }}">
+                    <input type="hidden" name="role" value="{{ selected_role }}">
+                    <input type="hidden" name="location" value="{{ selected_location }}">
+                    
+                    <div class="main-search-input-wrapper">
+                        <span class="search-icon-span">🔍</span>
+                        <input 
+                            type="text" 
+                            name="search" 
+                            placeholder="Search by title, company, skills..." 
+                            value="{{ search_query or '' }}"
+                            class="main-search-input"
+                        >
+                        {% if search_query %}
+                        <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role=selected_role, location=selected_location) }}" class="main-search-clear-btn">✕</a>
+                        {% endif %}
+                        <button type="submit" class="main-search-submit-btn">Search</button>
+                    </div>
+                </form>
+                
+                <button class="mobile-filter-trigger-btn" onclick="toggleMobileSidebar()">
+                    <span>🎛️</span> Filters
+                    {% if selected_batch != 'All' or selected_type != 'All' or selected_location != 'All' %}
+                    <span class="active-filter-dot"></span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- Horizontal Scrolling Category Carousel -->
+            <div class="category-pills-carousel">
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='All', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'All' %}active{% endif %}">
+                    💼 All Roles
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='python', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'python' %}active{% endif %}">
+                    🐍 Python
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='backend', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'backend' %}active{% endif %}">
+                    ⚙️ Backend
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='ai_llm', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'ai_llm' %}active{% endif %}">
+                    🧠 AI &amp; Agents
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='frontend', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'frontend' %}active{% endif %}">
+                    🎨 Frontend
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='fullstack', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'fullstack' %}active{% endif %}">
+                    🌐 Fullstack
+                </a>
+                <a href="{{ url_for('jobs.board', batch=selected_batch, type=selected_type, role='qa_testing', location=selected_location, search=search_query) }}" 
+                   class="category-pill {% if selected_role == 'qa_testing' %}active{% endif %}">
+                    🛡️ QA &amp; Testing
+                </a>
+            </div>
+
             <!-- Results Bar -->
             <div class="jobs-results-header">
                 <span class="total-jobs-text">
@@ -147,10 +211,9 @@
                     {% endif %}
                 </span>
                 
-                <!-- Mobile Filter Trigger -->
-                <button class="mobile-filter-trigger-btn" onclick="toggleMobileSidebar()">
-                    <span>🔍</span> Filters &amp; Search
-                </button>
+                {% if filters_active %}
+                <a href="{{ url_for('jobs.board') }}" class="desktop-reset-filters-link">✕ Clear Filters</a>
+                {% endif %}
             </div>
 
             <!-- AI Job Agent Banner -->
@@ -318,6 +381,7 @@
 <!-- Slide-Out Details Drawer -->
 <div class="job-drawer-overlay" id="jobDrawerOverlay" onclick="closeJobModal()"></div>
 <div class="job-details-drawer" id="jobDetailsDrawer">
+    <div class="drawer-drag-handle"></div>
     <div class="drawer-header">
         <div class="drawer-header-left">
             <div class="drawer-logo-container" id="drawerLogo">
