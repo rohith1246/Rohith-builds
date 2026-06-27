@@ -3,7 +3,7 @@
 {% block meta_description %}Find the best entry-level Python, backend, and AI engineer jobs and internships for freshers in India, matching your skills and course tracks.{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}?v={{ asset_version }}"/>
 {% endblock %}
 
 {% block content %}
