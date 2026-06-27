@@ -44,17 +44,19 @@ def calculate(expression):
         return f"Error: {e}"
 
 # --- Step B: Build the router prompt instructing the LLM on tool selection ---
-
+# We avoid using function signatures like search_web(query) which triggers Groq's native tool detection
 router_prompt = """
-You are an assistant that has access to tools. 
-You must decide whether to use a tool to answer the user's question.
-Available tools:
-- search_web(query): Use when asked about recent news, current events, or real-time information.
-- calculate(expression): Use for math calculations.
+You are a text router. You decide if a question needs a helper tool.
+Available helper tools:
+- search_web: Use for recent news, events, or real-time web search.
+- calculate: Use for math operations.
 
-Respond ONLY in one of the following formats:
-- If you need a tool: TOOL: name(arguments)
-- If you don't need a tool: ANSWER: your direct response
+Strictly format your response as:
+- TOOL: search_web(arguments)  <- if you need a web search
+- TOOL: calculate(arguments)  <- if you need a calculation
+- ANSWER: direct response  <- if no tool is needed
+
+Do not use native tool calling. Respond ONLY in the plain text formats above.
 """
 
 # --- Step C: Main Agent Orchestration function ---
@@ -103,7 +105,9 @@ def run_agent(user_input):
         return final_response.choices[0].message.content
     else:
         # If no tool is needed, return the assistant's direct text answer
-        return decision[7:].strip()
+        if decision.startswith("ANSWER:"):
+            return decision[7:].strip()
+        return decision
 
 # --- Step D: Test Runs ---
 print("--- Test Math Tool ---")
