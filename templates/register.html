@@ -4,7 +4,7 @@
 {% block meta_description %}Create a free account on Rohith Builds to start learning Python and AI today.{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v={{ asset_version }}">
 {% endblock %}
 
 {% block content %}
