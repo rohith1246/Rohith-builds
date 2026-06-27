@@ -108,15 +108,15 @@ def call_groq_with_fallback(messages: list[dict[str, str]], max_tokens: int = 30
 
     # Fallback chain:
     # 1. Primary key + llama-3.3-70b-versatile
-    # 2. Primary key + llama-3.1-8b-instant
+    # 2. Primary key + openai/gpt-oss-20b
     # 3. Secondary key + llama-3.3-70b-versatile
-    # 4. Secondary key + llama-3.1-8b-instant
-    # 5. Primary key + llama-3.1-8b-instant (already in fallback, but we keep the main steps)
+    # 4. Secondary key + openai/gpt-oss-20b
+    # 5. Primary key + openai/gpt-oss-20b (already in fallback, but we keep the main steps)
     steps: list[tuple[str, str]] = [
         (key_primary, "llama-3.3-70b-versatile"),
-        (key_primary, "llama-3.1-8b-instant"),
+        (key_primary, "openai/gpt-oss-20b"),
         (key_secondary, "llama-3.3-70b-versatile"),
-        (key_secondary, "llama-3.1-8b-instant"),
+        (key_secondary, "openai/gpt-oss-20b"),
     ]
 
     valid_steps: list[tuple[str, str]] = [(k, m) for k, m in steps if k]

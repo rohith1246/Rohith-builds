@@ -1,4 +1,4 @@
-﻿# RohithBuilds — AI-Powered Learning Platform
+# RohithBuilds — AI-Powered Learning Platform
 
 > Learn AI by Building Real Things. Not theory. Not fluff. Just practical skills.
 
@@ -60,7 +60,7 @@ Built solo. Zero funding. No team. Just execution.
 | **Database** | PostgreSQL / Neon DB |
 | **ORM & Migrations** | SQLAlchemy + Flask-Migrate (Alembic) |
 | **Connection Pooling** | Neon-optimized SQLAlchemy pool with pre-ping validation |
-| **AI Integration** | Groq (llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768) |
+| **AI Integration** | Groq (llama-3.3-70b-versatile, openai/gpt-oss-20b, mixtral-8x7b-32768) |
 | **PDF Generation** | ReportLab |
 | **E-mail Mailer** | SMTP / SendGrid |
 | **Frontend** | Vanilla HTML5, Vanilla CSS3 (custom dark/glass themes), Vanilla JS |

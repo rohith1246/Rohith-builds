@@ -30,16 +30,16 @@ def call_groq_with_fallback(client: Groq, messages: list[dict[str, str]]) -> Any
 
     # Fallback chain:
     # 1. Primary key + llama-3.3-70b-versatile
-    # 2. Primary key + llama-3.1-8b-instant
+    # 2. Primary key + openai/gpt-oss-20b
     # 3. Secondary key + llama-3.3-70b-versatile
-    # 4. Secondary key + llama-3.1-8b-instant
+    # 4. Secondary key + openai/gpt-oss-20b
     # 5. Primary key + mixtral-8x7b-32768
     # 6. Secondary key + mixtral-8x7b-32768
     steps: list[tuple[str, str]] = [
         (key_primary, "llama-3.3-70b-versatile"),
-        (key_primary, "llama-3.1-8b-instant"),
+        (key_primary, "openai/gpt-oss-20b"),
         (key_secondary, "llama-3.3-70b-versatile"),
-        (key_secondary, "llama-3.1-8b-instant"),
+        (key_secondary, "openai/gpt-oss-20b"),
         (key_primary, "mixtral-8x7b-32768"),
         (key_secondary, "mixtral-8x7b-32768"),
     ]
