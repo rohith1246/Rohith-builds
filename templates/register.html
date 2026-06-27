@@ -1,3 +1,4 @@
+{% set hide_nav_footer = true %}
 {% extends "base.html" %}
 {% block title %}Sign Up & Start Learning | Rohith Builds{% endblock %}
 {% block meta_description %}Create a free account on Rohith Builds to start learning Python and AI today.{% endblock %}
@@ -8,121 +9,141 @@
 
 {% block content %}
 <div class="auth-page">
-  <div class="auth-card">
-
-    <div class="auth-header">
-       <img
-    src="{{ url_for('static', filename='images/logo.png') }}"
-    alt="RohithBuilds"
-    class="auth-logo-img"
->
-      <h1>Create Your Account</h1>
-      <p>
-        Start learning AI, building projects, and mastering prompts.
-      </p>
+  <!-- Left Side Visual Panel -->
+  <div class="auth-visual-side">
+    <svg class="geometric-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3" />
+          <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <!-- Circuit paths representing code graph -->
+      <path d="M-50,150 L200,150 L280,230 L280,480 L200,560 L-50,560" fill="none" stroke="rgba(245, 158, 11, 0.06)" stroke-width="2" />
+      <path d="M120,-50 L120,250 L200,330 L500,330" fill="none" stroke="rgba(245, 158, 11, 0.06)" stroke-width="2" />
+      <path d="M180,500 L250,570 L420,570 L480,630" fill="none" stroke="rgba(245, 158, 11, 0.06)" stroke-width="2" />
+      
+      <!-- Pulsing Nodes -->
+      <circle cx="200" cy="150" r="5" fill="#F59E0B" opacity="0.3" class="pulse-node" style="animation-delay: 0.5s" />
+      <circle cx="280" cy="230" r="4" fill="#FCD34D" opacity="0.4" />
+      <circle cx="120" cy="250" r="5" fill="#F59E0B" opacity="0.3" class="pulse-node" style="animation-delay: 2s" />
+      <circle cx="200" cy="330" r="4" fill="#FCD34D" opacity="0.4" />
+      <circle cx="250" cy="570" r="5" fill="#F59E0B" opacity="0.3" class="pulse-node" style="animation-delay: 3.5s" />
+    </svg>
+    
+    <div class="brand-presence">
+      <div class="brand-sparkle">✦</div>
+      <h2 class="brand-slogan-title">Rohith Builds</h2>
+      <p class="brand-slogan-subtitle">Start learning AI, building projects, and mastering prompts.</p>
     </div>
+  </div>
 
-    <form method="POST" class="auth-form" novalidate>
+  <!-- Right Side Form Panel -->
+  <div class="auth-form-side">
+    <div class="auth-card">
 
-      {{ form.hidden_tag() }}
-
-      <div class="form-group">
-        {{ form.username.label(class="form-label") }}
-
-        {{ form.username(
-          class="form-input" + (" input-error" if form.username.errors else ""),
-          placeholder="Choose a username"
-        ) }}
-
-        {% for error in form.username.errors %}
-          <span class="form-error">{{ error }}</span>
-        {% endfor %}
+      <div class="auth-header">
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Rohith Builds Logo"
+          class="auth-logo-img"
+        >
+        <div class="auth-logo-text">Rohith<span>Builds</span></div>
+        <h1>Create Your Account</h1>
+        <p>Join the AI-powered career accelerator</p>
       </div>
 
-      <div class="form-group">
-        {{ form.email.label(class="form-label") }}
+      <form method="POST" class="auth-form" novalidate>
+        {{ form.hidden_tag() }}
 
-        {{ form.email(
-          class="form-input" + (" input-error" if form.email.errors else ""),
-          placeholder="you@example.com"
-        ) }}
-
-        {% for error in form.email.errors %}
-          <span class="form-error">{{ error }}</span>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.password.label(class="form-label") }}
-
-        <div class="input-password-wrap">
-          {{ form.password(
-            class="form-input" + (" input-error" if form.password.errors else ""),
-            id="passwordField",
-            placeholder="Create a password"
+        <div class="form-group">
+          {{ form.username.label(class="form-label") }}
+          {{ form.username(
+            class="form-input" + (" input-error" if form.username.errors else ""),
+            placeholder="Choose a username"
           ) }}
 
-          <button
-            type="button"
-            class="pw-toggle"
-            onclick="togglePassword('passwordField', this)">
-            👁
-          </button>
+          {% for error in form.username.errors %}
+            <span class="form-error">{{ error }}</span>
+          {% endfor %}
         </div>
 
-        {% for error in form.password.errors %}
-          <span class="form-error">{{ error }}</span>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.confirm_password.label(class="form-label") }}
-
-        <div class="input-password-wrap">
-          {{ form.confirm_password(
-            class="form-input" + (" input-error" if form.confirm_password.errors else ""),
-            id="confirmField",
-            placeholder="Confirm your password"
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(
+            class="form-input" + (" input-error" if form.email.errors else ""),
+            placeholder="you@example.com"
           ) }}
 
-          <button
-            type="button"
-            class="pw-toggle"
-            onclick="togglePassword('confirmField', this)">
-            👁
-          </button>
+          {% for error in form.email.errors %}
+            <span class="form-error">{{ error }}</span>
+          {% endfor %}
         </div>
 
-        {% for error in form.confirm_password.errors %}
-          <span class="form-error">{{ error }}</span>
-        {% endfor %}
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          <div class="input-password-wrap">
+            {{ form.password(
+              class="form-input" + (" input-error" if form.password.errors else ""),
+              id="passwordField",
+              placeholder="Create a password"
+            ) }}
+
+            <button
+              type="button"
+              class="pw-toggle"
+              onclick="togglePassword('passwordField', this)">
+              👁
+            </button>
+          </div>
+
+          {% for error in form.password.errors %}
+            <span class="form-error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.confirm_password.label(class="form-label") }}
+          <div class="input-password-wrap">
+            {{ form.confirm_password(
+              class="form-input" + (" input-error" if form.confirm_password.errors else ""),
+              id="confirmField",
+              placeholder="Confirm your password"
+            ) }}
+
+            <button
+              type="button"
+              class="pw-toggle"
+              onclick="togglePassword('confirmField', this)">
+              👁
+            </button>
+          </div>
+
+          {% for error in form.confirm_password.errors %}
+            <span class="form-error">{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn-primary btn-full") }}
+      </form>
+
+      <div class="auth-divider">
+        <span>or</span>
       </div>
 
-      <!-- <div class="verify-notice">
-        📧 A verification email will be sent after registration.
-        Please check your Inbox, Spam, or Promotions folder.
-      </div> -->
-
-      {{ form.submit(class="btn-primary btn-full") }}
-
-    </form>
-
-    <div class="auth-divider">
-      <span>or</span>
-    </div>
-
-    <a href="{{ url_for('auth.google_login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.google_login') }}" class="btn-google">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-icon">
-      Continue with Google
-    </a>
-
-    <p class="auth-switch">
-      Already have an account?
-      <a href="{{ url_for('auth.login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.login') }}">
-        Sign In →
+      <a href="{{ url_for('auth.google_login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.google_login') }}" class="btn-google">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-icon">
+        Continue with Google
       </a>
-    </p>
 
+      <p class="auth-switch">
+        Already have an account?
+        <a href="{{ url_for('auth.login', next=request.args.get('next')) if request.args.get('next') else url_for('auth.login') }}">
+          Sign In →
+        </a>
+      </p>
+
+    </div>
   </div>
 </div>
 {% endblock %}

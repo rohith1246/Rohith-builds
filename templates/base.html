@@ -46,7 +46,7 @@ gtag('config', 'G-QNQJZMK6E6');
   
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
  <script>
 window.COURSE_SLUG = null;
 window.LESSON_SLUG = null;
@@ -66,6 +66,7 @@ window.LESSON_SLUG = null;
 </head>
 <body>
 <!-- NAVBAR -->
+{% if not hide_nav_footer %}
 <nav class="navbar">
   <div class="nav-container">
 
@@ -214,6 +215,7 @@ window.LESSON_SLUG = null;
 
   </div>
 </nav>
+{% endif %}
 
 <!-- FLASH MESSAGES -->
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -230,11 +232,12 @@ window.LESSON_SLUG = null;
 {% endwith %}
 
 <!-- MAIN CONTENT -->
-<main class="main-content">
+<main class="main-content {% if hide_nav_footer %}auth-layout-override{% endif %}">
   {% block content %}{% endblock %}
 </main>
 
 <!-- FOOTER -->
+{% if not hide_nav_footer %}
 <footer class="footer">
   <div class="footer-inner">
     <p>© 2026 RohithBuilds • Made for builders</p>
@@ -249,6 +252,8 @@ window.LESSON_SLUG = null;
     </div>
   </div>
 </footer>
+{% endif %}
+{% if not hide_nav_footer %}
 <div id="rohi-widget">
 
     <button id="rohi-toggle">
@@ -320,6 +325,7 @@ window.LESSON_SLUG = null;
     </div>
 
 </div>
+{% endif %}
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
