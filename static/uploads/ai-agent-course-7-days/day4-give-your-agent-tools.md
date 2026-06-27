@@ -43,59 +43,48 @@ def calculate(expression):
     except Exception as e:
         return f"Error: {e}"
 
-# --- Step B: Build the router prompt instructing the LLM on tool selection ---
-# We avoid using function signatures like search_web(query) which triggers Groq's native tool detection
+# --- Step B: Build the router prompt using a classification style to bypass native tool calling ---
 router_prompt = """
-You are a text router. You decide if a question needs a helper tool.
-Available helper tools:
-- search_web: Use for recent news, events, or real-time web search.
-- calculate: Use for math operations.
+You are a classifier. Your job is to classify the user's input.
+Choose one of the three options below:
 
-Strictly format your response as:
-- TOOL: search_web(arguments)  <- if you need a web search
-- TOOL: calculate(arguments)  <- if you need a calculation
-- ANSWER: direct response  <- if no tool is needed
+1. If the question requires a math calculation, reply exactly in this format:
+RUN_CALCULATION: <mathematical expression here>
+Example: RUN_CALCULATION: 125 * 45
 
-Do not use native tool calling. Respond ONLY in the plain text formats above.
+2. If the question requires real-time information or news, reply exactly in this format:
+RUN_SEARCH: <search query here>
+Example: RUN_SEARCH: current AI news
+
+3. If it is a normal question that you can answer directly, reply exactly in this format:
+ANSWER: <your response here>
+
+Respond ONLY in one of the formats above. Do not output code or JSON.
 """
 
 # --- Step C: Main Agent Orchestration function ---
 
 def run_agent(user_input):
-    # Prepare payload for the tool decision step
     messages = [
         {"role": "system", "content": router_prompt},
         {"role": "user", "content": user_input}
     ]
     
-    # Query the LLM to get a routing decision (TOOL or ANSWER)
     response = client.chat.completions.create(
         model="openai/gpt-oss-20b",
-        messages=messages
+        messages=messages,
+        temperature=0.0
     )
     decision = response.choices[0].message.content.strip()
     print(f"Decision: {decision}")
     
-    # Check if the LLM decided to call a tool
-    if decision.startswith("TOOL:"):
-        # Extract the tool signature (e.g. "TOOL: calculate(125 * 45)" -> tool_name="calculate", args="125 * 45")
-        tool_call = decision[5:].strip()
-        tool_name = tool_call.split("(")[0]
-        args = tool_call.split("(")[1].rstrip(")")
+    if decision.startswith("RUN_SEARCH:"):
+        query = decision[11:].strip()
+        print(f"Executing web search for: {query}")
+        tool_result = search_web(query)
         
-        # Execute the corresponding Python function
-        if tool_name == "search_web":
-            print(f"Executing web search for: {args}")
-            tool_result = search_web(args)
-        elif tool_name == "calculate":
-            print(f"Executing calculation for: {args}")
-            tool_result = calculate(args)
-        else:
-            tool_result = "Unknown tool"
-            
-        # Synthesize final response: Feed the raw tool result back to the LLM to format a conversational reply
         synthesis_messages = [
-            {"role": "system", "content": "You are a helpful assistant. Synthesize the tool result into a clear, natural answer for the user."},
+            {"role": "system", "content": "You are a helpful assistant. Synthesize the search result into a clear, natural answer for the user."},
             {"role": "user", "content": f"User asked: {user_input}\nTool Result: {tool_result}"}
         ]
         final_response = client.chat.completions.create(
@@ -103,8 +92,23 @@ def run_agent(user_input):
             messages=synthesis_messages
         )
         return final_response.choices[0].message.content
+
+    elif decision.startswith("RUN_CALCULATION:"):
+        expression = decision[16:].strip()
+        print(f"Executing calculation for: {expression}")
+        tool_result = calculate(expression)
+        
+        synthesis_messages = [
+            {"role": "system", "content": "You are a helpful assistant. Synthesize the calculation result into a clear, natural answer for the user."},
+            {"role": "user", "content": f"User asked: {user_input}\nTool Result: {tool_result}"}
+        ]
+        final_response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=synthesis_messages
+        )
+        return final_response.choices[0].message.content
+
     else:
-        # If no tool is needed, return the assistant's direct text answer
         if decision.startswith("ANSWER:"):
             return decision[7:].strip()
         return decision
