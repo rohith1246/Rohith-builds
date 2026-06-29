@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Your ATS Score: {{ ats.total_score }}/100 — Resume Review Results | Rohith Builds{% endblock %}
+{% block meta_description %}Your resume scored {{ ats.total_score }}/100 on our ATS compatibility checker. See the full breakdown and AI-powered improvement suggestions.{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
+
+  <!-- Header -->
+  <div style="text-align: center; margin-bottom: 40px;">
+    <a href="{{ url_for('resume.resume_landing') }}" style="color: #fbbf24; font-size: 0.85rem; text-decoration: none; font-weight: 600;">← Analyze Another Resume</a>
+    <h1 style="font-size: 2.2rem; font-weight: 900; color: #fff; margin: 16px 0 8px 0;">Your Resume Analysis</h1>
+    <p style="color: #9ca3af; font-size: 0.95rem;">{{ word_count }} words analyzed • 8 ATS checks completed</p>
+  </div>
+
+  <!-- Score Circle + Grade -->
+  <div style="display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 50px; flex-wrap: wrap;">
+
+    <!-- Animated Score Circle -->
+    <div style="position: relative; width: 180px; height: 180px;">
+      <svg width="180" height="180" viewBox="0 0 180 180" style="transform: rotate(-90deg);">
+        <!-- Background circle -->
+        <circle cx="90" cy="90" r="78" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"/>
+        <!-- Score circle -->
+        <circle cx="90" cy="90" r="78" stroke="{{ ats.color }}" stroke-width="12" fill="none"
+                stroke-linecap="round"
+                stroke-dasharray="{{ (ats.total_score / ats.max_score * 490)|round }}, 490"
+                style="transition: stroke-dasharray 1.5s ease-in-out;">
+          <animate attributeName="stroke-dasharray" from="0, 490" to="{{ (ats.total_score / ats.max_score * 490)|round }}, 490" dur="1.5s" fill="freeze"/>
+        </circle>
+      </svg>
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <div style="font-size: 2.8rem; font-weight: 900; color: {{ ats.color }};">{{ ats.total_score }}</div>
+        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: -4px;">/{{ ats.max_score }}</div>
+      </div>
+    </div>
+
+    <!-- Grade Card -->
+    <div style="text-align: left;">
+      <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; font-weight: 700; margin-bottom: 6px;">ATS GRADE</div>
+      <div style="font-size: 2rem; font-weight: 900; color: {{ ats.color }}; margin-bottom: 8px;">{{ ats.grade }}</div>
+      <p style="color: #9ca3af; font-size: 0.85rem; max-width: 280px; line-height: 1.5;">
+        {% if ats.total_score >= 70 %}
+          Your resume is well-optimized for ATS systems. Focus on fine-tuning the areas below.
+        {% elif ats.total_score >= 50 %}
+          Your resume passes most ATS filters but has room for improvement. Fix the issues below.
+        {% elif ats.total_score >= 30 %}
+          Your resume may get filtered out by many ATS systems. Address the critical issues below.
+        {% else %}
+          Your resume needs significant work to pass ATS filters. Follow the suggestions below carefully.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- 8-Check Breakdown -->
+  <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 28px; margin-bottom: 30px;">
+    <h2 style="margin: 0 0 20px 0; font-size: 1.3rem; color: #fff; font-weight: 800;">📋 ATS Score Breakdown</h2>
+
+    {% for check in ats.checks %}
+    <div style="margin-bottom: {% if not loop.last %}20px{% else %}0{% endif %}; {% if not loop.last %}padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.04);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 0.95rem; font-weight: 700; color: #e5e7eb;">{{ check.name }}</span>
+        <span style="font-size: 0.9rem; font-weight: 800; color: {% if check.score == check.max %}#34d399{% elif check.score >= check.max * 0.5 %}#fbbf24{% else %}#f87171{% endif %};">{{ check.score }}/{{ check.max }}</span>
+      </div>
+      <!-- Progress Bar -->
+      <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; margin-bottom: 8px; overflow: hidden;">
+        <div style="height: 100%; width: {{ (check.score / check.max * 100)|round }}%; background: {% if check.score == check.max %}#34d399{% elif check.score >= check.max * 0.5 %}#fbbf24{% else %}#f87171{% endif %}; border-radius: 3px; transition: width 1s ease-in-out;"></div>
+      </div>
+      {% for detail in check.details %}
+        <p style="margin: 4px 0; font-size: 0.82rem; color: #9ca3af; line-height: 1.5;">{{ detail }}</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- AI Feedback Section -->
+  {% if feedback %}
+  <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 28px; margin-bottom: 30px;">
+    <h2 style="margin: 0 0 6px 0; font-size: 1.3rem; color: #fff; font-weight: 800;">🤖 AI-Powered Feedback</h2>
+    <p style="margin: 0 0 24px 0; font-size: 0.8rem; color: #6b7280;">Personalized suggestions from our AI recruiter</p>
+
+    <!-- Overall Summary -->
+    {% if feedback.overall_summary %}
+    <div style="background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.15); border-radius: 10px; padding: 16px; margin-bottom: 24px;">
+      <p style="margin: 0; color: #e5e7eb; font-size: 0.9rem; line-height: 1.6;">💡 {{ feedback.overall_summary }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Strengths -->
+    {% if feedback.strengths %}
+    <div style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px 0; font-size: 1rem; color: #34d399; font-weight: 700;">💪 Strengths</h3>
+      {% for s in feedback.strengths %}
+        <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+          <span style="color: #34d399; font-size: 0.85rem; flex-shrink: 0;">✓</span>
+          <p style="margin: 0; color: #d1d5db; font-size: 0.85rem; line-height: 1.5;">{{ s }}</p>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Improvements -->
+    {% if feedback.improvements %}
+    <div style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px 0; font-size: 1rem; color: #fbbf24; font-weight: 700;">🔧 Improvements</h3>
+      {% for imp in feedback.improvements %}
+        <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+          <span style="color: #fbbf24; font-size: 0.85rem; flex-shrink: 0;">→</span>
+          <p style="margin: 0; color: #d1d5db; font-size: 0.85rem; line-height: 1.5;">{{ imp }}</p>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Missing Keywords -->
+    {% if feedback.missing_keywords %}
+    <div style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px 0; font-size: 1rem; color: #38bdf8; font-weight: 700;">🔑 Missing Keywords</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        {% for kw in feedback.missing_keywords %}
+          <span style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">{{ kw }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Rewritten Bullet -->
+    {% if feedback.rewritten_bullet %}
+    <div>
+      <h3 style="margin: 0 0 12px 0; font-size: 1rem; color: #a78bfa; font-weight: 700;">✍️ Example Rewrite</h3>
+      <div style="background: rgba(167, 139, 250, 0.05); border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 10px; padding: 16px;">
+        <p style="margin: 0; color: #e5e7eb; font-size: 0.85rem; line-height: 1.6; font-style: italic;">"{{ feedback.rewritten_bullet }}"</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- CTA Banner -->
+  <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 16px; padding: 32px; text-align: center;">
+    <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; color: #fff; font-weight: 800;">Ready to match your resume with real jobs? 🚀</h3>
+    <p style="margin: 0 0 20px 0; color: #9ca3af; font-size: 0.9rem;">Sign up free and use our AI Job Agent to find matching opportunities instantly.</p>
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: 800; border-radius: 8px; text-decoration: none; font-size: 0.95rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        Sign Up Free →
+      </a>
+      <a href="{{ url_for('resume.resume_landing') }}" style="display: inline-block; padding: 12px 28px; border: 1px solid rgba(255,255,255,0.15); color: #e5e7eb; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 0.95rem;">
+        Analyze Another Resume
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

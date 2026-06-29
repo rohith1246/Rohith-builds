@@ -21,6 +21,7 @@ from modules.improve import improve_bp
 from modules.auth import auth_bp
 from modules.admin import admin_bp
 from modules.jobs import jobs_bp
+from modules.resume import resume_bp
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -107,6 +108,7 @@ app.register_blueprint(improve_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(jobs_bp)
+app.register_blueprint(resume_bp)
 
 
 @app.before_request

@@ -122,6 +122,11 @@ window.LESSON_SLUG = null;
         Jobs
       </a>
 
+      <a href="{{ url_for('resume.resume_landing') }}"
+         class="nav-link {% if request.blueprint == 'resume' %}active{% endif %}">
+        Resume
+      </a>
+
       <a href="/blog"
          class="nav-link {% if request.path.startswith('/blog') %}active{% endif %}">
         Blog
