@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Global Leaderboard | Rohith Builds{% endblock %}
+{% block meta_description %}See the top students on Rohith Builds, ranked by XP and learning streaks.{% endblock %}
+
+{% block content %}
+<div class="container leaderboard-page" style="margin-top: 40px; margin-bottom: 60px; max-width: 800px; padding: 0 20px;">
+  
+  <!-- Header Card -->
+  <div class="leaderboard-header-section" style="text-align: center; margin-bottom: 40px; position: relative; padding: 40px 30px; border-radius: 20px; background: linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(251,146,60,0.02) 100%); border: 1px solid rgba(251,191,36,0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);">
+    <div style="font-size: 3.8rem; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(251,191,36,0.6));">🏆</div>
+    <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.8rem; font-weight: 700; color: #fff; margin: 0; background: linear-gradient(to right, #ffffff, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">Global Leaderboard</h1>
+    <p style="color: #9ca3af; font-size: 1.05rem; margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.5;">See the top-ranking students building real projects and earning XP on Rohith Builds.</p>
+    {% if current_user_rank %}
+      <div class="user-rank-badge" style="display: inline-block; margin-top: 20px; padding: 8px 20px; border-radius: 20px; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; font-weight: 700; font-size: 0.95rem; box-shadow: 0 0 15px rgba(251,191,36,0.1); letter-spacing: 0.5px;">
+        Your Current Rank: #{{ current_user_rank }}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Leaderboard Table -->
+  <div class="leaderboard-table-container" style="background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6); overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+      <thead>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #9ca3af; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+          <th style="padding: 16px 15px; width: 90px; text-align: center;">Rank</th>
+          <th style="padding: 16px 15px;">Student</th>
+          <th style="padding: 16px 15px; width: 140px; text-align: center;">Streak</th>
+          <th style="padding: 16px 15px; width: 150px; text-align: center;">Joined Date</th>
+          <th style="padding: 16px 15px; width: 130px; text-align: right;">Total XP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in leaderboard %}
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: all 0.2s ease; {% if entry.username == current_user.username %}background: rgba(251,191,36,0.06); border-left: 3px solid #fbbf24;{% endif %}" class="leader-row">
+            <td style="padding: 18px 15px; text-align: center; font-weight: 700; font-size: 1.1rem; color: {% if entry.rank==1 %}#facc15{% elif entry.rank==2 %}#94a3b8{% elif entry.rank==3 %}#b45309{% else %}#9ca3af{% endif %};">
+              {% if entry.rank == 1 %}👑{% elif entry.rank == 2 %}🥈{% elif entry.rank == 3 %}🥉{% else %}{{ entry.rank }}{% endif %}
+            </td>
+            <td style="padding: 18px 15px; font-weight: 600; font-size: 0.98rem; color: {% if entry.username == current_user.username %}#fbbf24{% else %}#e5e7eb{% endif %};">
+              {{ entry.username }}
+            </td>
+            <td style="padding: 18px 15px; text-align: center; font-weight: 700; color: #fb923c; font-size: 0.95rem;">
+              {% if entry.streak > 0 %}
+                🔥 {{ entry.streak }} Day{{ 's' if entry.streak != 1 else '' }}
+              {% else %}
+                <span style="color: #4b5563; font-weight: 500;">-</span>
+              {% endif %}
+            </td>
+            <td style="padding: 18px 15px; text-align: center; color: #9ca3af; font-size: 0.9rem;">
+              {{ entry.created_at.strftime('%b %Y') }}
+            </td>
+            <td style="padding: 18px 15px; text-align: right; font-weight: 700; color: #f3f4f6; font-size: 1rem;">
+              <span style="color: #fbbf24;">{{ entry.xp }}</span> XP
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Back Button -->
+  <div style="text-align: center; margin-top: 40px;">
+    <a href="{{ url_for('auth.dashboard') }}" class="btn-back-dashboard" style="display: inline-block; padding: 12px 28px; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: #fff; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      Back to Dashboard
+    </a>
+  </div>
+
+</div>
+
+<style>
+  .leader-row:hover {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  .btn-back-dashboard:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock %}

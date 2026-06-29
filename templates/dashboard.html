@@ -212,6 +212,9 @@
                 <span style="font-weight:600;font-size:0.9rem;color:#f3f4f6;flex-shrink:0;margin-left:10px;">{{ entry.xp }} XP</span>
               </div>
             {% endfor %}
+            <div style="text-align:center;margin-top:12px;">
+              <a href="{{ url_for('auth.leaderboard') }}" class="link-glow" style="font-size:0.85rem;font-weight:600;text-decoration:none;">View Full Leaderboard →</a>
+            </div>
           {% else %}
             <p class="muted" style="text-align:center;padding:10px 0;">No active rankings yet.</p>
           {% endif %}

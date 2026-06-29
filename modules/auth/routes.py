@@ -443,7 +443,7 @@ def dashboard() -> str:
     leaders = (
         User.query
         .order_by(User.xp.desc())
-        .limit(5)
+        .limit(10)
         .all()
     )
 
@@ -486,6 +486,50 @@ def dashboard() -> str:
         achievements=achievements,
         suggested_courses=suggested_courses,
         leaderboard=leaderboard
+    )
+
+
+@auth_bp.route("/leaderboard")
+@login_required
+def leaderboard() -> str:
+    """Render the global leaderboard showing the top 50 users by XP."""
+    leaders = (
+        User.query
+        .order_by(User.xp.desc())
+        .limit(50)
+        .all()
+    )
+
+    leaderboard = []
+    current_user_rank = None
+    
+    for idx, u in enumerate(leaders):
+        streak = u.current_streak
+        if u.last_active_date:
+            today = datetime.now(timezone.utc).date()
+            if (today - u.last_active_date).days > 1:
+                streak = 0
+        
+        entry = {
+            "rank": idx + 1,
+            "username": u.username,
+            "xp": u.xp or 0,
+            "streak": streak,
+            "created_at": u.created_at
+        }
+        leaderboard.append(entry)
+        
+        if u.id == current_user.id:
+            current_user_rank = idx + 1
+
+    if current_user_rank is None:
+        higher_xp_count = User.query.filter(User.xp > current_user.xp).count()
+        current_user_rank = higher_xp_count + 1
+
+    return render_template(
+        "leaderboard.html",
+        leaderboard=leaderboard,
+        current_user_rank=current_user_rank
     )
 
 
