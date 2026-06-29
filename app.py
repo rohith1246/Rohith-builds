@@ -434,6 +434,12 @@ def backend_developer_salary_india() -> str:
     return render_template("blog/backend-developer-salary-india.html")
 
 
+@app.route("/blog/data-analytics-roadmap-resources-free")
+def data_analytics_roadmap_resources_free() -> str:
+    """Render the Data Analytics roadmap blog post."""
+    return render_template("blog/data-analytics-roadmap-resources-free.html")
+
+
 @app.route("/health")
 def health_check() -> tuple[Response, int]:
     """Provide service health status."""

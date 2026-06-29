@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Data Analytics Roadmap & Free Resources (2026 Guide) | Rohith Builds{% endblock %}
+
+{% block meta_description %}A complete step-by-step roadmap to master data analytics in 2026 with 10 high-quality free resources, certifications, and project ideas.{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": "https://rohith-builds-g79e.onrender.com/blog/data-analytics-roadmap-resources-free/#article",
+      "isPartOf": {
+        "@id": "https://rohith-builds-g79e.onrender.com/#website"
+      },
+      "headline": "Data Analytics Roadmap & Free Resources (2026 Guide)",
+      "description": "A complete step-by-step roadmap to master data analytics in 2026 with 10 high-quality free resources, certifications, and project ideas.",
+      "inLanguage": "en-US",
+      "mainEntityOfPage": "https://rohith-builds-g79e.onrender.com/blog/data-analytics-roadmap-resources-free",
+      "datePublished": "2026-06-29T00:00:00+05:30",
+      "dateModified": "2026-06-29T00:00:00+05:30",
+      "author": {
+        "@type": "Person",
+        "name": "Rohith Builds"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Rohith Builds",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://rohith-builds-g79e.onrender.com/static/images/logo.png"
+        }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://rohith-builds-g79e.onrender.com/blog/data-analytics-roadmap-resources-free/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can I learn Data Analytics for free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! You do not need expensive bootcamps. All key skills like SQL, Excel, PowerBI, Python, and Statistics are taught for free on open platforms like YouTube, Kaggle, and SQLBolt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to become a Data Analyst?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "With 1-2 hours of study every day, you can build a solid foundation and a portfolio of data projects in 3 to 6 months."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://rohith-builds-g79e.onrender.com/blog/data-analytics-roadmap-resources-free/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://rohith-builds-g79e.onrender.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://rohith-builds-g79e.onrender.com/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Data Analytics Roadmap",
+          "item": "https://rohith-builds-g79e.onrender.com/blog/data-analytics-roadmap-resources-free"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.blog-container {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+.blog-post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3xl);
+  box-shadow: var(--shadow-lg);
+}
+.blog-badge {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.blog-header h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.blog-meta {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin-bottom: var(--spacing-2xl);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--spacing-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.blog-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.blog-body {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #e5e7eb;
+}
+.blog-body h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: var(--spacing-3xl);
+  margin-bottom: var(--spacing-md);
+  color: var(--primary);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+  padding-bottom: 8px;
+}
+.blog-body h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text);
+}
+.blog-body p {
+  margin-bottom: var(--spacing-xl);
+}
+.blog-body ul, .blog-body ol {
+  margin-bottom: var(--spacing-xl);
+  padding-left: var(--spacing-2xl);
+}
+.blog-body li {
+  margin-bottom: var(--spacing-sm);
+}
+.blog-body strong {
+  color: #fff;
+  font-weight: 700;
+}
+.phase-card {
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+.phase-header {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: var(--spacing-sm);
+}
+.resource-list {
+  margin: var(--spacing-xl) 0;
+}
+.resource-item {
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 4px solid var(--primary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.resource-item a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: underline;
+}
+.resource-item a:hover {
+  color: var(--text);
+}
+.blog-cta {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(31, 41, 55, 0.95));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  margin-top: var(--spacing-3xl);
+  text-align: center;
+}
+.blog-cta h3 {
+  color: var(--primary);
+  font-size: 1.6rem;
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+}
+.blog-cta p {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.05rem;
+}
+.blog-cta .btn-cta {
+  display: inline-block;
+  background: var(--primary);
+  color: #111827;
+  padding: 14px 30px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.blog-cta .btn-cta:hover {
+  background: #111827;
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+@media (max-width: 768px) {
+  .blog-container {
+    padding: var(--spacing-lg) var(--spacing-sm);
+  }
+  .blog-post {
+    padding: var(--spacing-lg);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-container">
+  <article class="blog-post">
+    <!-- Header -->
+    <header class="blog-header">
+      <span class="blog-badge">Roadmap 2026</span>
+      <h1>Data Analytics Roadmap & Free Resources (2026 Guide)</h1>
+      <div class="blog-meta">
+        <span>👤 By Rohith Builds</span>
+        <span>📅 Published: June 2026</span>
+        <span>⏱️ 12 Min Read</span>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="blog-body">
+      <p>
+        Data Analytics has become one of the most high-demand career paths for software developers, engineers, and business professionals alike. With companies processing petabytes of data daily, the ability to extract, clean, and visualize key trends is a massive career superpower.
+      </p>
+      <p>
+        The best part? <strong>You do not need an expensive university degree or a $1,000 coding bootcamp to learn it.</strong> Every core skill required to become a junior data analyst can be learned for free using high-quality online courses and interactive sandboxes.
+      </p>
+      <p>
+        In this guide, we lay out the complete, step-by-step roadmap to learn Data Analytics from absolute scratch, followed by 10 completely free learning resources you can start using today.
+      </p>
+
+      <h2>🗺️ The Step-by-Step Data Analytics Roadmap</h2>
+      <p>To become a successful Data Analyst, you should focus on mastering these five core phases sequentially:</p>
+
+      <!-- Phase 1 -->
+      <div class="phase-card">
+        <div class="phase-header">Phase 1: Basic Spreadsheet Manipulation (Excel / Google Sheets)</div>
+        <p>Before coding, you must understand the basics of grid data. Excel is still the world's most widely used data tool. Master lookup functions (VLOOKUP, XLOOKUP), pivot tables, data cleaning filters, and basic charting.</p>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-card">
+        <div class="phase-header">Phase 2: Database Querying & SQL</div>
+        <p>SQL is the absolute foundation of data analytics. You must know how to pull data from database engines. Master SELECT statements, joins (INNER, LEFT, RIGHT), aggregations (GROUP BY, HAVING), subqueries, and Window functions.</p>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-card">
+        <div class="phase-header">Phase 3: Programming for Data (Python & Pandas)</div>
+        <p>When data sets exceed millions of rows, spreadsheet tools crash. Python handles large datasets effortlessly. Focus on learning Python basics, then move to the Pandas and NumPy libraries for data filtering, cleaning, and aggregation.</p>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="phase-card">
+        <div class="phase-header">Phase 4: Data Visualization & Business Dashboards (Power BI / Tableau)</div>
+        <p>Executives do not look at code; they look at dashboards. Learn how to transform raw tables into visual stories using Power BI or Tableau. Focus on designing clean, interactive charts and KPI tiles.</p>
+      </div>
+
+      <!-- Phase 5 -->
+      <div class="phase-card">
+        <div class="phase-header">Phase 5: Applied Statistics & Math</div>
+        <p>To draw valid conclusions from data, you need basic mathematical backing. Learn concepts like mean, median, mode, variance, standard deviation, correlation vs. causation, and hypothesis testing.</p>
+      </div>
+
+      <h2>📚 10 Best Free Data Analytics Resources</h2>
+      <p>Here are 10 highly recommended, free resources to help you master all the steps above:</p>
+
+      <div class="resource-list">
+        
+        <div class="resource-item">
+          <strong>1. </strong><a href="https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZIh7mBYbaggRYyPG7B" target="_blank" rel="noopener">Alex The Analyst (YouTube)</a>
+          <p>The single best free full-length Data Analyst bootcamp on YouTube. Includes comprehensive playlists on SQL, Excel, Tableau, Power BI, and Python.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>2. </strong><a href="https://sqlbolt.com/" target="_blank" rel="noopener">SQLBolt</a>
+          <p>An amazing interactive, browser-based tutorial that teaches you SQL step-by-step using actual databases running in your browser. No local installation needed.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>3. </strong><a href="https://www.freecodecamp.org/news/data-analysis-with-python-course/" target="_blank" rel="noopener">freeCodeCamp Data Analysis with Python</a>
+          <p>A massive 10-hour video course on YouTube covering Python basics, Pandas, NumPy, and basic statistics for data scientists.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>4. </strong><a href="https://www.coursera.org/professional-certificates/google-data-analytics" target="_blank" rel="noopener">Google Data Analytics Certificate (Coursera - Audit Mode)</a>
+          <p>You can "Audit" this highly rated professional certificate for free. It covers spreadsheets, SQL, R programming, and data visualizations.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>5. </strong><a href="https://www.kaggle.com/learn" target="_blank" rel="noopener">Kaggle Learn Courses</a>
+          <p>Kaggle offers short, bite-sized, interactive coding courses on Python, SQL, Pandas, and Data Visualization completely free.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>6. </strong><a href="https://8weeksqlchallenge.com/" target="_blank" rel="noopener">Danny Ma's 8-Week SQL Challenge</a>
+          <p>A repository of realistic database questions and challenges designed to help you practice writing complex SQL queries for interview preparation.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>7. </strong><a href="https://www.khanacademy.org/math/ap-statistics" target="_blank" rel="noopener">Khan Academy AP Statistics</a>
+          <p>The absolute gold standard to learn the math and statistics needed for data science and analysis (probability, variables, and distributions).</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>8. </strong><a href="https://learn.microsoft.com/en-us/training/paths/get-started-power-bi/" target="_blank" rel="noopener">Microsoft Power BI Learning Path</a>
+          <p>Microsoft's official step-by-step documentation and tutorials on how to build report models and dashboards in Power BI.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>9. </strong><a href="https://www.youtube.com/c/LukeBarousse" target="_blank" rel="noopener">Luke Barousse (YouTube)</a>
+          <p>An excellent channel with reviews of data analytics tools, career guides, portfolio tips, and interactive templates.</p>
+        </div>
+
+        <div class="resource-item">
+          <strong>10. </strong><a href="https://pandas.pydata.org/docs/getting_started/index.html" target="_blank" rel="noopener">Pandas Official Tutorials</a>
+          <p>Official Pandas cheatsheets and beginner guides to help you master Python DataFrame manipulation.</p>
+        </div>
+
+      </div>
+
+      <!-- Call to Action -->
+      <div class="blog-cta">
+        <h3>Ready to build your first portfolio project?</h3>
+        <p>Learn how to write a Python script that searches the live web, reads articles, and generates automated research documents.</p>
+        <a href="/learn" class="btn-cta">Start Free AI Agent Course</a>
+      </div>
+
+    </div>
+  </article>
+</div>
+{% endblock %}
