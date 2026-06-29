@@ -26,6 +26,7 @@ Built solo. Zero funding. No team. Just execution.
 - **Python + AI Course:** 100 days of structured, sketchnote-based python lessons.
 - **7-Day AI Agent Course:** Real-world AI agents built with Python and Groq.
 - **XP & Progress Tracking:** Users earn XP upon completing lessons, tracked persistently in the database.
+- **Global Leaderboard:** Standalone leaderboard (`/leaderboard`) listing the top 50 users ranked by total XP, displaying learning streaks (🔥), and calculating user-specific rank badges.
 - **Reviews:** Students can submit reviews/ratings for each course day.
 
 ### 2. Prompt Vault & Collections
@@ -73,9 +74,9 @@ Built solo. Zero funding. No team. Just execution.
 ```
 users
 ├── id (PK), username, email, password_hash
-├── is_admin, bio, created_at, is_verified
-├── rohi_messages_today (int)
-└── rohi_last_reset_date (date)
+├── is_admin, created_at, is_verified, google_id
+├── rohi_messages_today (int), rohi_last_reset_date (date)
+└── current_streak (int), last_active_date (date), xp (int)
 
 prompts
 ├── id (PK), title, content, category, likes, copies
@@ -144,8 +145,8 @@ RohithBuilds/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/rohith1246/rohithbuilds.git
-   cd rohithbuilds
+   git clone https://github.com/rohith1246/Rohith-builds.git
+   cd Rohith-builds
    ```
 
 2. **Create and activate virtual environment:**
