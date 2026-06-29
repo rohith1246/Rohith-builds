@@ -109,6 +109,39 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(jobs_bp)
 
 
+@app.before_request
+def track_session():
+    """Track user activity session persistently in database."""
+    # Ignore static assets, health checks, manifest, and admin routes
+    if request.method == "GET" and not request.path.startswith(("/static", "/health", "/admin", "/manifest.json")):
+        try:
+            from flask import session
+            from datetime import datetime, timezone
+            import uuid
+            if "track_sid" not in session:
+                session["track_sid"] = str(uuid.uuid4())
+            
+            sid = session["track_sid"]
+            user_id = current_user.id if current_user.is_authenticated else None
+            ip = request.headers.get("X-Forwarded-For", request.remote_addr) or ""
+            ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
+            
+            from models import ActiveSession
+            sess = ActiveSession.query.filter_by(session_id=sid).first()
+            if not sess:
+                sess = ActiveSession(session_id=sid)
+                db.session.add(sess)
+            
+            sess.user_id = user_id
+            sess.last_page = request.path
+            sess.ip_hash = ip_hash
+            sess.updated_at = datetime.now(timezone.utc)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error tracking active session: {e}")
+
+
 # Database Seeding
 SEED_PROMPTS = [
     {"title": "Ultimate Code Reviewer", "content": "You are an expert senior software engineer conducting a thorough code review...", "category": "Coding"},

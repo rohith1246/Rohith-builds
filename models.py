@@ -607,3 +607,20 @@ class UserMemory(db.Model):
 
     def __repr__(self) -> str:
         return f"<UserMemory {self.user_id} {self.memory_key}>"
+
+
+class ActiveSession(db.Model):
+    """Database model for tracking live user activity sessions."""
+    __tablename__ = "active_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
+    last_page = db.Column(db.String(255))
+    ip_hash = db.Column(db.String(64))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), index=True)
+
+    user = db.relationship("User", backref=db.backref("active_sessions", lazy=True, cascade="all, delete-orphan"))
+
+    def __repr__(self) -> str:
+        return f"<ActiveSession {self.session_id} {self.last_page}>"
